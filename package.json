@@ -1,7 +1,7 @@
 {
   "name": "owlet",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.tsx",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -16,5 +16,8 @@
     "react-native": "0.81.5",
     "react-native-web": "^0.21.0"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "typescript": "~5.9.2"
+  }
 }
