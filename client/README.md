@@ -1,2 +1,0 @@
-To run the app, cd into the owlet folder. In your terminal, type npm start -- --web to host the app on a local server.
-Alternatively, you can download Expo Go on your phone or mobile device, create an account, cd into owlet, and execute npm start in the terminal.
