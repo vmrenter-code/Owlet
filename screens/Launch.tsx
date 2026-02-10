@@ -1,10 +1,12 @@
 import {View, Text, StyleSheet} from 'react-native';
 
+//Import any components you need
 import PrimaryBlueButton from '../components/PrimaryBlueButton'
 import PrimaryWhiteButton from '../components/PrimaryWhiteButton'
 
 export default function Launch() {
     return (
+        //Views behave like divs. I used divs to wrap our components into divs to apply layout styles
         <View style = {styles.container}>
             <View style = {styles.textContainer}>
                 <Text style = {styles.text}>owlet</Text>
