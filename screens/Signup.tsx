@@ -45,7 +45,7 @@ export default function Signup() {
 
             <Pressable style={({ pressed }) => [styles.googleButton, pressed && { opacity: 0.9, transform: [{ scale: 1.02 }] }]}>
                 <Image 
-                    source={{ uri: 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg' }} 
+                    source={{ uri: 'https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png' }} 
                     style={styles.googleIcon}
                 />
                 <Text style={styles.googleButtonText}>Continue with Google</Text>
