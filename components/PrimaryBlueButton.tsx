@@ -3,15 +3,15 @@
 
 //Note: This is just sets up the button. Formatting styles may have
 //to be done within your components.
-import {View, Text, StyleSheet} from 'react-native';
+import {Pressable, Text, StyleSheet} from 'react-native';
 
 //Children allows us to type whatever we want in the button.
 //For example, if you want a button that has the words "Hi" inside it,
 // Simply do: <PrimaryBlueButton>Hi</PrimaryBlueButton>
-export default function PrimaryButton({ children }: any) {
-    return <View style = {styles.container}>
+export default function PrimaryButton({ children, onPress }: any) {
+    return <Pressable style = {styles.container} onPress = {onPress}>
         <Text style = {styles.text}>{ children }</Text>
-    </View>
+    </Pressable>
 }
 
 //Styles for the button
