@@ -9,9 +9,11 @@ import {Pressable, Text, StyleSheet} from 'react-native';
 //For example, if you want a button that has the words "Hi" inside it,
 // Simply do: <PrimaryBlueButton>Hi</PrimaryBlueButton>
 export default function PrimaryButton({ children, onPress }: any) {
-    return <Pressable style = {styles.container} onPress = {onPress}>
+    return (
+    <Pressable onPress = { onPress } style = {({ pressed }: any) => [styles.container, pressed && { transform: [ {scale: 1.04 },], opacity: 0.90}]} >
         <Text style = {styles.text}>{ children }</Text>
     </Pressable>
+    );
 }
 
 //Styles for the button

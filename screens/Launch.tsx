@@ -6,6 +6,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Button } from '@react-navigation/elements';
+import { NavigationContainer } from '@react-navigation/native'
 
 //Import any components you need
 import PrimaryBlueButton from '../components/PrimaryBlueButton'
@@ -25,7 +26,7 @@ function Launch() {
             
             <View style = {styles.buttonContainer}>
                 <PrimaryBlueButton>Create Account</PrimaryBlueButton>
-                <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Login</PrimaryWhiteButton>
+                <PrimaryWhiteButton onPress={() => navigation.push('Login')}>Login</PrimaryWhiteButton>
             </View>
             
         </View>
@@ -54,7 +55,9 @@ const RootStack = createNativeStackNavigator({
             marginTop: 0,
             backgroundColor: '#fff', 
         },
-        animationTypeForReplace: 'push',
+        animation: 'slide_from_right',
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
         title: '',
         headerShadowVisible: false,
         headerTintColor: '#3ab0d1'
