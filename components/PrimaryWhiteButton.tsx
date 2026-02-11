@@ -25,7 +25,8 @@ const styles = StyleSheet.create({
         //For shadow on Apple, use the parameters below
         shadowColor: '#000',
         shadowOffset: {width: 0, height:3},
-        shadowOpacity: 0.25,
+        shadowOpacity: 0.45,
+        shadowRadius: 6,
         borderColor: '#e0e0e0',
         borderWidth: 1
 

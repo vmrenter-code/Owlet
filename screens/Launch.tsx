@@ -56,7 +56,8 @@ const RootStack = createNativeStackNavigator({
         },
         animationTypeForReplace: 'push',
         title: '',
-        headerShadowVisible: false
+        headerShadowVisible: false,
+        headerTintColor: '#3ab0d1'
     }
 })
 
@@ -69,7 +70,7 @@ export default function App() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
+        padding: 30,
         marginTop: 100,
         backgroundColor: '#ffffff'
     },
@@ -83,10 +84,8 @@ const styles = StyleSheet.create({
     },
 
     buttonContainer: {
-        position: 'absolute',
+        marginTop: 'auto',
         bottom: 70,
-        left: 20,
-        right: 20,
         gap: 50
     },
 
