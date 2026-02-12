@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 
 import  InputFields from '../components/InputFields'
 import PrimaryBlueButton from '../components/PrimaryBlueButton'
+import GoogleButton from '../components/GoogleButton'
 
 export default function Login() {
     return (
@@ -32,10 +33,14 @@ export default function Login() {
                 <PrimaryBlueButton>Login</PrimaryBlueButton>
             </View>
 
-            <View style = { styles.orContainer }>
-                <Text style = { styles.subtitleStyle }>or login with</Text>
+           <View style={styles.orContainer}>
+                <View style={styles.orLine} />
+                    <Text style={styles.orText}>or</Text>
+                <View style={styles.orLine} />
             </View>
 
+            <GoogleButton></GoogleButton>
+          
         </View>
     )
 }
@@ -80,16 +85,29 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end'
     },
 
-    orContainer: {
-        marginTop: '10%',
+   orContainer: {
+        marginTop: '8%',
+        flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        gap: 15
     },
 
     text: {
         marginBottom: '2%',
         paddingLeft: 3
-    }
+    },
+
+     orLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: '#d0d0d0'
+    },
+
+     orText: {
+        fontSize: 14,
+        color: '#888888'
+    },
 
 
 });
