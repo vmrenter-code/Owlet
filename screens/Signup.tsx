@@ -34,10 +34,6 @@ export default function Signup() {
                 </View>
             </View>
 
-            <View style={styles.buttonContainer}>
-                <PrimaryBlueButton>Create Account</PrimaryBlueButton>
-            </View>
-
             <View style={styles.orContainer}>
                 <View style={styles.orLine} />
                 <Text style={styles.orText}>or</Text>
@@ -45,6 +41,10 @@ export default function Signup() {
             </View>
 
             <GoogleButton></GoogleButton>
+
+            <View style={styles.buttonContainer}>
+                <PrimaryBlueButton>Create Account</PrimaryBlueButton>
+            </View>
             
         </View>
     )
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
 
     titleStyle: {
         fontSize: 30,
-        fontWeight: 'bold'
+        fontWeight: 400
     },
 
     subtitleStyle: {
@@ -76,9 +76,14 @@ const styles = StyleSheet.create({
         marginTop: '7%'
     },
 
-    buttonContainer: {
-        marginTop: '10%'
+     buttonContainer: {
+        position: 'absolute',
+        bottom: 30,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 30
     },
+
 
     orContainer: {
         marginTop: '8%',

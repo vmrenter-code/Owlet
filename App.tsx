@@ -27,7 +27,7 @@ export default function App() {
                     gestureDirection: 'horizontal',
                     title: '',
                     headerShadowVisible: false,
-                    headerTintColor: '#3ab0d1',
+                    headerTintColor: '#49A3BD',
                 }}
             >
                 <Stack.Screen

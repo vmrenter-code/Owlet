@@ -29,10 +29,6 @@ export default function Login() {
                 <Text style = { styles.linkStyle }>Forgot Password?</Text>
             </View>
 
-            <View style = { styles.buttonContainer }>
-                <PrimaryBlueButton>Login</PrimaryBlueButton>
-            </View>
-
            <View style={styles.orContainer}>
                 <View style={styles.orLine} />
                     <Text style={styles.orText}>or</Text>
@@ -40,6 +36,10 @@ export default function Login() {
             </View>
 
             <GoogleButton></GoogleButton>
+
+            <View style = { styles.buttonContainer }>
+                <PrimaryBlueButton>Login</PrimaryBlueButton>
+            </View>
           
         </View>
     )
@@ -49,12 +49,12 @@ const styles = StyleSheet.create({
      container: {
         flex: 1,
         padding: 30,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
     },
 
     titleStyle: {
         fontSize: 30,
-        fontWeight: 'bold'
+        fontWeight: 400
     },
 
     subtitleStyle: {
@@ -77,8 +77,13 @@ const styles = StyleSheet.create({
     },
 
     buttonContainer: {
-        marginTop: '10%'
+        position: 'absolute',
+        bottom: 30,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 30
     },
+
     
     linkContainer:{
         marginTop: '5%',

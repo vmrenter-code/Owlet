@@ -20,7 +20,7 @@ export default function PrimaryButton({ children, onPress }: any) {
 const styles = StyleSheet.create({
     container: {
         padding: 12,
-        backgroundColor: '#3ab0d1',
+        backgroundColor: '#49A3BD',
         borderRadius: 100,
         //For shadow on Android, use elevation
         elevation: 4,

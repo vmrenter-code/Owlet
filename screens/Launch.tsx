@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
 
     text: {
         fontSize: 30,
-        color: '#3ab0d1',
+        color: '#49A3BD',
         fontWeight: 'bold',
         letterSpacing: 7,
         transform: [{ translateY: -60}]
