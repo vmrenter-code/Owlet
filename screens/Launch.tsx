@@ -40,9 +40,12 @@ const styles = StyleSheet.create({
     },
 
     buttonContainer: {
-        marginTop: 'auto',
-        bottom: 70,
-        gap: 50
+        position: 'absolute',
+        bottom: 30,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 30,
+        gap: 35,
     },
 
     textContainer: {
