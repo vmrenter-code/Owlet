@@ -1,14 +1,14 @@
-import {View, TextInput, StyleSheet} from 'react-native';
+import {View, TextInput, StyleSheet, TextInputProps} from 'react-native';
 
 // When integrating inputfields, this code allows us to type in
 // whatever we want in the placeholder
-type InputFieldsProps = {
+type InputFieldsProps = TextInputProps &{
     placeholder?: string;
 }
-export default function InputFields({ placeholder }: InputFieldsProps) {
+export default function InputFields({ placeholder, ...props }: InputFieldsProps) {
     return (
         <View>
-            <TextInput style = { styles.container }placeholder = { placeholder } placeholderTextColor="#888888"/>
+            <TextInput style = { styles.container }placeholder = { placeholder } placeholderTextColor="#888888" {...props}/>
         </View>
     )
 }
@@ -18,7 +18,6 @@ const styles = StyleSheet.create({
         borderColor: '#898989',
         borderWidth: 0.5,
         borderRadius: 12,
-        elevation: 4,
         padding: 5.5,
         height: 35,
         fontSize: 14,
