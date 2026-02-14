@@ -3,6 +3,7 @@ import { userAuthServices } from '../src/services/userAuthServices';
 import { useState } from 'react';
 import InputFields from '../components/InputFields'
 import PrimaryBlueButton from '../components/PrimaryBlueButton'
+import GoogleButton from '../components/GoogleButton'
 
 export default function Signup() {
     const [username, setUsername] = useState('');
@@ -86,13 +87,8 @@ export default function Signup() {
                 <View style={styles.orLine} />
             </View>
 
-            <Pressable style={({ pressed }) => [styles.googleButton, pressed && { opacity: 0.9, transform: [{ scale: 1.02 }] }]}>
-                <Image 
-                    source={{ uri: 'https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png' }} 
-                    style={styles.googleIcon}
-                />
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
-            </Pressable>
+            <GoogleButton></GoogleButton>
+            
         </View>
     )
 }
@@ -144,30 +140,6 @@ const styles = StyleSheet.create({
     orText: {
         fontSize: 14,
         color: '#888888'
-    },
-
-    googleButton: {
-        marginTop: '6%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 12,
-        backgroundColor: '#ffffff',
-        borderRadius: 100,
-        borderColor: '#e0e0e0',
-        borderWidth: 1,
-        gap: 10
-    },
-
-    googleIcon: {
-        width: 20,
-        height: 20
-    },
-
-    googleButtonText: {
-        fontSize: 14,
-        color: '#333333',
-        fontWeight: '500'
     },
 
     text: {
