@@ -1,10 +1,14 @@
 import { View, Text, StyleSheet } from 'react-native';
 
-import  InputFields from '../components/InputFields'
+import InputFields from '../components/InputFields'
 import PrimaryBlueButton from '../components/PrimaryBlueButton'
 import GoogleButton from '../components/GoogleButton'
+import { useNavigation } from '@react-navigation/native';
+
 
 export default function Login() {
+    const navigation = useNavigation<any>();
+
     return (
         <View style = { styles.container}>
             <View style = { styles.titleContainer}>
@@ -38,7 +42,7 @@ export default function Login() {
             <GoogleButton></GoogleButton>
 
             <View style = { styles.buttonContainer }>
-                <PrimaryBlueButton>Login</PrimaryBlueButton>
+                <PrimaryBlueButton onPress={() => navigation.push('Home')}>Login</PrimaryBlueButton>
             </View>
           
         </View>

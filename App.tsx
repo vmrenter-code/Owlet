@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Launch from './screens/Launch';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
+import Home from './screens/Home';
 
 //Following https://reactnavigation.org/docs/hello-react-navigation, to navigate between different screens
 const Stack = createNativeStackNavigator();
@@ -33,7 +34,6 @@ export default function App() {
                 <Stack.Screen
                     name="Launch"
                     component={Launch}
-
                     // The navigator header will NOT be shown on the launch screen ONLY.
                     options={{
                         headerShown: false,
@@ -49,6 +49,15 @@ export default function App() {
                     name="Signup"
                     component={Signup}
                 />
+
+                <Stack.Screen
+                    name="Home"
+                    component={Home}
+                    options={{
+                        headerShown: false,
+                    }}
+                />
+
 
             </Stack.Navigator>
         </NavigationContainer>
