@@ -16,7 +16,7 @@ export default function Home() {
             <View style={styles.buttonContainer}>
                 <BeginScreenBtn>
                     <>
-                    <Text style = {{ fontSize: 28, color: '#fff', fontWeight: 400}}>Begin Screening</Text>
+                    <Text style = {{ fontSize: 28, color: '#fff', fontWeight: 500}}>Begin Screening</Text>
                     <Text style = {{ fontSize: 18, color: '#fff'}}>~10 minutes</Text>
                     </>
                 </BeginScreenBtn>
@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
   },
 
   headerStyle: {
-    fontSize: 28
+    fontSize: 28,
+    fontWeight: 400
   }
 });
