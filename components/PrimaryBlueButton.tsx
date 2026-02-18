@@ -22,8 +22,6 @@ const styles = StyleSheet.create({
         padding: 12,
         backgroundColor: '#49A3BD',
         borderRadius: 100,
-        //For shadow on Android, use elevation
-        elevation: 4,
         //For shadow on Apple, use the parameters below
         shadowColor: '#000',
         shadowOffset: {width: 0, height:3},

@@ -1,7 +1,8 @@
 //Modal -> applicable anywhere from home screen to other needs
 //Children allows us to put in whatever contents we want inside the header
 import { ReactNode } from 'react';
-import { View, StyleSheet, Dimensions } from "react-native";
+import { View, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window')
 
@@ -11,26 +12,33 @@ type Props = {
 
 export default function HomeModal({ children }: Props) {
   return (
-    <View style = {styles.card}>
+    <LinearGradient
+      colors={["rgba(255, 255, 255, 0)", "rgba(180, 203, 209, 0)"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      style={styles.card}
+    >
       <View style = {styles.content}>
-          { children }
+        {children}
       </View>
-    </View>
+     
+
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    //crucial: position: absolute makes modal behave indepently, and thus lets any input contents flow freely. also puts the modal at the bottom of the screen
-    position: 'absolute',
-    backgroundColor: "#fff",
+    backgroundColor: '#ffffff8c',
     width: "100%",
-    height: "80%",
     borderRadius: 38,
     alignSelf: "center",
     //space left for up top
-    top: width * 0.50,
-    opacity: 0.67
+    shadowOffset: {width: 1, height:0},
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    position: 'absolute',
+    bottom: 0,
   },
 
   content: {

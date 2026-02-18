@@ -12,7 +12,7 @@ export default function BeginScreenBtn({ children, onPress }: any) {
       ]}
     >
       <LinearGradient
-        colors={["#49A3BD", "#69B2C7", "#83C3D5", "#A1D9D0"]}
+        colors={["#3595B1", "#4CA3B7", "#66B3BF","#A1D9D0"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.gradient}
@@ -39,7 +39,8 @@ const styles = StyleSheet.create({
     shadowColor: '#000000',
     shadowOffset: { width: 5.5, height: 6.5 },
     shadowOpacity: 0.34,
-    shadowRadius: 8
+    shadowRadius: 8, 
+    borderColor: '#4699ac'
     
   },
 
