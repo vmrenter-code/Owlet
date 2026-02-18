@@ -36,10 +36,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 5.5, height: 6.5 },
-    shadowOpacity: 0.34,
-    shadowRadius: 8, 
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height:3},
+    shadowOpacity: 0.45,
+    shadowRadius: 6,
     borderColor: '#4699ac'
     
   },
