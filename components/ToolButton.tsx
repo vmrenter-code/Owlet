@@ -18,7 +18,7 @@ return (
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f2fdffc7',
+    backgroundColor: '#f2fdffd3',
     borderRadius: 10,
     alignSelf: "center",
     shadowColor: '#000',
