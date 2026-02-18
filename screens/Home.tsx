@@ -1,5 +1,6 @@
 // notice how modal has children, or it's contents in it. refer to modal.tsx for further documentaiton
-import { View, StyleSheet, Text, ScrollView } from 'react-native';
+// has scrolling, for smaller phone sizes
+import { View, StyleSheet, Text, ScrollView, Dimensions } from 'react-native';
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
@@ -7,49 +8,109 @@ import BeginScreenBtn from '../components/BeginScreenBtn';
 import Card from '../components/Card'
 import ToolButton from '../components/ToolButton';
 
+const { height } = Dimensions.get('window');
+
 export default function Home() {
   return (
-      <ScrollView style={styles.bgContainer} 
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
+    <View style={{ flex: 1 }}>
+
+      <View style={styles.formatBg}>
+        <HomeBg />
+      </View>
+
+      <ScrollView 
+        style={styles.bgContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-      <HomeBg/>
-     
-      <Modal>
-        <View>
-            <Text style = {styles.headerStyle}>Get Started</Text>
-            <View style={styles.buttonContainer}>
-                <BeginScreenBtn>
-                    <>
-                    <Text style = {{ fontSize: 22, color: '#fff'}}>Begin Screening</Text>
-                    <Text style = {{ fontSize: 16, color: '#fff'}}>~10 minutes</Text>
-                    </>
-                </BeginScreenBtn>
-            </View>
 
-            <Text style = {styles.headerStyle}>Recent Screenings</Text>
-            <View style={styles.cardContainer}>
-                <Card>
-                </Card>
-            </View>
-
-          <Text style = {styles.headerStyle}>Support Tools</Text>
-          <View style={styles.toolContainer}>
-            <ToolButton></ToolButton>
-            <ToolButton></ToolButton>
-            <ToolButton></ToolButton>
+        <View style={styles.heroContainer}>
+          <View style={styles.textContainer}>
+            <Text style={{fontSize: 30, color: '#fff', fontWeight: 500}}>Hi, User!</Text>
+            <Text style={{fontSize: 22, color: '#ffffffee'}}>Ready to begin?</Text>
           </View>
-
-
         </View>
-      </Modal>
-    </ScrollView>
- )
+
+        <View style={styles.modalContainer}>
+          <Modal>
+            <View>
+
+              <Text style={styles.headerStyle}>Get Started</Text>
+
+              <View style={styles.buttonContainer}>
+                <BeginScreenBtn>
+                  <>
+                    <Text style={{ fontSize: 22, color: '#fff'}}>Begin Screening</Text>
+                    <Text style={{ fontSize: 16, color: '#fff'}}>~10 minutes</Text>
+                  </>
+                </BeginScreenBtn>
+              </View>
+
+              <Text style={styles.headerStyle}>Recent Screenings</Text>
+
+              <View style={styles.cardContainer}>
+                <Card></Card>
+              </View>
+
+              <Text style={styles.headerStyle}>Support Tools</Text>
+
+              <View style={styles.toolContainer}>
+                <ToolButton></ToolButton>
+                <ToolButton></ToolButton>
+                <ToolButton></ToolButton>
+              </View>
+
+              <Text></Text>
+              <Text></Text>
+              <Text></Text>
+
+            </View>
+          </Modal>
+        </View>
+
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
+
+  //fills the entire background with HomeBG
+  formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+
   bgContainer: {
-    flex: 1,  
+    flex: 1,
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 0,
+  },
+
+  //Styles for the hero (blue part at the top), ensures responsiveness to dimensions
+  heroContainer: {
+    width: '100%',
+    height: height * 0.32, 
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    zIndex: 2,
+  },
+
+  textContainer: {
+    justifyContent: 'center',
+  },
+
+  modalContainer: {
+    marginTop: -38,         
+    minHeight: height * 0.26, 
+    zIndex: 3,
   },
 
   buttonContainer: {
@@ -64,7 +125,6 @@ const styles = StyleSheet.create({
   headerStyle: {
     fontSize: 24,
     fontWeight: 'thin'
-
   },
 
   cardContainer: {
@@ -81,13 +141,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 20
   },
-
-  scrollContent: {
-    flexGrow: 1,
-  },
-
-  textContainer: {
-    flex: 1,
-    alignItems: 'center',
-  }
 });

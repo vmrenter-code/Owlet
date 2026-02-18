@@ -1,10 +1,8 @@
 //Modal -> applicable anywhere from home screen to other needs
 //Children allows us to put in whatever contents we want inside the header
 import { ReactNode } from 'react';
-import { View, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window')
 
 type Props = {
     children?: ReactNode;
@@ -21,8 +19,6 @@ export default function HomeModal({ children }: Props) {
       <View style = {styles.content}>
         {children}
       </View>
-     
-
     </LinearGradient>
   );
 }
@@ -33,12 +29,9 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 38,
     alignSelf: "center",
-    //space left for up top
     shadowOffset: {width: 1, height:0},
     shadowOpacity: 0.25,
     shadowRadius: 20,
-    position: 'absolute',
-    bottom: 0,
   },
 
   content: {
