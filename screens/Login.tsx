@@ -42,7 +42,7 @@ export default function Login() {
             <GoogleButton></GoogleButton>
 
             <View style = { styles.buttonContainer }>
-                <PrimaryBlueButton onPress={() => navigation.push('Home')}>Login</PrimaryBlueButton>
+                <PrimaryBlueButton onPress={() => navigation.replace('Home')}>Login</PrimaryBlueButton>
             </View>
           
         </View>

@@ -7,6 +7,7 @@ import Modal from '../components/Modal';
 import BeginScreenBtn from '../components/BeginScreenBtn';
 import Card from '../components/Card'
 import ToolButton from '../components/ToolButton';
+import ProfileContainer from '../components/ProfileContainer';
 
 const { height } = Dimensions.get('window');
 
@@ -28,6 +29,9 @@ export default function Home() {
           <View style={styles.textContainer}>
             <Text style={{fontSize: 30, color: '#fff', fontWeight: 500}}>Hi, User!</Text>
             <Text style={{fontSize: 22, color: '#ffffffee'}}>Ready to begin?</Text>
+          </View>
+          <View style ={styles.profileContainer}>
+            <ProfileContainer/>
           </View>
         </View>
 
@@ -60,9 +64,7 @@ export default function Home() {
                 <ToolButton></ToolButton>
               </View>
 
-              <Text></Text>
-              <Text></Text>
-              <Text></Text>
+                <Text style={styles.ignore}>.</Text>
 
             </View>
           </Modal>
@@ -96,11 +98,13 @@ const styles = StyleSheet.create({
 
   //Styles for the hero (blue part at the top), ensures responsiveness to dimensions
   heroContainer: {
+    flexDirection: 'row',
     width: '100%',
     height: height * 0.32, 
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 28,
     zIndex: 2,
+    alignItems: 'center'
   },
 
   textContainer: {
@@ -141,4 +145,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 20
   },
+
+  profileContainer: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  
+  ignore: {
+    backgroundColor: '#ffffff00',
+    color: '#00000000'
+  }
 });

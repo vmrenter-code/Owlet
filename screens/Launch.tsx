@@ -15,8 +15,8 @@ export default function Launch() {
             </View>
             
             <View style = {styles.buttonContainer}>
-                <PrimaryBlueButton onPress={() => navigation.push('Signup')}>Create Account</PrimaryBlueButton>
-                <PrimaryWhiteButton onPress={() => navigation.push('Login')}>Login</PrimaryWhiteButton>
+                <PrimaryBlueButton onPress={() => navigation.replace('Signup')}>Create Account</PrimaryBlueButton>
+                <PrimaryWhiteButton onPress={() => navigation.replace('Login')}>Login</PrimaryWhiteButton>
             </View>
             
         </View>

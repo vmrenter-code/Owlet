@@ -7,6 +7,7 @@ import Launch from './screens/Launch';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
 import Home from './screens/Home';
+import Tabs from './nav/Tabs'
 
 //Following https://reactnavigation.org/docs/hello-react-navigation, to navigate between different screens
 const Stack = createNativeStackNavigator();
@@ -52,7 +53,7 @@ export default function App() {
 
                 <Stack.Screen
                     name="Home"
-                    component={Home}
+                    component={Tabs}
                     options={{
                         headerShown: false,
                     }}
