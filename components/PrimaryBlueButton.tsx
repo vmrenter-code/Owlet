@@ -4,6 +4,7 @@
 //Note: This is just sets up the button. Formatting styles may have
 //to be done within your components.
 import {Pressable, Text, StyleSheet} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 //Children allows us to type whatever we want in the button.
 //For example, if you want a button that has the words "Hi" inside it,
@@ -11,7 +12,12 @@ import {Pressable, Text, StyleSheet} from 'react-native';
 export default function PrimaryButton({ children, onPress }: any) {
     return (
     <Pressable onPress = { onPress } style = {({ pressed }: any) => [styles.container, pressed && { transform: [ {scale: 1.04 }], opacity: 0.90}]} >
-        <Text style = {styles.text}>{ children }</Text>
+        <LinearGradient
+            colors={['#49A3BD', '#60bad3']}
+            style={styles.gradient}
+        >
+            <Text style = {styles.text}>{ children }</Text>
+        </LinearGradient>
     </Pressable>
     );
 }
@@ -20,16 +26,23 @@ export default function PrimaryButton({ children, onPress }: any) {
 const styles = StyleSheet.create({
     container: {
         padding: 12,
-        backgroundColor: '#49A3BD',
         borderRadius: 100,
         //For shadow on Apple, use the parameters below
+        
+    },
+
+    gradient: {
+        padding: 12,
+        borderRadius: 100,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: '#000',
         shadowOffset: {width: 0, height:3},
         shadowOpacity: 0.45,
         shadowRadius: 6,
         borderColor: '#32a0be',
         borderWidth: 1
-
     },
 
     text: {
@@ -39,11 +52,4 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         letterSpacing: 0.2
     }
-
 });
-
-
-
-
-
-

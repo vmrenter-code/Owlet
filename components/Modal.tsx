@@ -25,7 +25,7 @@ export default function HomeModal({ children }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff8c',
+    backgroundColor: '#ffffff96',
     width: "100%",
     borderTopLeftRadius: 38,
     borderTopRightRadius: 38,

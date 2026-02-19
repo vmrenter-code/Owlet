@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
 
   headerStyle: {
     fontSize: 24,
-    fontWeight: 'thin'
+    fontWeight: '400'
   },
 
   cardContainer: {
