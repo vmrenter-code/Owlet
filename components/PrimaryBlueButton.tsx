@@ -13,7 +13,7 @@ export default function PrimaryButton({ children, onPress }: any) {
     return (
     <Pressable onPress = { onPress } style = {({ pressed }: any) => [styles.container, pressed && { transform: [ {scale: 1.04 }], opacity: 0.90}]} >
         <LinearGradient
-            colors={['#49A3BD', '#60bad3']}
+            colors={['#74BBCF', '#9ad1c0']}
             style={styles.gradient}
         >
             <Text style = {styles.text}>{ children }</Text>
@@ -34,15 +34,15 @@ const styles = StyleSheet.create({
     gradient: {
         padding: 12,
         borderRadius: 100,
+                alignSelf: 'center',
+
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#000',
         shadowOffset: {width: 0, height:3},
-        shadowOpacity: 0.45,
-        shadowRadius: 6,
-        borderColor: '#32a0be',
-        borderWidth: 1
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
     },
 
     text: {

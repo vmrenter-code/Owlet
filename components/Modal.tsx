@@ -25,7 +25,7 @@ export default function HomeModal({ children }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff96',
+    backgroundColor: '#e2f4f2bd',
     width: "100%",
     borderTopLeftRadius: 38,
     borderTopRightRadius: 38,
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
 
   content: {
     //this content style formats any content in the modal. so here, contents are formatted 28 from the edge of the modal
-    paddingHorizontal: 28,
+    paddingHorizontal: 22,
     paddingVertical: 28,
   }
 });

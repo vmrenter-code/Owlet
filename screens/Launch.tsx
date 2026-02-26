@@ -41,11 +41,11 @@ const styles = StyleSheet.create({
 
     buttonContainer: {
         position: 'absolute',
+        padding: 19,
         bottom: 30,
         left: 0,
         right: 0,
-        paddingHorizontal: 30,
-        gap: 35,
+        gap: 16,
     },
 
     textContainer: {

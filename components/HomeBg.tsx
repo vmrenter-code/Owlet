@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 export default function HomeBg() {
   return (
     <LinearGradient
-      colors={["#49A3BD", "#69B2C7", "#83C3D5","#A1D9D0"]}
+      colors={["#70b8cc", "#a1dbc8"]}
       start={{ x: 0, y: 0 }}
       style={ styles.card }
       end= {{ x: 1, y:0 }}

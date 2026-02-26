@@ -22,15 +22,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 12,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#fdfdfd',
         borderRadius: 100,
         borderColor: '#e0e0e0',
         borderWidth: 1,
         gap: 10,
         shadowColor: '#000',
         shadowOffset: {width: 0, height:3},
-        shadowOpacity: 0.25,
-        shadowRadius: 10,
+        shadowOpacity: 0.20,
+        shadowRadius: 8,
 
     },
 
@@ -41,8 +41,9 @@ const styles = StyleSheet.create({
 
     googleButtonText: {
         fontSize: 14,
-        color: '#333333',
-        fontWeight: '500'
+        color: '#757575',
+        fontWeight: '500',
+        textAlign: 'center'
     }
 
 })

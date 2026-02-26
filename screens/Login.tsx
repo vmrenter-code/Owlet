@@ -1,50 +1,62 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
 
 import InputFields from '../components/InputFields'
-import PrimaryBlueButton from '../components/PrimaryBlueButton'
+import PrimaryWhiteButton from '../components/PrimaryWhiteButton'
 import GoogleButton from '../components/GoogleButton'
-import { useNavigation } from '@react-navigation/native';
+import HomeBg from '../components/HomeBg';
 
 
 export default function Login() {
     const navigation = useNavigation<any>();
 
     return (
-        <View style = { styles.container}>
-            <View style = { styles.titleContainer}>
-                <Text style = { styles.titleStyle}>Login</Text>
-                <Text style = { styles.subtitleStyle }>Welcome back.</Text>
-            </View>
-                       
 
-            <View style = { styles.divider }>
-                <View>
-                    <Text style = { styles.text }>Username</Text>
-                    <InputFields placeholder= { "Username" }></InputFields>
+        <View style={{ flex: 1 }}>
+
+            <View style={styles.formatBg}>
+                    <HomeBg />
+            </View>
+
+            <View style = { styles.container}>
+                <View style = { styles.titleContainer}>
+                    <Text style = { styles.titleStyle}>Login</Text>
+                    <Text style = { styles.subtitleStyle }>Welcome back.</Text>
                 </View>
-                
-                <View>
-                    <Text style = { styles.text }>Password</Text>
-                    <InputFields placeholder= { "Password" }></InputFields>
+                        
+
+                <View style = { styles.divider }>
+                    <View>
+                        <Text style = { styles.text }>Username</Text>
+                        <InputFields></InputFields>
+                    </View>
+                    
+                    <View>
+                        <Text style = { styles.text }>Password</Text>
+                        <InputFields></InputFields>
+                    </View>
                 </View>
-            </View>
 
-            <View style = {styles.linkContainer}>
-                <Text style = { styles.linkStyle }>Forgot Password?</Text>
-            </View>
+                <View style = {styles.linkContainer}>
+                    <Text style = { styles.linkStyle }>Forgot Password?</Text>
+                </View>
 
-           <View style={styles.orContainer}>
-                <View style={styles.orLine} />
-                    <Text style={styles.orText}>or</Text>
-                <View style={styles.orLine} />
-            </View>
+               <View style={styles.orContainer}>
+                    <View style={styles.orLine} />
+                        <Text style={styles.orText}>or login with</Text>
+                    <View style={styles.orLine} />
+                </View>
 
-            <GoogleButton></GoogleButton>
+                <View style = {styles.googleContainer}>
+                    <GoogleButton></GoogleButton>
+                </View>
 
-            <View style = { styles.buttonContainer }>
-                <PrimaryBlueButton onPress={() => navigation.replace('Home')}>Login</PrimaryBlueButton>
+                <View style = { styles.buttonContainer }>
+                    <PrimaryWhiteButton onPress={() => navigation.replace('Home')}>Login</PrimaryWhiteButton>
+                </View>
+            
             </View>
-          
         </View>
     )
 }
@@ -53,22 +65,23 @@ const styles = StyleSheet.create({
      container: {
         flex: 1,
         padding: 30,
-        backgroundColor: '#ffffff',
     },
 
     titleStyle: {
         fontSize: 30,
-        fontWeight: 400
+        fontWeight: '500',
+        color: '#fff'
     },
 
     subtitleStyle: {
-        fontSize: 15,
-        color: '#555555'
+        fontSize: 16,
+        color: '#f0f0f0'
     },
 
     linkStyle: {
-        color: '#3ab0d1',
-        fontSize: 13
+        color: '#ffffff',
+        fontSize: 14,
+        fontWeight: '500'
     },
 
     titleContainer:{
@@ -76,7 +89,7 @@ const styles = StyleSheet.create({
     },
 
     divider: {
-        gap: 30,
+        gap: 16,
         marginTop: '9%'
     },
 
@@ -85,7 +98,7 @@ const styles = StyleSheet.create({
         bottom: 30,
         left: 0,
         right: 0,
-        paddingHorizontal: 30
+        paddingHorizontal: 19
     },
 
     
@@ -104,19 +117,36 @@ const styles = StyleSheet.create({
 
     text: {
         marginBottom: '2%',
-        paddingLeft: 3
+        paddingLeft: 3,
+        color: '#fff',
+        fontWeight: '500',
+        fontSize: 16
     },
 
      orLine: {
         flex: 1,
         height: 1,
-        backgroundColor: '#d0d0d0'
+        backgroundColor: '#ffffff'
     },
 
      orText: {
-        fontSize: 14,
-        color: '#888888'
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#f8f8f8'
     },
+
+    formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+
+  googleContainer: {
+    marginTop: 16
+  }
 
 
 });

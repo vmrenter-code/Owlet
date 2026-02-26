@@ -15,8 +15,7 @@ export default function InputFields({ placeholder }: InputFieldsProps) {
 
 const styles = StyleSheet.create({
     container: {
-        borderColor: '#898989',
-        borderWidth: 0.5,
+        backgroundColor:'#fff',
         borderRadius: 12,
         padding: 5.5,
         height: 35,

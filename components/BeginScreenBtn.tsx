@@ -1,6 +1,7 @@
 //Begin Screening Button set up
 import { LinearGradient } from 'expo-linear-gradient';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet, Image } from 'react-native';
+
 
 export default function BeginScreenBtn({ children, onPress }: any) {
   return (
@@ -12,13 +13,20 @@ export default function BeginScreenBtn({ children, onPress }: any) {
       ]}
     >
       <LinearGradient
-        colors={["#3595B1", "#4CA3B7", "#66B3BF","#A1D9D0"]}
+        colors={["#5FABC7", "#A1D9D0"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.gradient}
       >
-        <View style={styles.textContainer}>
-          {children}
+        <View style={styles.buttonRow}>
+          
+
+
+
+
+          <View style={styles.textContainer}>
+            {children}
+          </View>
         </View>
       </LinearGradient>
     </Pressable>
@@ -26,26 +34,36 @@ export default function BeginScreenBtn({ children, onPress }: any) {
 }
 
 const styles = StyleSheet.create({
-  pressable: {
-    //ignore for press
-  },
+  pressable: {},
 
   gradient: {
-    width: '100%',  
+    width: '100%',
     height: 98,
     borderRadius: 10,
     justifyContent: 'center',
-    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height:3},
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.45,
     shadowRadius: 6,
-    borderColor: '#4699ac'
-    
+    borderColor: '#4699ac',
+  },
+
+  buttonRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingLeft: 30,
+  gap: 20
+  },
+
+
+  icon: {
+    width: 50,
+    height: 50,
   },
 
   textContainer: {
-    //Need container to align title and subtitle on button in the center, evenly divided
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    fontWeight: 'bold'
   },
 });

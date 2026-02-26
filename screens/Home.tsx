@@ -1,6 +1,7 @@
 // notice how modal has children, or it's contents in it. refer to modal.tsx for further documentaiton
 // has scrolling, for smaller phone sizes
-import { View, StyleSheet, Text, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Dimensions, Image } from 'react-native';
+
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
@@ -26,9 +27,9 @@ export default function Home() {
       >
 
         <View style={styles.heroContainer}>
-          <View style={styles.textContainer}>
+          <View>
             <Text style={{fontSize: 30, color: '#fff', fontWeight: 500}}>Hi, User!</Text>
-            <Text style={{fontSize: 22, color: '#ffffffee'}}>Ready to begin?</Text>
+            <Text style={{fontSize: 20, color: '#ffffffee'}}>Screen with confidence.</Text>
           </View>
           <View style ={styles.profileContainer}>
             <ProfileContainer/>
@@ -39,13 +40,12 @@ export default function Home() {
           <Modal>
             <View>
 
-              <Text style={styles.headerStyle}>Get Started</Text>
-
               <View style={styles.buttonContainer}>
                 <BeginScreenBtn>
                   <>
-                    <Text style={{ fontSize: 22, color: '#fff'}}>Begin Screening</Text>
-                    <Text style={{ fontSize: 16, color: '#fff'}}>~10 minutes</Text>
+                    <Text style={{ fontSize: 26, color: '#F8F9E8'}}>Begin Screening</Text>
+                    <Text style = {{ fontSize: 16, color: '#F8F9E8'}}>~10 minutes</Text>
+                    
                   </>
                 </BeginScreenBtn>
               </View>
@@ -59,9 +59,13 @@ export default function Home() {
               <Text style={styles.headerStyle}>Support Tools</Text>
 
               <View style={styles.toolContainer}>
-                <ToolButton></ToolButton>
-                <ToolButton></ToolButton>
-                <ToolButton></ToolButton>
+                <ToolButton >
+                  <Text style={styles.toolText}>Instructions</Text>
+                </ToolButton>
+
+                <ToolButton>
+                  <Text style={styles.toolText}>FAQs</Text>
+                </ToolButton>
               </View>
 
                 <Text style={styles.ignore}>.</Text>
@@ -107,9 +111,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
 
-  textContainer: {
-    justifyContent: 'center',
-  },
+
 
   modalContainer: {
     marginTop: -38,         
@@ -123,12 +125,13 @@ const styles = StyleSheet.create({
     //makes sure the button sits right on top layer, won't get hidden behind the layers
     zIndex: 20,
     //content between contents and the following section MUST be 28
-    marginBottom: 28
+    marginBottom: 28,
   },
 
   headerStyle: {
     fontSize: 24,
-    fontWeight: '400'
+    fontWeight: '400',
+    color: '#737373'
   },
 
   cardContainer: {
@@ -143,12 +146,18 @@ const styles = StyleSheet.create({
     marginBottom: 28,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 20
+    gap: 30
   },
 
   profileContainer: {
     justifyContent: 'center',
     alignItems: 'center'
+  },
+
+  toolText: {
+    color: '#737373',
+    fontSize: 14
+
   },
   
   ignore: {

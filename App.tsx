@@ -8,6 +8,7 @@ import Login from './screens/Login';
 import Signup from './screens/Signup';
 import Home from './screens/Home';
 import Tabs from './nav/Tabs'
+import HomeBg from './components/HomeBg';
 
 //Following https://reactnavigation.org/docs/hello-react-navigation, to navigate between different screens
 const Stack = createNativeStackNavigator();
@@ -19,18 +20,20 @@ export default function App() {
 
                 //Global styles for the navigator. Gets rid of the ugly preset that disrupts design.
                 screenOptions={{
-                    contentStyle: {
-                        paddingTop: 0,
-                        marginTop: 0,
-                        backgroundColor: '#fff',
-                    },
-                    animation: 'slide_from_right',
-                    gestureEnabled: true,
-                    gestureDirection: 'horizontal',
-                    title: '',
-                    headerShadowVisible: false,
-                    headerTintColor: '#49A3BD',
-                }}
+                contentStyle: {
+                paddingTop: 0,
+                marginTop: 0,
+                backgroundColor: '#fff',
+                },
+
+                 headerBackground: () => <HomeBg />,
+
+                headerTransparent: false,   // keep header container visible
+                headerShadowVisible: false,
+                headerTintColor: '#49A3BD',
+                headerTitle: ''
+}}
+
             >
                 <Stack.Screen
                     name="Launch"

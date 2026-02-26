@@ -1,36 +1,75 @@
 import { ReactNode } from 'react';
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Pressable, Text } from "react-native";
 
 type Props = {
-    children?: ReactNode;
+  children?: ReactNode;
+  onPress?: () => void;
 }
 
-export default function Card({ children }: Props) {
+export default function Card({ children, onPress }: Props) {
   return (
-    <View style = {styles.card}>
-      <View style = {styles.content}>
-          { children }
+    <Pressable style={({ pressed }) => [styles.card, pressed && { opacity: 0.9, transform: [{ scale: 1.02 }] }]}>
+      
+      {/* Top green section */}
+      <View style={styles.topSection} />
+
+      {/* Bottom white section */}
+      <View style={styles.bottomSection}>
+        <View style={styles.content}>
+          <View style={styles.textContainer}>
+            <Text style={styles.cardHeader}>No Screenings Yet</Text>
+            <Text style={styles.cardText}>
+              Your child’s completed screenings will appear here for easy review.
+            </Text>
+          </View>
+        </View>
       </View>
-    </View>
+
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#f2fdffc7",
+    width: '100%',
     borderRadius: 10,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height:3},
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.45,
     shadowRadius: 6,
-    alignSelf: "center",
-    padding: 60,
-    width: '100%',
+    backgroundColor: '#fff'
+  },
 
+  topSection: {
+    height: 110,
+    backgroundColor: '#E4FAF5'
+  },
+
+  bottomSection: {
+    backgroundColor: '#f2fdff',
+    paddingVertical: 6,
+    paddingHorizontal: 20
   },
 
   content: {
-    paddingHorizontal: 28,
-    paddingVertical: 28,
+    paddingHorizontal: 2,
+    paddingVertical: 8
+  },
+
+  cardHeader: {
+    fontSize: 20,
+    color: '#737373',
+    fontWeight: '400'
+  },
+
+  cardText: {
+    fontSize: 12,
+    color: '#737373'
+  },
+
+  textContainer: {
+    flexDirection: 'column',
+    gap: 3.5
   }
 });

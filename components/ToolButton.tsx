@@ -1,40 +1,47 @@
 import { ReactNode } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image, Pressable } from 'react-native';
 
 type Props = {
-    children?: ReactNode;
-}
+  icon?: any; 
+  children?: ReactNode;
+  onPress?: () => void;
+};
 
-
-export default function ToolButton({ children }: Props) {
-return (
-    <View style = {[styles.card]}>
-      <View style = {styles.content}>
-          { children }
+export default function ToolButton({ icon, children, onPress }: Props) {
+  return (
+    <Pressable style={({ pressed }) => [styles.card, pressed && { opacity: 0.9, transform: [{ scale: 1.02 }] }]}>
+      <View style={styles.content}>
+        {icon && (
+          <Image source={icon} style={styles.icon} resizeMode="contain" />
+        )}
+        {children}
       </View>
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f2fdffd3',
+    backgroundColor: '#f2fdff',
     borderRadius: 10,
     alignSelf: "center",
     shadowColor: '#000',
-    shadowOffset: {width: 0, height:3},
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.45,
     shadowRadius: 6,
-    flex: 1,
-    height: 90
-
+    width: 130,
+    height: 130
   },
 
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 28,
+    gap: 10
+  },
+
+  icon: {
+    width: 50,
+    height: 50
   }
 });
