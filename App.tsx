@@ -9,6 +9,7 @@ import Signup from './screens/Signup';
 import Home from './screens/Home';
 import Tabs from './nav/Tabs'
 import HomeBg from './components/HomeBg';
+import ScreeningInstructions from './screens/ScreeningInstructions';
 
 //Following https://reactnavigation.org/docs/hello-react-navigation, to navigate between different screens
 const Stack = createNativeStackNavigator();
@@ -61,6 +62,15 @@ export default function App() {
                         headerShown: false,
                     }}
                 />
+
+                <Stack.Screen
+                    name="ScreeningInstructions"
+                    component = {ScreeningInstructions}
+                    options = {{
+                        headerShown: false
+                    }}
+                />
+
 
 
             </Stack.Navigator>

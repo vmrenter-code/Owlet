@@ -25,10 +25,10 @@ export default function HomeModal({ children }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#e2f4f2bd',
+    backgroundColor: '#f1fcfabd',
     width: "100%",
-    borderTopLeftRadius: 38,
-    borderTopRightRadius: 38,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     alignSelf: "center",
     shadowOffset: {width: 1, height:0},
     shadowOpacity: 0.25,

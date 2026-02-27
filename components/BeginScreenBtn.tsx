@@ -19,11 +19,7 @@ export default function BeginScreenBtn({ children, onPress }: any) {
         style={styles.gradient}
       >
         <View style={styles.buttonRow}>
-          
-
-
-
-
+            <Image source = {require('../assets/Play.png')} style={styles.playStyles}/>
           <View style={styles.textContainer}>
             {children}
           </View>
@@ -66,4 +62,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     fontWeight: 'bold'
   },
+
+  playStyles: {
+    width: 65,
+    height: 65
+  }
 });

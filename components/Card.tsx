@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { View, StyleSheet, Pressable, Text } from "react-native";
+import { View, StyleSheet, Pressable, Text, Image } from "react-native";
 
 type Props = {
   children?: ReactNode;
@@ -8,20 +8,31 @@ type Props = {
 
 export default function Card({ children, onPress }: Props) {
   return (
-    <Pressable style={({ pressed }) => [styles.card, pressed && { opacity: 0.9, transform: [{ scale: 1.02 }] }]}>
-      
-      {/* Top green section */}
+    <Pressable 
+      onPress={onPress} 
+      style={({ pressed }: any) => [
+        styles.card,
+        pressed && { transform: [{ scale: 1.04 }], opacity: 0.90 }
+      ]}
+    >
+
       <View style={styles.topSection} />
 
-      {/* Bottom white section */}
       <View style={styles.bottomSection}>
-        <View style={styles.content}>
+        <View style={styles.row}>
+
           <View style={styles.textContainer}>
             <Text style={styles.cardHeader}>No Screenings Yet</Text>
             <Text style={styles.cardText}>
-              Your child’s completed screenings will appear here for easy review.
+              Your child’s screenings will appear here.
             </Text>
           </View>
+
+          <Image
+            source={require('../assets/ChevronRight.png')}
+            style={styles.chevron}
+          />
+
         </View>
       </View>
 
@@ -36,25 +47,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.45,
-    shadowRadius: 6,
+    shadowOpacity: 0.30,
+    shadowRadius: 7,
     backgroundColor: '#fff'
   },
 
   topSection: {
-    height: 110,
+    height: 150,
     backgroundColor: '#E4FAF5'
   },
 
   bottomSection: {
     backgroundColor: '#f2fdff',
-    paddingVertical: 6,
-    paddingHorizontal: 20
-  },
-
-  content: {
-    paddingHorizontal: 2,
-    paddingVertical: 8
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
 
   cardHeader: {
@@ -64,12 +70,26 @@ const styles = StyleSheet.create({
   },
 
   cardText: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#737373'
   },
 
   textContainer: {
     flexDirection: 'column',
-    gap: 3.5
-  }
+    gap: 3.5,
+    flexShrink: 1
+
+  },
+
+  chevron: {
+    width: 28,
+    height: 28,
+    tintColor: '#737373'
+  },
+
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
 });

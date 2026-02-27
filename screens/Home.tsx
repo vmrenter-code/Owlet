@@ -1,7 +1,7 @@
 // notice how modal has children, or it's contents in it. refer to modal.tsx for further documentaiton
 // has scrolling, for smaller phone sizes
 import { View, StyleSheet, Text, ScrollView, Dimensions, Image } from 'react-native';
-
+import { useNavigation } from '@react-navigation/native';
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
@@ -13,6 +13,8 @@ import ProfileContainer from '../components/ProfileContainer';
 const { height } = Dimensions.get('window');
 
 export default function Home() {
+  const navigation = useNavigation<any>();
+
   return (
     <View style={{ flex: 1 }}>
 
@@ -41,7 +43,7 @@ export default function Home() {
             <View>
 
               <View style={styles.buttonContainer}>
-                <BeginScreenBtn>
+                <BeginScreenBtn onPress={() => navigation.replace('ScreeningInstructions')}>
                   <>
                     <Text style={{ fontSize: 26, color: '#F8F9E8'}}>Begin Screening</Text>
                     <Text style = {{ fontSize: 16, color: '#F8F9E8'}}>~10 minutes</Text>
@@ -59,13 +61,19 @@ export default function Home() {
               <Text style={styles.headerStyle}>Support Tools</Text>
 
               <View style={styles.toolContainer}>
-                <ToolButton >
-                  <Text style={styles.toolText}>Instructions</Text>
-                </ToolButton>
+                <View>
+                  <ToolButton>
+                    <Image source = {require('../assets/QuestionMarkCircle.png')} style = {styles.faqStyles}/>
+                    <Text style={styles.toolText}>FAQs</Text>
+                  </ToolButton>
+                </View>
 
-                <ToolButton>
-                  <Text style={styles.toolText}>FAQs</Text>
-                </ToolButton>
+                <View>
+                  <ToolButton>
+                    <Image source = {require('../assets/Book1.png')} style = {styles.infStyles}/>
+                    <Text style={styles.toolText}>Instructions</Text>
+                  </ToolButton>
+                </View>
               </View>
 
                 <Text style={styles.ignore}>.</Text>
@@ -156,12 +164,23 @@ const styles = StyleSheet.create({
 
   toolText: {
     color: '#737373',
-    fontSize: 14
+    fontSize: 16
 
   },
   
   ignore: {
     backgroundColor: '#ffffff00',
     color: '#00000000'
+  },
+
+  faqStyles: {
+    width: 60,
+    height: 60
+  },
+
+  infStyles: {
+    width: 60,
+    height: 60
+
   }
 });
