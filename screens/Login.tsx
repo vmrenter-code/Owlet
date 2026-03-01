@@ -1,10 +1,40 @@
-import { View, Text, StyleSheet } from 'react-native';
-
-import  InputFields from '../components/InputFields'
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import { useState } from 'react';
+import { userAuthServices } from '../src/services/userAuthServices';
+import InputFields from '../components/InputFields'
 import PrimaryBlueButton from '../components/PrimaryBlueButton'
 import GoogleButton from '../components/GoogleButton'
 
 export default function Login() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert('Error', 'Please fill in all fields.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const user = await userAuthServices.login(email, password);
+            if (user) {
+                Alert.alert('Success', 'Logged in!');
+                // Navigation to home screen will be here once it's created
+            }
+        } catch (error: any) {
+            let message = 'Login failed.';
+            if (error.code === 'auth/user-not-found') {
+                message = 'User not found.';
+            } else if (error.code === 'auth/wrong-password') {
+                message = 'Incorrect password.';
+            }
+            Alert.alert('Error', message);
+        }
+        setLoading(false);
+    };
+
     return (
         <View style = { styles.container}>
             <View style = { styles.titleContainer}>
@@ -15,13 +45,24 @@ export default function Login() {
 
             <View style = { styles.divider }>
                 <View>
-                    <Text style = { styles.text }>Username</Text>
-                    <InputFields placeholder= { "Username" }></InputFields>
+                    <Text style = { styles.text }>Email</Text>
+                    <InputFields 
+                        placeholder="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                    />
                 </View>
                 
                 <View>
                     <Text style = { styles.text }>Password</Text>
-                    <InputFields placeholder= { "Password" }></InputFields>
+                    <InputFields 
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={true}
+                    />
                 </View>
             </View>
 
@@ -30,7 +71,9 @@ export default function Login() {
             </View>
 
             <View style = { styles.buttonContainer }>
-                <PrimaryBlueButton>Login</PrimaryBlueButton>
+                <PrimaryBlueButton onPress={handleLogin} disabled={loading}>
+                    {loading ? 'Logging in...' : 'Login'}
+                </PrimaryBlueButton>
             </View>
 
            <View style={styles.orContainer}>
