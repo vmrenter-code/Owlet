@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Launch from './screens/Launch';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
+import ForgotPassword from './screens/ForgotPassword';
 
 //Following https://reactnavigation.org/docs/hello-react-navigation, to navigate between different screens
 const Stack = createNativeStackNavigator();
@@ -48,6 +49,11 @@ export default function App() {
                 <Stack.Screen
                     name="Signup"
                     component={Signup}
+                />
+
+                <Stack.Screen
+                    name="ForgotPassword"
+                    component={ForgotPassword}
                 />
 
             </Stack.Navigator>

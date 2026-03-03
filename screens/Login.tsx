@@ -1,11 +1,13 @@
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
 import { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { userAuthServices } from '../src/services/userAuthServices';
 import InputFields from '../components/InputFields'
 import PrimaryBlueButton from '../components/PrimaryBlueButton'
 import GoogleButton from '../components/GoogleButton'
 
 export default function Login() {
+    const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -67,7 +69,9 @@ export default function Login() {
             </View>
 
             <View style = {styles.linkContainer}>
-                <Text style = { styles.linkStyle }>Forgot Password?</Text>
+                <Pressable onPress={() => navigation.navigate('ForgotPassword')}>
+                    <Text style = { styles.linkStyle }>Forgot Password?</Text>
+                </Pressable>
             </View>
 
             <View style = { styles.buttonContainer }>
