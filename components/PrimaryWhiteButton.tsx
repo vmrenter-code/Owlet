@@ -12,12 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function PrimaryWhiteButton({ children, onPress }: any) {
     return (
     <Pressable onPress = { onPress } style = {({ pressed }: any) => [styles.container, pressed && { transform: [ {scale: 1.04 }], opacity: 0.90}]} >
-        <LinearGradient
-            colors={['#ffffff', '#F0F3F2']}
-            style={styles.gradient}
-        >
             <Text style = {styles.text}>{ children }</Text>
-        </LinearGradient>
     </Pressable>
     );
 }
@@ -25,31 +20,21 @@ export default function PrimaryWhiteButton({ children, onPress }: any) {
 //Styles for the button
 const styles = StyleSheet.create({
     container: {
-        padding: 12,
+         padding: 17,
         borderRadius: 100,
-        //For shadow on Apple, use the parameters below
+        backgroundColor: '#ffffff',
+        shadowColor: '#00000031',
+        shadowOffset: {width: 2, height: 4},
+        shadowRadius: 4,
+        borderColor: '#F0F1F1',
+        borderWidth: 2
         
     },
 
-    gradient: {
-        padding: 12,
-        borderRadius: 100,
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height:3},
-        shadowOpacity: 0.20,
-        shadowRadius: 8,
-        borderColor: '#dddddd',
-        borderWidth: 1
-    },
-
     text: {
-        fontSize: 14,
-        color: '#74BBCF',
+        fontSize: 17,
+        color: '#8BC0CF',
         textAlign: 'center',
-        fontWeight: 'bold',
-        letterSpacing: 0.2
+        fontWeight: 600,
     }
 });

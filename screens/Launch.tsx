@@ -10,9 +10,6 @@ export default function Launch() {
     return (
         //Views behave like divs. I used divs to wrap our components into divs to apply layout styles
         <View style = {styles.container}>
-            <View style = {styles.textContainer}>
-                <Text style = {styles.text}>owlet</Text>
-            </View>
             
             <View style = {styles.buttonContainer}>
                 <PrimaryBlueButton onPress={() => navigation.replace('Signup')}>Create Account</PrimaryBlueButton>
@@ -28,7 +25,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 30,
         marginTop: 100,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#F6F9F7'
     },
 
     text: {
@@ -45,13 +42,7 @@ const styles = StyleSheet.create({
         bottom: 30,
         left: 0,
         right: 0,
-        gap: 16,
+        gap: 20,
     },
-
-    textContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    }
 
 });
