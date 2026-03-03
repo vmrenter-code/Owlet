@@ -7,8 +7,8 @@ type InputFieldsProps = {
 }
 export default function InputFields({ placeholder }: InputFieldsProps) {
     return (
-        <View>
-            <TextInput style = { styles.container }placeholder = { placeholder } placeholderTextColor="#888888"/>
+        <View style = { styles.container }>
+            <TextInput style = {styles.input} placeholder = { placeholder } placeholderTextColor="#585858" underlineColorAndroid="transparent" />
         </View>
     )
 }
@@ -16,10 +16,14 @@ export default function InputFields({ placeholder }: InputFieldsProps) {
 const styles = StyleSheet.create({
     container: {
         backgroundColor:'#fff',
-        borderRadius: 12,
-        padding: 5.5,
-        height: 35,
-        fontSize: 14,
-        color: '#000000'
+        borderRadius: 100,
+        padding: 15,
+        borderColor: '#F0F1F1',
+        borderWidth: 2
+    },
+
+    input: {
+        fontSize: 17,
+        outlineColor: 'transparent'
     }
 })

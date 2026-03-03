@@ -1,12 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-
 import InputFields from '../components/InputFields'
 import PrimaryWhiteButton from '../components/PrimaryWhiteButton'
 import GoogleButton from '../components/GoogleButton'
 import HomeBg from '../components/HomeBg';
-
 
 export default function Login() {
     const navigation = useNavigation<any>();
@@ -16,98 +14,101 @@ export default function Login() {
         <View style={{ flex: 1 }}>
 
             <View style={styles.formatBg}>
-                    <HomeBg />
+                <HomeBg />
             </View>
 
-            <View style = { styles.container}>
-                <View style = { styles.titleContainer}>
-                    <Text style = { styles.titleStyle}>Login</Text>
-                    <Text style = { styles.subtitleStyle }>Welcome back.</Text>
-                </View>
-                        
+            <View style={styles.container}>
 
-                <View style = { styles.divider }>
-                    <View>
-                        <Text style = { styles.text }>Username</Text>
-                        <InputFields></InputFields>
+                <View>
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.titleStyle}>Login</Text>
+                        <Text style={styles.subtitleStyle}>Your space for early insights.</Text>
                     </View>
-                    
-                    <View>
-                        <Text style = { styles.text }>Password</Text>
-                        <InputFields></InputFields>
+
+                    <View style={styles.divider}>
+                        <View>
+                            <InputFields placeholder="Username"></InputFields>
+                        </View>
+
+                        <View>
+                            <InputFields placeholder="Password"></InputFields>
+                        </View>
                     </View>
-                </View>
 
-                <View style = {styles.linkContainer}>
-                    <Text style = { styles.linkStyle }>Forgot Password?</Text>
-                </View>
+                    <View style={styles.linkContainer}>
+                        <Text style={styles.linkStyle}>Forgot Password?</Text>
+                    </View>
 
-               <View style={styles.orContainer}>
-                    <View style={styles.orLine} />
+                    <View style={styles.orContainer}>
+                        <View style={styles.orLine} />
                         <Text style={styles.orText}>or login with</Text>
-                    <View style={styles.orLine} />
+                        <View style={styles.orLine} />
+                    </View>
+
+                    <View style={styles.googleContainer}>
+                        <GoogleButton></GoogleButton>
+                    </View>
                 </View>
 
-                <View style = {styles.googleContainer}>
-                    <GoogleButton></GoogleButton>
+                
+                <View style={styles.bottomSection}>
+                    <View style = {{width: '100%'}} >
+                        <PrimaryWhiteButton onPress={() => navigation.replace('Home')}>
+                            Login
+                        </PrimaryWhiteButton>
+                    </View>
+
+                    <Text style={styles.createText}>
+                        Need an account? <Text style={{ fontWeight: '500' }}>Create one</Text>
+                    </Text>
                 </View>
 
-                <View style = { styles.buttonContainer }>
-                    <PrimaryWhiteButton onPress={() => navigation.replace('Home')}>Login</PrimaryWhiteButton>
-                </View>
-            
             </View>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
-     container: {
+    container: {
         flex: 1,
         padding: 30,
+        paddingTop: '14%',
+        justifyContent: 'space-between',
     },
 
     titleStyle: {
-        fontSize: 30,
-        fontWeight: '500',
-        color: '#fff'
+        fontSize: 28,
+        fontWeight: 600,
+        color: '#151515',
+        textAlign: 'center'
     },
 
     subtitleStyle: {
-        fontSize: 16,
-        color: '#f0f0f0'
+        fontSize: 17,
+        color: '#0B0B0B',
+        textAlign: 'center'
     },
 
     linkStyle: {
-        color: '#ffffff',
-        fontSize: 14,
-        fontWeight: '500'
+        color: '#303030',
+        fontSize: 15,
     },
 
-    titleContainer:{
+    titleContainer: {
         gap: 3
     },
 
     divider: {
-        gap: 16,
+        gap: 14,
         marginTop: '9%'
     },
 
-    buttonContainer: {
-        position: 'absolute',
-        bottom: 30,
-        left: 0,
-        right: 0,
-        paddingHorizontal: 19
-    },
-
-    
-    linkContainer:{
-        marginTop: '5%',
+    linkContainer: {
+        marginTop: '6%',
         alignItems: 'flex-end'
     },
 
-   orContainer: {
+    orContainer: {
         marginTop: '8%',
         flexDirection: 'row',
         justifyContent: 'center',
@@ -115,38 +116,38 @@ const styles = StyleSheet.create({
         gap: 15
     },
 
-    text: {
-        marginBottom: '2%',
-        paddingLeft: 3,
-        color: '#fff',
-        fontWeight: '500',
-        fontSize: 16
-    },
-
-     orLine: {
+    orLine: {
         flex: 1,
         height: 1,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#0B0B0B'
     },
 
-     orText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#f8f8f8'
+    orText: {
+        fontSize: 17,
+        color: '#000000'
     },
 
     formatBg: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 0,
-  },
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0,
+    },
 
-  googleContainer: {
-    marginTop: 16
-  }
+    googleContainer: {
+        marginTop: 16
+    },
 
+    bottomSection: {
+        alignItems: 'center',
+        gap: 20,
+        paddingBottom: 0,
+    },
 
+    createText: {
+        fontSize: 15,
+        color: '#0B0B0B',
+    }
 });

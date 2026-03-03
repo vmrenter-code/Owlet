@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
         shadowColor: '#00000031',
         shadowOffset: {width: 2, height: 4},
         shadowRadius: 4,
-          borderColor: '#8BC0CF',
+        borderColor: '#8BC0CF',
         borderWidth: 2
     },
 
