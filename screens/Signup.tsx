@@ -1,139 +1,143 @@
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-import InputFields from '../components/InputFields'
-import PrimaryWhiteButton from '../components/PrimaryWhiteButton'
-import GoogleButton from '../components/GoogleButton'
+import InputFields from '../components/InputFields';
+import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
+import GoogleButton from '../components/GoogleButton';
 import HomeBg from '../components/HomeBg';
 
-export default function Signup() {
-    return (
+export default function Login() {
+  const navigation = useNavigation<any>();
 
-        <View style={{ flex: 1 }}>
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={styles.formatBg}>
+        <HomeBg />
+      </View>
 
-             <View style={styles.formatBg}>
-                 <HomeBg />
-             </View>
+      <View style={styles.container}>
+        <View style={styles.centerSection}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleStyle}>Create Your Account</Text>
+            <Text style={styles.subtitleStyle}>Set up your account to begin.</Text>
+          </View>
 
-            <View style={styles.container}>
-                <View style={styles.titleContainer}>
-                    <Text style={styles.titleStyle}>Create Account</Text>
-                    <Text style={styles.subtitleStyle}>Fill your information below.</Text>
-                </View>
+          <View style={styles.divider}>
+            <InputFields placeholder="Create a unique username" />
+            <InputFields placeholder="Enter your email" />
+            <InputFields placeholder="Create your password"/>
+            <InputFields placeholder="Confirm your password"/>
+          </View>
 
-                <View style={styles.divider}>
-                    <View>
-                        <Text style={styles.text}>Username</Text>
-                        <InputFields/>
-                    </View>
+          <View style={styles.linkContainer}>
+            <Text style={styles.linkStyle}>Forgot Password?</Text>
+          </View>
 
-                    <View>
-                        <Text style={styles.text}>Email</Text>
-                        <InputFields/>
-                    </View>
+          <View style={styles.orContainer}>
+            <View style={styles.orLine} />
+            <Text style={styles.orText}>or continue with</Text>
+            <View style={styles.orLine} />
+          </View>
 
-                    <View>
-                        <Text style={styles.text}>Password</Text>
-                        <InputFields/>
-                    </View>
-
-                    <View>
-                        <Text style={styles.text}>Confirm Password</Text>
-                        <InputFields/>
-                    </View>
-                </View>
-
-                <View style={styles.orContainer}>
-                    <View style={styles.orLine} />
-                    <Text style={styles.orText}>or</Text>
-                    <View style={styles.orLine} />
-                </View>
-
-                <GoogleButton></GoogleButton>
-
-                <View style={styles.buttonContainer}>
-                    <PrimaryWhiteButton>Create Account</PrimaryWhiteButton>
-                </View>
-                
-            </View>
+          <View style={styles.googleContainer}>
+            <GoogleButton />
+          </View>
         </View>
-    )
+
+        <View style={styles.bottomSection}>
+          <View style={{ width: '100%' }}>
+            <PrimaryWhiteButton onPress={() => navigation.replace('Home')}>
+              Create Account
+            </PrimaryWhiteButton>
+          </View>
+
+          <Text style={styles.createText}>
+            Have an account? <Text style={{ fontWeight: '500' }}>Sign in</Text>
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-     container: {
-        flex: 1,
-        padding: 30,
-    },
+  container: {
+    flex: 1,
+    padding: 30,
+  },
 
-    titleStyle: {
-        fontSize: 30,
-        fontWeight: '500',
-        color: '#fff'
-    },
+  centerSection: {
+    flex: 1,
+    justifyContent: 'center',
+  },
 
-    subtitleStyle: {
-        fontSize: 16,
-        color: '#f0f0f0'
-    },
+  titleStyle: {
+    fontSize: 28,
+    fontWeight: 600,
+    color: '#151515',
+    textAlign: 'center',
+  },
 
-    linkStyle: {
-        color: '#ffffff',
-        fontSize: 14,
-        fontWeight: '500'
-    },
+  subtitleStyle: {
+    fontSize: 17,
+    color: '#0B0B0B',
+    textAlign: 'center',
+  },
 
-    titleContainer:{
-        gap: 3
-    },
+  titleContainer: {
+    gap: 3,
+  },
 
-    divider: {
-        gap: 16,
-        marginTop: '9%'
-    },
+  divider: {
+    gap: 14,
+    marginTop: '9%',
+  },
 
-    buttonContainer: {
-        position: 'absolute',
-        bottom: 30,
-        left: 0,
-        right: 0,
-        paddingHorizontal: 19
-    },
+  linkContainer: {
+    marginTop: '6%',
+    alignItems: 'flex-end',
+  },
 
-    
-    linkContainer:{
-        marginTop: '5%',
-        alignItems: 'flex-end'
-    },
+  linkStyle: {
+    color: '#303030',
+    fontSize: 15,
+  },
 
-   orContainer: {
-        marginTop: '8%',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 15
-    },
+  orContainer: {
+    marginTop: '8%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 15,
+  },
 
-    text: {
-        marginBottom: '2%',
-        paddingLeft: 3,
-        color: '#fff',
-        fontWeight: '500',
-        fontSize: 16
-    },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#0B0B0B',
+  },
 
-     orLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#ffffff'
-    },
+  orText: {
+    fontSize: 17,
+    color: '#000000',
+  },
 
-     orText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#f8f8f8'
-    },
+  googleContainer: {
+    marginTop: 20,
+  },
 
-    formatBg: {
+  bottomSection: {
+    alignItems: 'center',
+    gap: 20,
+    paddingBottom: 0,
+  },
+
+  createText: {
+    fontSize: 15,
+    color: '#0B0B0B',
+  },
+
+  formatBg: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -141,9 +145,4 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 0,
   },
-
-  googleContainer: {
-    marginTop: 16
-  }
-
 });

@@ -1,21 +1,19 @@
-//Home screen background
 import { StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function HomeBg() {
   return (
     <LinearGradient
-      colors={["#70b8cc", "#a1dbc8"]}
+      colors={['#ecfffb', '#fcecfb']}
       start={{ x: 0, y: 0 }}
-      style={ styles.card }
-      end= {{ x: 1, y:0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.card}
     />
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    // absolutely fills the entire screen
-   ...StyleSheet.absoluteFillObject
+    ...StyleSheet.absoluteFillObject,
   },
 });
