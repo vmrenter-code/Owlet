@@ -28,14 +28,14 @@ const LockIcon = ({ width = 20, height = 20, color = "#585858" }) => (
 );
 
 const MailIcon = ({ width = 20, height = 20, color = "#585858" }) => (
-  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+  <Svg width={width} height={height} viewBox="0 0 25 25" fill="none">
     <Rect x={4} y={6} width={16} height={12} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
     <Path d="M4 6l8 6 8-6" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
   </Svg>
 );
 
 const CheckCircleIcon = ({ width = 20, height = 20, color = "#585858" }) => (
-  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+  <Svg width={width} height={height} viewBox="0 0 25 25" fill="none">
     <Path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
     <Path d="M8 12l3 3 5-5" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
   </Svg>
