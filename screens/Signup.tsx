@@ -133,6 +133,7 @@ const styles = StyleSheet.create({
 
   linkContainer: {
     marginTop: '4%',
+    marginBottom: '3%',
     alignItems: 'flex-end',
   },
 
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   },
 
   orText: {
-    fontSize: 17,
+    fontSize: 15,
     color: '#303030',
     fontFamily: 'Roboto'
 
