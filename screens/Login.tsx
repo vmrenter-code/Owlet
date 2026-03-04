@@ -6,18 +6,18 @@ import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
 import GoogleButton from '../components/GoogleButton';
 import HomeBg from '../components/HomeBg';
 
-import { Svg, Path } from 'react-native-svg';
+import { Svg, Path, Rect } from 'react-native-svg';
 
 const UserIcon = ({ width = 20, height = 20, color = "#585858" }) => (
-  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
     <Path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
     <Path d="M5 22c0-4 14-4 14 0" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
   </Svg>
 );
 
 const LockIcon = ({ width = 20, height = 20, color = "#585858" }) => (
-  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
-    <Path d="M6 11h12v9H6v-9z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
+    <Rect x={6} y={11} width={12} height={9} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
     <Path d="M9 11V7a3 3 0 0 1 6 0v4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
     <Path d="M12 16a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill={color}/>
   </Svg>
