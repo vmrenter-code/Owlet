@@ -28,7 +28,7 @@ export default function BeginCard({ children }: Props) {
             <Text style={styles.subHeader}>10 minutes</Text>
             <Text style={styles.header}>Begin Screening</Text>
             <Text style={styles.description}>
-              Begin a brief check for early signs of autism.
+                Start early-sign check.
             </Text>
           </View>
 
@@ -49,7 +49,7 @@ export default function BeginCard({ children }: Props) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: '#8BC0CF',
+    backgroundColor: '#84BEC4',
     borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
