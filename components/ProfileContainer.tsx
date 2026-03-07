@@ -18,15 +18,14 @@ return (
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f2fdffd3',
-    borderRadius: 100,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
     alignSelf: "center",
     shadowColor: '#000',
     shadowOffset: {width: 0, height:3},
-    shadowOpacity: 0.45,
+    shadowOpacity: 0.30,
     shadowRadius: 6,
     flex: 1,
-    padding: 15
 
   },
 

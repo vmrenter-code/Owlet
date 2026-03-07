@@ -1,70 +1,52 @@
-//Begin Screening Button set up
-import { LinearGradient } from 'expo-linear-gradient';
-import { View, Pressable, StyleSheet, Image } from 'react-native';
+import { ReactNode } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
+type Props = {
+  children?: ReactNode;
+  onPress?: () => void;
+};
 
-export default function BeginScreenBtn({ children, onPress }: any) {
+export default function BeginScreenBtn({ children, onPress }: Props) {
+  const navigation = useNavigation<any>();
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePress = () => {
+    if (onPress) onPress();
+    else navigation.replace('ScreeningInstructions');
+  };
+
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.pressable,
-        pressed && { transform: [{ scale: 1.04 }], opacity: 0.9 },
-      ]}
-    >
-      <LinearGradient
-        colors={["#5FABC7", "#A1D9D0"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.gradient}
-      >
-        <View style={styles.buttonRow}>
-            <Image source = {require('../assets/Play.png')} style={styles.playStyles}/>
-          <View style={styles.textContainer}>
-            {children}
-          </View>
-        </View>
-      </LinearGradient>
-    </Pressable>
+    <Animated.View style={[styles.button, animatedStyle]}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Animated.View
+          onTouchStart={() => { scale.value = withSpring(0.8); }}
+          onTouchEnd={() => { scale.value = withSpring(1); handlePress(); }}
+          onTouchCancel={() => { scale.value = withSpring(1); }}
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        >
+          {children}
+        </Animated.View>
+      </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  pressable: {},
-
-  gradient: {
-    width: '100%',
-    height: 98,
-    borderRadius: 10,
+  button: {
+    width: 54,
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: '#8BC0CF',
+    alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.45,
-    shadowRadius: 6,
-    borderColor: '#4699ac',
+    shadowColor: '#00000025',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
   },
-
-  buttonRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingLeft: 30,
-  gap: 20
-  },
-
-
-  icon: {
-    width: 50,
-    height: 50,
-  },
-
-  textContainer: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    fontWeight: 'bold'
-  },
-
-  playStyles: {
-    width: 65,
-    height: 65
-  }
 });

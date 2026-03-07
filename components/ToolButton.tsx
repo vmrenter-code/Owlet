@@ -1,5 +1,10 @@
 import { ReactNode } from 'react';
-import { View, StyleSheet, Image, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 
 type Props = {
   icon?: any; 
@@ -8,40 +13,50 @@ type Props = {
 };
 
 export default function ToolButton({ icon, children, onPress }: Props) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
   return (
-    <Pressable style={({ pressed }) => [styles.card, pressed && { opacity: 0.9, transform: [{ scale: 1.02 }] }]}>
-      <View style={styles.content}>
-        {icon && (
-          <Image source={icon} style={styles.icon} resizeMode="contain" />
-        )}
-        {children}
-      </View>
-    </Pressable>
+    <Animated.View style={[styles.card, animatedStyle]}>
+      <Pressable
+        onPressIn={() => {
+          scale.value = withSpring(0.8);
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1);
+        }}
+        onPress={onPress}
+        style={{ flex: 1 }}
+      >
+        <View style={styles.content}>
+          {children}
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f2fdff',
-    borderRadius: 10,
-    alignSelf: "center",
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    width: 130,
-    height: 130
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    borderColor: '#F0F1F1',
+    borderWidth: 1,
+    padding: 16,
+    flex: 1,
+    shadowColor: '#00000025',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
   },
 
   content: {
-    flex: 1,
+    flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10
-  },
-
-  icon: {
-    width: 50,
-    height: 50
+    alignItems: 'flex-start'
   }
 });

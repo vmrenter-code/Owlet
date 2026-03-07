@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
 
   text: {
     fontSize: 17,
-    fontFamily: 'Roboto',
+    fontFamily: 'NotoSans-Regular',
     color: '#8BC0CF',
     textAlign: 'center',
     fontWeight: '600',

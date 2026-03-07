@@ -1,85 +1,164 @@
-// notice how modal has children, or it's contents in it. refer to modal.tsx for further documentaiton
-// has scrolling, for smaller phone sizes
-import { View, StyleSheet, Text, ScrollView, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
 import BeginScreenBtn from '../components/BeginScreenBtn';
-import Card from '../components/Card'
+import Card from '../components/Card';
 import ToolButton from '../components/ToolButton';
 import ProfileContainer from '../components/ProfileContainer';
-
-const { height } = Dimensions.get('window');
+import BeginCard from '../components/BeginCard';
+import { Svg, Path, Circle } from 'react-native-svg';
 
 export default function Home() {
   const navigation = useNavigation<any>();
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
 
       <View style={styles.formatBg}>
         <HomeBg />
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.bgContainer}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
 
         <View style={styles.heroContainer}>
-          <View>
-            <Text style={{fontSize: 30, color: '#fff', fontWeight: 500}}>Hi, User!</Text>
-            <Text style={{fontSize: 20, color: '#ffffffee'}}>Screen with confidence.</Text>
+
+          <View style={styles.profileContainer}>
+            <ProfileContainer />
+            <View style={{ flexDirection: 'column' }}>
+                <Text
+                  style={{
+                    fontSize: 22,
+                    color: '#151515',
+                    fontFamily: 'NotoSans-SemiBold',
+                    lineHeight: 26,
+                    letterSpacing: -0.2
+                  }}
+                >
+                  Hi, User!
+                </Text>
+
+                <Text
+                  style={{
+                    fontSize: 17,
+                    color: '#2E3332',
+                    fontFamily: 'NotoSans-Regular',
+                    lineHeight: 17,
+                    letterSpacing: -0.2
+                  }}
+                >
+                  Ready to begin?
+                </Text>
+              </View>
           </View>
-          <View style ={styles.profileContainer}>
-            <ProfileContainer/>
+
+          <View style={styles.iconContainer}>
+            <Svg width={24} height={24} viewBox="0 0 27 27" fill="none">
+              <Path
+                d="M4 5c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H8l-4 3V5z"
+                stroke="#151515"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <Circle cx={8} cy={10} r={1.2} fill="#151515" />
+              <Circle cx={12} cy={10} r={1.2} fill="#151515" />
+              <Circle cx={16} cy={10} r={1.2} fill="#151515" />
+            </Svg>
+
+            <Svg width={24} height={24} viewBox="0 0 30 30" fill="none">
+              <Path
+                d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                stroke="#151515"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+
+            <Svg width={24} height={24} viewBox="0 0 29 29" fill="none">
+              <Path
+                d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z
+                   M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.07 7.07 0 0 0-1.7-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65c-.63.26-1.21.59-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.49.39 1.07.72 1.7.98l.38 2.65c.06.25.26.42.5.42h4c.24 0 .44-.17.5-.42l.38-2.65c.63-.26 1.21-.59 1.7-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65z"
+                stroke="#151515"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
           </View>
+
         </View>
 
-        <View style={styles.modalContainer}>
-          <Modal>
-            <View>
+        <View>
 
-              <View style={styles.buttonContainer}>
-                <BeginScreenBtn onPress={() => navigation.replace('ScreeningInstructions')}>
-                  <>
-                    <Text style={{ fontSize: 26, color: '#F8F9E8'}}>Begin Screening</Text>
-                    <Text style = {{ fontSize: 16, color: '#F8F9E8'}}>~10 minutes</Text>
-                    
-                  </>
-                </BeginScreenBtn>
-              </View>
+          <View style={{ marginBottom: 28 }}>
+            <BeginCard/>
+          </View>
 
-              <Text style={styles.headerStyle}>Recent Screenings</Text>
+          <View style={styles.row}>
+            <Text style={styles.headerStyle}>Recent History</Text>
 
-              <View style={styles.cardContainer}>
-                <Card></Card>
-              </View>
-
-              <Text style={styles.headerStyle}>Support Tools</Text>
-
-              <View style={styles.toolContainer}>
-                <View>
-                  <ToolButton>
-                    <Image source = {require('../assets/QuestionMarkCircle.png')} style = {styles.faqStyles}/>
-                    <Text style={styles.toolText}>FAQs</Text>
-                  </ToolButton>
-                </View>
-
-                <View>
-                  <ToolButton>
-                    <Image source = {require('../assets/Book1.png')} style = {styles.infStyles}/>
-                    <Text style={styles.toolText}>Instructions</Text>
-                  </ToolButton>
-                </View>
-              </View>
-
-                <Text style={styles.ignore}>.</Text>
-
+            <View style={styles.chevronWrapper}>
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 -960 960 960" fill="#0b0c0c">
+                <path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" />
+              </svg>
             </View>
-          </Modal>
+          </View>
+
+          <View style={styles.cardContainer}>
+            <Card />
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.headerStyle}>Before You Begin</Text>
+
+            <View style={styles.chevronWrapper}>
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 -960 960 960" fill="#0d0e0d">
+                <path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" />
+              </svg>
+            </View>
+          </View>
+
+          <View style={styles.toolContainer}>
+
+            <View style={styles.toolItem}>
+              <ToolButton>
+                <View style={styles.toolBox}>
+                  <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#161B1A">
+                    <path d="M440-280h80v-240h-80v240Zm68.5-331.5Q520-623 520-640t-11.5-28.5Q497-680 480-680t-28.5 11.5Q440-657 440-640t11.5 28.5Q463-600 480-600t28.5-11.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                  </svg>
+
+                  <View>
+                    <Text style={styles.toolText}>Instructions</Text>
+                    <Text style={styles.toolSubText}>Parent Guide</Text>
+                  </View>
+                </View>
+              </ToolButton>
+            </View>
+
+            <View style={styles.toolItem}>
+              <ToolButton>
+                <View style={styles.toolBox}>
+                  <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="#161B1A">
+                    <path d="M513.5-254.5Q528-269 528-290t-14.5-35.5Q499-340 478-340t-35.5 14.5Q428-311 428-290t14.5 35.5Q457-240 478-240t35.5-14.5ZM442-394h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                  </svg>
+
+                  <View>
+                    <Text style={styles.toolText}>Questions?</Text>
+                    <Text style={styles.toolSubText}>Find Answers</Text>
+                  </View>
+                </View>
+              </ToolButton>
+            </View>
+
+          </View>
+
         </View>
 
       </ScrollView>
@@ -88,89 +167,107 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 22
+  },
 
-  //fills the entire background with HomeBG
   formatBg: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 0,
+    zIndex: 0
   },
 
   bgContainer: {
-    flex: 1,
+    flex: 1
   },
 
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 0,
+    paddingBottom: 0
   },
 
-  //Styles for the hero (blue part at the top), ensures responsiveness to dimensions
   heroContainer: {
     flexDirection: 'row',
-    width: '100%',
-    height: height * 0.32, 
     justifyContent: 'space-between',
-    paddingHorizontal: 28,
-    zIndex: 2,
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingVertical: 32
   },
 
-
-
-  modalContainer: {
-    marginTop: -38,         
-    minHeight: height * 0.26, 
-    zIndex: 3,
-  },
-
-  buttonContainer: {
-    //important! margin between header and it's contents MUST be 16 (for consistency)
-    marginTop: 16,
-    //makes sure the button sits right on top layer, won't get hidden behind the layers
-    zIndex: 20,
-    //content between contents and the following section MUST be 28
-    marginBottom: 28,
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16
   },
 
   headerStyle: {
-    fontSize: 24,
-    fontWeight: '400',
-    color: '#737373'
+    fontSize: 22,
+    marginBottom: 12,
+    letterSpacing: -0.2,
+    fontWeight: '600',
+    color: '#161B1A',
+    fontFamily: 'NotoSans-SemiBold',
+  },
+
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    gap: 8
+  },
+
+  chevronWrapper: {
+    height: 24,
+    width: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   cardContainer: {
-    marginTop: 16,
+    marginTop: 12,
     zIndex: 20,
     marginBottom: 28
   },
 
   toolContainer: {
-    marginTop: 16,
-    zIndex: 20,
-    marginBottom: 28,
+    marginTop: 12,
+    marginBottom: 16,
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 30
+    gap: 12
+  },
+
+  toolItem: {
+    flex: 1
+  },
+
+  toolBox: {
+    flexDirection: 'column',
+    gap: 12
   },
 
   profileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center'
+    gap: 14
   },
 
   toolText: {
-    color: '#737373',
-    fontSize: 16
-
+    color: '#161B1A',
+    fontSize: 17,
+    fontFamily: 'NotoSans-SemiBold',
+    letterSpacing: -0.2,
+    marginBottom: 4
   },
-  
-  ignore: {
-    backgroundColor: '#ffffff00',
-    color: '#00000000'
+
+  toolSubText: {
+    color: '#2E3332',
+    fontSize: 15,
+    fontFamily: 'NotoSans-Regular',
+    lineHeight: 18
   },
 
   faqStyles: {
@@ -181,6 +278,5 @@ const styles = StyleSheet.create({
   infStyles: {
     width: 60,
     height: 60
-
   }
 });

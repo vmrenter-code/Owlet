@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 17,
-    fontFamily: 'Roboto',
+    fontFamily: 'NotoSans-Regular',
     outlineColor: 'transparent',
   },
 

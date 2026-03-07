@@ -1,13 +1,14 @@
 //This is the root of our application.
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useFonts } from 'expo-font';
 
 //Import all screens
 import Launch from './screens/Launch';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
 import Home from './screens/Home';
-import Tabs from './nav/Tabs'
+import Tabs from './nav/Tabs';
 import HomeBg from './components/HomeBg';
 import ScreeningInstructions from './screens/ScreeningInstructions';
 
@@ -15,71 +16,81 @@ import ScreeningInstructions from './screens/ScreeningInstructions';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-    return (
-        <NavigationContainer>
-            <Stack.Navigator
 
-                //Global styles for the navigator. Gets rid of the ugly preset that disrupts design.
-                screenOptions={{
-                contentStyle: {
-                paddingTop: 0,
-                marginTop: 0,
-                backgroundColor: '#fff',
-                },
+  const [fontsLoaded] = useFonts({
+  'NotoSans-Regular': require('./assets/Noto_Sans/static/NotoSans-Regular.ttf'),
+  'NotoSans-Medium': require('./assets/Noto_Sans/static/NotoSans-Medium.ttf'),
+  'NotoSans-Bold': require('./assets/Noto_Sans/static/NotoSans-Bold.ttf'),
+  'NotoSans-SemiBold': require('./assets/Noto_Sans/static/NotoSans-SemiBold.ttf'),
+  
 
-                 headerBackground: () => <HomeBg />,
+});
 
-                headerTransparent: false,   // keep header container visible
-                headerShadowVisible: false,
-                headerTintColor: '#49A3BD',
-                headerTitle: ''
-}}
+  if (!fontsLoaded) return null;
 
-            >
-                <Stack.Screen
-                    name="Launch"
-                    component={Launch}
-                    // The navigator header will NOT be shown on the launch screen ONLY.
-                    options={{
-                        headerShown: false,
-                    }}
-                />
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
 
-                <Stack.Screen
-                    name="Login"
-                    component={Login}
-                    options = {{
-                        headerShown: false
-                    }}
-                />
+        //Global styles for the navigator. Gets rid of the ugly preset that disrupts design.
+        screenOptions={{
+          contentStyle: {
+            paddingTop: 0,
+            marginTop: 0,
+            backgroundColor: '#fff',
+          },
 
-                <Stack.Screen
-                    name="Signup"
-                    component={Signup}
-                    options = {{
-                        headerShown: false
-                    }}
-                />
+          headerBackground: () => <HomeBg />,
 
-                <Stack.Screen
-                    name="Home"
-                    component={Tabs}
-                    options={{
-                        headerShown: false,
-                    }}
-                />
+          headerTransparent: false,   // keep header container visible
+          headerShadowVisible: false,
+          headerTintColor: '#49A3BD',
+          headerTitle: ''
+        }}
 
-                <Stack.Screen
-                    name="ScreeningInstructions"
-                    component = {ScreeningInstructions}
-                    options = {{
-                        headerShown: false
-                    }}
-                />
+      >
+        <Stack.Screen
+          name="Launch"
+          component={Launch}
+          // The navigator header will NOT be shown on the launch screen ONLY.
+          options={{
+            headerShown: false,
+          }}
+        />
 
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{
+            headerShown: false
+          }}
+        />
 
+        <Stack.Screen
+          name="Signup"
+          component={Signup}
+          options={{
+            headerShown: false
+          }}
+        />
 
-            </Stack.Navigator>
-        </NavigationContainer>
-    );
+        <Stack.Screen
+          name="Home"
+          component={Tabs}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="ScreeningInstructions"
+          component={ScreeningInstructions}
+          options={{
+            headerShown: false
+          }}
+        />
+
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }

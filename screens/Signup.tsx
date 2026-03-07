@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import InputFields from '../components/InputFields';
-import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
+import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
 import HomeBg from '../components/HomeBg';
 
@@ -35,7 +35,7 @@ const MailIcon = ({ width = 20, height = 20, color = "#585858" }) => (
 );
 
 const CheckCircleIcon = ({ width = 20, height = 20, color = "#585858" }) => (
-  <Svg width={width} height={height} viewBox="0 0 25 25" fill="none">
+  <Svg width={width} height={height} viewBox="0 0 26 26" fill="none">
     <Path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
     <Path d="M8 12l3 3 5-5" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
   </Svg>
@@ -81,13 +81,13 @@ const CheckCircleIcon = ({ width = 20, height = 20, color = "#585858" }) => (
 
         <View style={styles.bottomSection}>
           <View style={{ width: '100%' }}>
-            <PrimaryWhiteButton onPress={() => navigation.replace('Home')}>
+            <PrimaryBlueButton onPress={() => navigation.replace('Home')}>
               Create Account
-            </PrimaryWhiteButton>
-          </View>
+            </PrimaryBlueButton>
+        </View>
 
           <Text style={styles.createText}>
-            Have an account? <Text style={{ fontWeight: '500' }}>Sign in</Text>
+            Have an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Sign in</Text>
           </Text>
         </View>
       </View>
@@ -111,14 +111,14 @@ const styles = StyleSheet.create({
     fontWeight: 600,
     color: '#151515',
     textAlign: 'center',
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-SemiBold',
   },
 
   subtitleStyle: {
     fontSize: 17,
     color: '#0B0B0B',
     textAlign: 'center',
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-Regular'
 
   },
 
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   linkStyle: {
     color: '#303030',
     fontSize: 15,
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-Regular',
 
   },
 
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   orText: {
     fontSize: 15,
     color: '#303030',
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-Regular'
 
   },
 
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   createText: {
     fontSize: 15,
     color: '#0B0B0B',
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-Regular'
 
   },
 

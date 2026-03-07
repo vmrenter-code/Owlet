@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import InputFields from '../components/InputFields';
-import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
+import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
 import HomeBg from '../components/HomeBg';
 
@@ -68,13 +68,13 @@ export default function Login() {
 
         <View style={styles.bottomSection}>
           <View style={{ width: '100%' }}>
-            <PrimaryWhiteButton onPress={() => navigation.replace('Home')}>
+            <PrimaryBlueButton onPress={() => navigation.replace('Home')}>
               Login
-            </PrimaryWhiteButton>
+            </PrimaryBlueButton>
           </View>
 
           <Text style={styles.createText}>
-            Need an account? <Text style={{ fontWeight: '500' }}>Create one</Text>
+            Need an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Create one</Text>
           </Text>
         </View>
       </View>
@@ -95,17 +95,16 @@ const styles = StyleSheet.create({
 
   titleStyle: {
     fontSize: 28,
-    fontWeight: 600,
     color: '#151515',
     textAlign: 'center',
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-SemiBold',
   },
 
   subtitleStyle: {
     fontSize: 17,
     color: '#0B0B0B',
     textAlign: 'center',
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-Regular',
 
   },
 
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
   linkStyle: {
     color: '#303030',
     fontSize: 15,
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-Regular',
 
   },
 
@@ -148,7 +147,7 @@ const styles = StyleSheet.create({
   orText: {
     fontSize: 15,
     color: '#303030',
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-Regular'
 
   },
 
@@ -165,7 +164,7 @@ const styles = StyleSheet.create({
   createText: {
     fontSize: 15,
     color: '#0B0B0B',
-    fontFamily: 'Roboto'
+    fontFamily: 'NotoSans-Regular'
 
   },
 
