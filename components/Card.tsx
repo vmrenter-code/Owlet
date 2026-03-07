@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
 
   bottomSection: {
-    backgroundColor: '#f2fdff',
+    backgroundColor: '#ffffff',
     padding: 16
   },
 

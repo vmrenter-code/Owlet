@@ -45,7 +45,7 @@ export default function Home() {
 
                 <Text
                   style={{
-                    fontSize: 17,
+                    fontSize: 15,
                     color: '#2E3332',
                     fontFamily: 'NotoSans-Regular',
                     lineHeight: 17,

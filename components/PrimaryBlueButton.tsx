@@ -45,11 +45,11 @@ const styles = StyleSheet.create({
   container: {
     padding: 17,
     borderRadius: 100,
-    backgroundColor: '#8BC0CF',
+    backgroundColor: '#84BEC4',
     shadowColor: '#00000031',
     shadowOffset: { width: 2, height: 4 },
     shadowRadius: 4,
-    borderColor: '#8BC0CF',
+    borderColor: '#84BEC4',
     borderWidth: 2,
   },
 

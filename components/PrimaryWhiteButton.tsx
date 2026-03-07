@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 17,
     fontFamily: 'NotoSans-Regular',
-    color: '#8BC0CF',
+    color: '#84BEC4',
     textAlign: 'center',
     fontWeight: '600',
   },
