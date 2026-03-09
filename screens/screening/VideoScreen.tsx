@@ -75,7 +75,7 @@ export default function VideoScreen() {
                 {/* Troubleshooting button on the right */}
                 <Pressable 
                     style={styles.troubleshootButton}
-                    onPress={() => navigation.navigate('TroubleshootingScreen')}
+                    onPress={() => navigation.navigate('TroubleshootingScreen', { videoNumber })}
                 >
                     <Text style={styles.troubleshootIcon}>!</Text>
                 </Pressable>

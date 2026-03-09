@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 // Troubleshooting screen with list of common issues
 
@@ -14,12 +14,17 @@ const troubleshootingOptions = [
 
 export default function TroubleshootingScreen() {
     const navigation = useNavigation<any>();
+    const route = useRoute<any>();
+    
+    // Get the video number from params to preserve user's position
+    const videoNumber = route.params?.videoNumber || 1;
 
     const handleOptionPress = (option: typeof troubleshootingOptions[0]) => {
-        // Navigate to solution screen for this specific issue
+        // Navigate to solution screen, passing the video number
         navigation.navigate('TroubleshootingSolution', { 
             issueId: option.id,
-            issueLabel: option.label 
+            issueLabel: option.label,
+            videoNumber: videoNumber
         });
     };
 

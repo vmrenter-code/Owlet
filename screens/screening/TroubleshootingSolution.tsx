@@ -65,11 +65,12 @@ export default function TroubleshootingSolution() {
     const route = useRoute<any>();
     
     const issueId = route.params?.issueId || 7;
+    const videoNumber = route.params?.videoNumber || 1;
     const solution = solutions[issueId] || solutions[7];
 
     const handleBackToScreening = () => {
-        // Go back to the video screen
-        navigation.navigate('VideoScreen');
+        // Go back to the video screen at the same position
+        navigation.navigate('VideoScreen', { videoNumber });
     };
 
     return (

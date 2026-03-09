@@ -1,18 +1,60 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Svg, Path, Circle, Rect } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+
+// Icon components
+const PersonIcon = () => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Circle cx={12} cy={8} r={4} stroke="#333" strokeWidth={2} />
+        <Path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="#333" strokeWidth={2} strokeLinecap="round" />
+    </Svg>
+);
+
+const BellIcon = () => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" stroke="#333" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const ShieldIcon = () => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z" stroke="#333" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const AccessibilityIcon = () => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Circle cx={12} cy={4} r={2} stroke="#333" strokeWidth={2} />
+        <Path d="M12 8v4m0 0l-3 6m3-6l3 6M5 10h14" stroke="#333" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const HelpIcon = () => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Circle cx={12} cy={12} r={10} stroke="#333" strokeWidth={2} />
+        <Path d="M9 9c0-1.5 1.5-3 3-3s3 1.5 3 3c0 2-3 2-3 4" stroke="#333" strokeWidth={2} strokeLinecap="round" />
+        <Circle cx={12} cy={17} r={1} fill="#333" />
+    </Svg>
+);
+
+const LanguageIcon = () => (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path d="M5 8h6M8 5v3M7 8c0 3 2 6 6 8M13 5l4 9 4-9M14 11h6" stroke="#333" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
 
 // Settings menu items
 const settingsSection1 = [
-    { id: 'account', label: 'Account', icon: '👤', screen: 'Account' },
-    { id: 'child', label: "Child's Information", icon: '👶', screen: null },
+    { id: 'account', label: 'Account &\nChild Information', IconComponent: PersonIcon, screen: 'Account' },
 ];
 
 const settingsSection2 = [
-    { id: 'notifications', label: 'Notifications', icon: '🔔', screen: null },
-    { id: 'privacy', label: 'Privacy & Data', icon: '🛡️', screen: null },
-    { id: 'accessibility', label: 'Accessibility', icon: '♿', screen: null },
-    { id: 'support', label: 'Support', icon: '❓', screen: null },
-    { id: 'languages', label: 'Languages', icon: '🌐', screen: null },
+    { id: 'notifications', label: 'Notifications', IconComponent: BellIcon, screen: 'Notifications' },
+    { id: 'privacy', label: 'Privacy & Data', IconComponent: ShieldIcon, screen: 'PrivacyData' },
+    { id: 'accessibility', label: 'Accessibility', IconComponent: AccessibilityIcon, screen: 'Accessibility' },
+    { id: 'support', label: 'Support', IconComponent: HelpIcon, screen: 'Support' },
+    { id: 'languages', label: 'Languages', IconComponent: LanguageIcon, screen: 'Languages' },
 ];
 
 export default function Settings() {
@@ -24,7 +66,7 @@ export default function Settings() {
         }
     };
 
-    const renderSettingsItem = (item: typeof settingsSection1[0]) => (
+    const renderSettingsItem = (item: any) => (
         <Pressable
             key={item.id}
             style={({ pressed }) => [
@@ -33,7 +75,9 @@ export default function Settings() {
             ]}
             onPress={() => handleItemPress(item)}
         >
-            <Text style={styles.itemIcon}>{item.icon}</Text>
+            <View style={styles.iconContainer}>
+                <item.IconComponent />
+            </View>
             <Text style={styles.itemLabel}>{item.label}</Text>
             <Text style={styles.itemArrow}>›</Text>
         </Pressable>
@@ -41,6 +85,12 @@ export default function Settings() {
 
     return (
         <View style={styles.container}>
+            <LinearGradient
+                colors={['#ecfffb', '#fcecfb']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={styles.gradient}
+            />
             {/* Header */}
             <View style={styles.header}>
                 <Pressable 
@@ -70,7 +120,10 @@ export default function Settings() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+    },
+
+    gradient: {
+        ...StyleSheet.absoluteFillObject,
     },
 
     header: {
@@ -132,9 +185,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#f8f8f8',
     },
 
-    itemIcon: {
-        fontSize: 20,
+    iconContainer: {
+        width: 24,
+        height: 24,
         marginRight: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 
     itemLabel: {

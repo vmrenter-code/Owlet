@@ -8,6 +8,13 @@ import Launch from './screens/Launch';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
 import Home from './screens/Home';
+import Settings from './screens/Settings';
+import Account from './screens/Account';
+import Notifications from './screens/Notifications';
+import PrivacyData from './screens/PrivacyData';
+import Accessibility from './screens/Accessibility';
+import Support from './screens/Support';
+import Languages from './screens/Languages';
 import ScreeningInstructions from './screens/ScreeningInstructions';
 import HomeBg from './components/HomeBg';
 
@@ -48,6 +55,13 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
         <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
+        <Stack.Screen name="Settings" component={Settings} options={{ headerShown: false }} />
+        <Stack.Screen name="Account" component={Account} options={{ headerShown: false }} />
+        <Stack.Screen name="Notifications" component={Notifications} options={{ headerShown: false }} />
+        <Stack.Screen name="PrivacyData" component={PrivacyData} options={{ headerShown: false }} />
+        <Stack.Screen name="Accessibility" component={Accessibility} options={{ headerShown: false }} />
+        <Stack.Screen name="Support" component={Support} options={{ headerShown: false }} />
+        <Stack.Screen name="Languages" component={Languages} options={{ headerShown: false }} />
         <Stack.Screen name="ScreeningInstructions" component={ScreeningInstructions} options={{ headerShown: false }} />
         
         {/* Screening process screens */}

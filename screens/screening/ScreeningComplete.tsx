@@ -7,7 +7,7 @@ export default function ScreeningComplete() {
     const navigation = useNavigation<any>();
 
     const handleOk = () => {
-        navigation.navigate('Launch');
+        navigation.navigate('Home');
     };
 
     return (

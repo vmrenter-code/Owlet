@@ -1,31 +1,38 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Svg, Path, Circle } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 
-// Account menu items
-const accountItems = [
-    { id: 'editProfile', label: 'Edit Profile', hasAvatar: true },
-    { id: 'username', label: 'Username', hasArrow: true },
-    { id: 'email', label: 'Email', hasArrow: true },
-    { id: 'password', label: 'Change Password', hasArrow: true },
-    { id: 'profile', label: 'Edit Profile', hasArrow: true },
-    { id: 'switchChild', label: 'Switch Child Profile', hasArrow: true },
-];
+//avatar icon
+const FoxAvatar = () => (
+    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
+        <Circle cx={12} cy={12} r={10} fill="#FFCDD2" />
+        <Path d="M8 14c0 0 1.5 2 4 2s4-2 4-2" stroke="#D32F2F" strokeWidth={1.5} strokeLinecap="round" />
+        <Circle cx={9} cy={10} r={1.5} fill="#333" />
+        <Circle cx={15} cy={10} r={1.5} fill="#333" />
+        <Path d="M6 6l2 3M18 6l-2 3" stroke="#D32F2F" strokeWidth={1.5} strokeLinecap="round" />
+    </Svg>
+);
 
 export default function Account() {
     const navigation = useNavigation<any>();
 
     const handleDeleteAccount = () => {
-        // Handle delete account
         console.log('Delete account pressed');
     };
 
     const handleLogout = () => {
-        // Handle logout - navigate back to Launch
         navigation.navigate('Launch');
     };
 
     return (
         <View style={styles.container}>
+            <LinearGradient
+                colors={['#ecfffb', '#fcecfb']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={styles.gradient}
+            />
             {/* Header */}
             <View style={styles.header}>
                 <Pressable 
@@ -36,54 +43,88 @@ export default function Account() {
                 </Pressable>
             </View>
 
-            {/* Title */}
-            <Text style={styles.title}>Account</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Account Section */}
+                <Text style={styles.sectionTitle}>Account</Text>
 
-            {/* Account Items */}
-            <View style={styles.section}>
-                {accountItems.map((item) => (
-                    <Pressable
-                        key={item.id}
-                        style={({ pressed }) => [
-                            styles.accountItem,
-                            pressed && styles.accountItemPressed
-                        ]}
-                    >
-                        <Text style={styles.itemLabel}>{item.label}</Text>
-                        {item.hasAvatar && (
-                            <View style={styles.avatarContainer}>
-                                <Text style={styles.avatarEmoji}>🐻</Text>
-                            </View>
-                        )}
-                        {item.hasArrow && (
-                            <Text style={styles.itemArrow}>›</Text>
-                        )}
+                <View style={styles.section}>
+                    {/* Edit Profile with Avatar */}
+                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                        <Text style={styles.itemLabel}>Edit Profile</Text>
+                        <View style={styles.avatarContainer}>
+                            <FoxAvatar />
+                        </View>
                     </Pressable>
-                ))}
-            </View>
 
-            {/* Danger Zone */}
-            <View style={styles.dangerSection}>
-                <Pressable
-                    style={({ pressed }) => [
-                        styles.dangerItem,
-                        pressed && styles.dangerItemPressed
-                    ]}
-                    onPress={handleDeleteAccount}
-                >
-                    <Text style={styles.dangerText}>Delete Account</Text>
-                </Pressable>
+                    {/* Username */}
+                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                        <Text style={styles.itemLabel}>Name</Text>
+                        <Text style={styles.itemValue}>username</Text>
+                    </Pressable>
 
-                <Pressable
-                    style={({ pressed }) => [
-                        styles.dangerItem,
-                        pressed && styles.dangerItemPressed
-                    ]}
-                    onPress={handleLogout}
-                >
-                    <Text style={styles.dangerText}>Log out</Text>
-                </Pressable>
-            </View>
+                    {/* Email */}
+                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                        <Text style={styles.itemLabel}>Email</Text>
+                        <Text style={styles.itemValue}>username@gmail.com</Text>
+                    </Pressable>
+
+                    {/* Change Password */}
+                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                        <Text style={styles.itemLabel}>Change Password</Text>
+                        <Text style={styles.itemArrow}>›</Text>
+                    </Pressable>
+
+                    
+                </View>
+
+                {/* Child's Information Section */}
+                <Text style={styles.sectionTitle}>Child's Information</Text>
+
+                <View style={styles.section}>
+                    {/* Name */}
+                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                        <Text style={styles.itemLabel}>Name</Text>
+                        <Text style={styles.itemValue}>Babyy</Text>
+                    </Pressable>
+
+                    {/* Birth Date */}
+                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                        <Text style={styles.itemLabel}>Birth Date</Text>
+                        <Text style={styles.itemValue}>03/08/2020</Text>
+                    </Pressable>
+
+                    {/* Race & Ethnicity */}
+                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                        <Text style={styles.itemLabel}>Race & Ethnicity</Text>
+                        <Text style={styles.itemArrow}>›</Text>
+                    </Pressable>
+
+                    {/* Switch Child Profile */}
+                    <Pressable style={({ pressed }) => [styles.accountItem, styles.lastItem, pressed && styles.accountItemPressed]}>
+                        <Text style={styles.itemLabel}>Switch Child Profile</Text>
+                        <Text style={styles.itemArrow}>›</Text>
+                    </Pressable>
+                </View>
+
+                {/* Danger Zone */}
+                <View style={styles.dangerSection}>
+                    <Pressable
+                        style={({ pressed }) => [styles.dangerItem, pressed && styles.dangerItemPressed]}
+                        onPress={handleDeleteAccount}
+                    >
+                        <Text style={styles.dangerText}>Delete Account</Text>
+                    </Pressable>
+
+                    <Pressable
+                        style={({ pressed }) => [styles.dangerItem, styles.lastItem, pressed && styles.dangerItemPressed]}
+                        onPress={handleLogout}
+                    >
+                        <Text style={styles.dangerText}>Log out</Text>
+                    </Pressable>
+                </View>
+
+                <View style={{ height: 40 }} />
+            </ScrollView>
         </View>
     );
 }
@@ -91,7 +132,10 @@ export default function Account() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+    },
+
+    gradient: {
+        ...StyleSheet.absoluteFillObject,
     },
 
     header: {
@@ -102,51 +146,43 @@ const styles = StyleSheet.create({
     backButton: {
         width: 40,
         height: 40,
-        borderRadius: 20,
-        backgroundColor: '#ffffff',
         justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
+        alignItems: 'flex-start',
     },
 
     backArrow: {
-        fontSize: 20,
+        fontSize: 24,
         color: '#333',
     },
 
-    title: {
-        fontSize: 28,
+    sectionTitle: {
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#333',
         paddingHorizontal: 25,
-        paddingTop: 25,
-        paddingBottom: 20,
+        paddingTop: 20,
+        paddingBottom: 12,
     },
 
     section: {
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
-        marginBottom: 20,
+        marginBottom: 8,
         borderRadius: 16,
         overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
-        elevation: 1,
     },
 
     accountItem: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 16,
-        paddingHorizontal: 16,
+        paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
+    },
+
+    lastItem: {
+        borderBottomWidth: 0,
     },
 
     accountItemPressed: {
@@ -159,17 +195,18 @@ const styles = StyleSheet.create({
         color: '#333',
     },
 
-    avatarContainer: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: '#f5f5f5',
-        justifyContent: 'center',
-        alignItems: 'center',
+    itemValue: {
+        fontSize: 16,
+        color: '#999',
     },
 
-    avatarEmoji: {
-        fontSize: 18,
+    avatarContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#FFF0F0',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 
     itemArrow: {
@@ -180,18 +217,14 @@ const styles = StyleSheet.create({
     dangerSection: {
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
+        marginTop: 20,
         borderRadius: 16,
         overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
-        elevation: 1,
     },
 
     dangerItem: {
         paddingVertical: 16,
-        paddingHorizontal: 16,
+        paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
     },
