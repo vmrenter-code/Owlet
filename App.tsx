@@ -11,6 +11,14 @@ import Home from './screens/Home';
 import ScreeningInstructions from './screens/ScreeningInstructions';
 import HomeBg from './components/HomeBg';
 
+// Screening process screens
+import PositionChild from './screens/screening/PositionChild';
+import ReadyToBegin from './screens/screening/ReadyToBegin';
+import VideoScreen from './screens/screening/VideoScreen';
+import ScreeningComplete from './screens/screening/ScreeningComplete';
+import TroubleshootingScreen from './screens/screening/TroubleshootingScreen';
+import TroubleshootingSolution from './screens/screening/TroubleshootingSolution';
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -41,6 +49,14 @@ export default function App() {
         <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
         <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
         <Stack.Screen name="ScreeningInstructions" component={ScreeningInstructions} options={{ headerShown: false }} />
+        
+        {/* Screening process screens */}
+        <Stack.Screen name="PositionChild" component={PositionChild} options={{ headerShown: false }} />
+        <Stack.Screen name="ReadyToBegin" component={ReadyToBegin} options={{ headerShown: false }} />
+        <Stack.Screen name="VideoScreen" component={VideoScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ScreeningComplete" component={ScreeningComplete} options={{ headerShown: false }} />
+        <Stack.Screen name="TroubleshootingScreen" component={TroubleshootingScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="TroubleshootingSolution" component={TroubleshootingSolution} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
