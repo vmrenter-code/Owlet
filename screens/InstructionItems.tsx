@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions, ScrollView } from 'react-native';
+import ImageCard from '../components/ImageCard';
 
 type Slide = {
   id: string;
@@ -8,12 +9,29 @@ type Slide = {
 };
 
 export default function InstructionItems({ item }: { item: Slide }) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
 
   return (
     <View style={[styles.container, { width }]}>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
+
+      {/* IMAGE (top half) */}
+      <View style={[styles.imageWrapper, { height: height * 0.5 }]}>
+        <ImageCard style={styles.imageCard} />
+      </View>
+
+      {/* TEXT (scrollable bottom) */}
+      <ScrollView
+        style={styles.scrollArea}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.textWrapper}>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.description}>{item.description}</Text>
+
+        </View>
+      </ScrollView>
+
     </View>
   );
 }
@@ -21,18 +39,43 @@ export default function InstructionItems({ item }: { item: Slide }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,          // pushes the whole card downward
-    paddingHorizontal: 20,
-    justifyContent: 'flex-start'
   },
+
+  imageWrapper: {
+    width: '100%',
+  },
+
+  imageCard: {
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+  },
+
+  scrollArea: {
+    flex: 1,
+  },
+
+ scrollContent: {
+  flexGrow: 1,
+  paddingBottom: 40,
+  justifyContent: 'flex-start',
+},
+
+  textWrapper: {
+    paddingHorizontal: 28,
+    paddingTop: 28,
+  },
+
   title: {
     fontSize: 28,
-    fontWeight: '400',
-    marginBottom: 24,        // increases space between title and description
-    color: '#444444'
+    fontFamily: 'NotoSans-SemiBold',
+    color: '#161B1A',
+    marginBottom: 16,
   },
+
   description: {
     fontSize: 18,
-    color: '#858585'
-  }
+    color: '#2E3332',
+    marginBottom: 20,
+  },
 });

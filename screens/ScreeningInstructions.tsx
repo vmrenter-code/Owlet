@@ -5,6 +5,7 @@ import InstructionSlides from './InstructionSlides';
 import InstructionItems from './InstructionItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
+import HomeBg from '../components/HomeBg';
 
 export default function ScreeningInstructions() {
   const { width } = useWindowDimensions();
@@ -24,32 +25,42 @@ export default function ScreeningInstructions() {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   return (
+
     <View style={styles.container}>
-      <View style={{ flex: 3 }}>
-        <FlatList
-          data={InstructionSlides}
-          renderItem={({ item }) => <InstructionItems item={item} />}
-          keyExtractor={(item) => item.id}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          style={{ width }}
-          bounces={false}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-            { useNativeDriver: false }
-          )}
-          scrollEventThrottle={32}
-          onViewableItemsChanged={viewableItemsChanged}
-          viewabilityConfig={viewConfig}
-          ref={slidesRef}
-        />
+
+      <View style={styles.formatBg}>
+              <HomeBg />
       </View>
+      
+      <View style={styles.container}>
+        <View style={{ flex: 3 }}>
+          <FlatList
+            data={InstructionSlides}
+            renderItem={({ item }) => <InstructionItems item={item} />}
+            keyExtractor={(item) => item.id}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ width }}
+            bounces={false}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false }
+            )}
+            scrollEventThrottle={32}
+            onViewableItemsChanged={viewableItemsChanged}
+            viewabilityConfig={viewConfig}
+            ref={slidesRef}
+          />
+        </View>
 
-      <Paginator data={InstructionSlides} scrollX={scrollX} />
+        <Paginator data={InstructionSlides} scrollX={scrollX} />
 
-      <View style={styles.buttonWrapper}>
-        <PrimaryBlueButton>Begin Screening</PrimaryBlueButton>
+
+        <View style={styles.buttonWrapper}>
+          {/** Route the recording screen when the button is pressed */}
+          <PrimaryBlueButton>Begin Screening</PrimaryBlueButton>
+        </View>
       </View>
     </View>
   );
@@ -58,8 +69,15 @@ export default function ScreeningInstructions() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center'
+  },
+
+  formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0
   },
 
   buttonWrapper: {

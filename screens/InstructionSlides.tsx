@@ -3,7 +3,16 @@ export default [
     id: '1',
     title: 'Screening Preview',
     description:
-      "You and your child will watch several short video clips while we measure your child’s visual attention.\n\n Most children respond well to the videos, though periods of boredom or fussiness are also typical.\n\n Swipe right to explore the instructions and understand what’s expected."
+      "Your child will watch five short videos while we measure your child’s gaze."
+  },
+
+  {
+    id: '1.5',
+    title: "Expected Behavior",
+    description: 
+      "Most kids enjoy the videos, though brief boredom is normal."
+
+
   },
 
   {
@@ -30,13 +39,13 @@ export default [
     id: '5',
     title: 'Sensor Placement',
     description:
-        'After you tap Begin Screening, you’ll receive guidance on how to place the sensor on your child.'
+        'You’ll receive guidance on how to place the sensor on your child.'
   },
 
   {
     id: '6',
     title: 'During the Screening',
-    description: 'If your child becomes fussy, the lighting changes, or the camera or microphone becomes obstructed, please retake the screening'
+    description: 'If there are any disruptions, please restart the screening.'
   }
 
 ]

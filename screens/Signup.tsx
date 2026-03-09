@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
 
   subtitleStyle: {
     fontSize: 17,
-    color: '#0B0B0B',
+    color: '#2E3332',
     textAlign: 'center',
     fontFamily: 'NotoSans-Regular'
 

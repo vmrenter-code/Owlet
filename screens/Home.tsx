@@ -3,7 +3,6 @@ import { useNavigation } from '@react-navigation/native';
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
-import BeginScreenBtn from '../components/BeginScreenBtn';
 import Card from '../components/Card';
 import ToolButton from '../components/ToolButton';
 import ProfileContainer from '../components/ProfileContainer';
@@ -169,7 +168,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 22
+    paddingHorizontal: 20
   },
 
   formatBg: {
@@ -214,16 +213,14 @@ const styles = StyleSheet.create({
 
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start', 
     width: '100%',
     gap: 8
   },
-
   chevronWrapper: {
-    height: 24,
-    width: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 4, 
   },
 
   cardContainer: {
@@ -260,7 +257,8 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontFamily: 'NotoSans-SemiBold',
     letterSpacing: -0.2,
-    marginBottom: 4
+    marginBottom: 4,
+    marginTop: 8
   },
 
   toolSubText: {
@@ -272,7 +270,7 @@ const styles = StyleSheet.create({
 
   faqStyles: {
     width: 60,
-    height: 60
+    height: 60,
   },
 
   infStyles: {

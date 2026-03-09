@@ -95,14 +95,14 @@ const styles = StyleSheet.create({
 
   titleStyle: {
     fontSize: 28,
-    color: '#151515',
+    color: '#2E3332',
     textAlign: 'center',
     fontFamily: 'NotoSans-SemiBold',
   },
 
   subtitleStyle: {
     fontSize: 17,
-    color: '#0B0B0B',
+    color: '#',
     textAlign: 'center',
     fontFamily: 'NotoSans-Regular',
 
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
 
   createText: {
     fontSize: 15,
-    color: '#0B0B0B',
+    color: '#2E3332',
     fontFamily: 'NotoSans-Regular'
 
   },

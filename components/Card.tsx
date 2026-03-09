@@ -43,7 +43,7 @@ export default function Card({ children, onPress }: Props) {
               </Text>
             </View>
 
-            <Svg height="24px" width="24px" viewBox="0 -960 960 960" fill="#0d0e0d">
+            <Svg height="30px" width="30px" viewBox="0 -960 960 960" fill="#0d0e0d">
               <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z"/>
             </Svg>
 
@@ -59,11 +59,9 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 25,
     overflow: 'hidden',
-    shadowColor: '#00000031',
-    shadowOffset: { width: 2, height: 4 },
-    shadowRadius: 4,
-    borderColor: '#F0F1F1',
-    borderWidth: 2,
+    shadowColor: '#00000025',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
     backgroundColor: '#fff'
   },
 
