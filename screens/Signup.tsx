@@ -1,106 +1,193 @@
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-import InputFields from '../components/InputFields'
-import PrimaryBlueButton from '../components/PrimaryBlueButton'
-import GoogleButton from '../components/GoogleButton'
+import InputFields from '../components/InputFields';
+import PrimaryBlueButton from '../components/PrimaryBlueButton';
+import GoogleButton from '../components/GoogleButton';
+import HomeBg from '../components/HomeBg';
 
-export default function Signup() {
-    return (
-        <View style={styles.container}>
-            <View style={styles.titleContainer}>
-                <Text style={styles.titleStyle}>Create Account</Text>
-                <Text style={styles.subtitleStyle}>Fill your information below.</Text>
-            </View>
+import { Svg, Path, Rect } from 'react-native-svg';
 
-            <View style={styles.divider}>
-                <View>
-                    <Text style={styles.text}>Username</Text>
-                    <InputFields placeholder="Username" />
-                </View>
 
-                <View>
-                    <Text style={styles.text}>Email</Text>
-                    <InputFields placeholder="Email" />
-                </View>
+export default function Login() {
+  const navigation = useNavigation<any>();
 
-                <View>
-                    <Text style={styles.text}>Password</Text>
-                    <InputFields placeholder="Password" />
-                </View>
+const UserIcon = ({ width = 20, height = 20, color = "#585858" }) => (
+  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
+    <Path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M5 22c0-4 14-4 14 0" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
 
-                <View>
-                    <Text style={styles.text}>Confirm Password</Text>
-                    <InputFields placeholder="Confirm Password" />
-                </View>
-            </View>
+const LockIcon = ({ width = 20, height = 20, color = "#585858" }) => (
+  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
+    <Rect x={6} y={11} width={12} height={9} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M9 11V7a3 3 0 0 1 6 0v4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M12 16a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill={color}/>
+  </Svg>
+);
 
-            <View style={styles.buttonContainer}>
-                <PrimaryBlueButton>Create Account</PrimaryBlueButton>
-            </View>
+const MailIcon = ({ width = 20, height = 20, color = "#585858" }) => (
+  <Svg width={width} height={height} viewBox="0 0 25 25" fill="none">
+    <Rect x={4} y={6} width={16} height={12} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M4 6l8 6 8-6" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
 
-            <View style={styles.orContainer}>
-                <View style={styles.orLine} />
-                <Text style={styles.orText}>or</Text>
-                <View style={styles.orLine} />
-            </View>
+const CheckCircleIcon = ({ width = 20, height = 20, color = "#585858" }) => (
+  <Svg width={width} height={height} viewBox="0 0 26 26" fill="none">
+    <Path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M8 12l3 3 5-5" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
 
-            <GoogleButton></GoogleButton>
-            
+
+
+
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={styles.formatBg}>
+        <HomeBg />
+      </View>
+
+      <View style={styles.container}>
+        <View style={styles.centerSection}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleStyle}>Create Your Account</Text>
+            <Text style={styles.subtitleStyle}>Set up your account to begin.</Text>
+          </View>
+
+          <View style={styles.divider}>
+            <InputFields placeholder="Create a unique username" icon={<UserIcon width={20} height={20} />} />
+            <InputFields placeholder="Enter your email" icon={<MailIcon width={20} height={20} />} />
+            <InputFields placeholder="Create your password" icon={<LockIcon width={20} height={20} />} />
+            <InputFields placeholder="Confirm your password" icon={<CheckCircleIcon width={20} height={20} />} />
+          </View>
+
+          <View style={styles.linkContainer}>
+            <Text style={styles.linkStyle}>Forgot Password?</Text>
+          </View>
+
+          <View style={styles.orContainer}>
+            <View style={styles.orLine} />
+            <Text style={styles.orText}>or continue with</Text>
+            <View style={styles.orLine} />
+          </View>
+
+          <View style={styles.googleContainer}>
+            <GoogleButton />
+          </View>
         </View>
-    )
+
+        <View style={styles.bottomSection}>
+          <View style={{ width: '100%' }}>
+            <PrimaryBlueButton onPress={() => navigation.replace('Home')}>
+              Create Account
+            </PrimaryBlueButton>
+        </View>
+
+          <Text style={styles.createText}>
+            Have an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Sign in</Text>
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 30,
-        backgroundColor: '#ffffff'
-    },
+  container: {
+    flex: 1,
+    padding: 30,
+  },
 
-    titleStyle: {
-        fontSize: 30,
-        fontWeight: 'bold'
-    },
+  centerSection: {
+    flex: 1,
+    justifyContent: 'center',
+  },
 
-    subtitleStyle: {
-        fontSize: 15,
-        color: '#555555'
-    },
+  titleStyle: {
+    fontSize: 28,
+    fontWeight: 600,
+    color: '#151515',
+    textAlign: 'center',
+    fontFamily: 'NotoSans-SemiBold',
+  },
 
-    titleContainer: {
-        gap: 3
-    },
+  subtitleStyle: {
+    fontSize: 17,
+    color: '#2E3332',
+    textAlign: 'center',
+    fontFamily: 'NotoSans-Regular'
 
-    divider: {
-        gap: 20,
-        marginTop: '7%'
-    },
+  },
 
-    buttonContainer: {
-        marginTop: '10%'
-    },
+  titleContainer: {
+    gap: 3,
+  },
 
-    orContainer: {
-        marginTop: '8%',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 15
-    },
+  divider: {
+    gap: 10,
+    marginTop: '9%',
+  },
 
-    orLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#d0d0d0'
-    },
+  linkContainer: {
+    marginTop: '4%',
+    marginBottom: '3%',
+    alignItems: 'flex-end',
+  },
 
-    orText: {
-        fontSize: 14,
-        color: '#888888'
-    },
+  linkStyle: {
+    color: '#303030',
+    fontSize: 15,
+    fontFamily: 'NotoSans-Regular',
 
-    text: {
-        marginBottom: '2%',
-        paddingLeft: 3
-    }
+  },
+
+  orContainer: {
+    marginTop: '5%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#303030',
+  },
+
+  orText: {
+    fontSize: 15,
+    color: '#303030',
+    fontFamily: 'NotoSans-Regular'
+
+  },
+
+  googleContainer: {
+    marginTop: 12,
+  },
+
+  bottomSection: {
+    alignItems: 'center',
+    gap: 20,
+    paddingBottom: 0,
+  },
+
+  createText: {
+    fontSize: 15,
+    color: '#0B0B0B',
+    fontFamily: 'NotoSans-Regular'
+
+  },
+
+  formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
 });
