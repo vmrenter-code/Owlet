@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Signup Preview</title>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #ffffff;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            padding: 60px 30px 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title-container {
+            margin-bottom: 8px;
+        }
+
+        .title {
+            font-size: 30px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 3px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: #555555;
+        }
+
+        .form-container {
+            margin-top: 7%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 8px;
+            padding-left: 3px;
+        }
+
+        .input-group input {
+            width: 100%;
+            border: 0.5px solid #898989;
+            border-radius: 12px;
+            padding: 10px 12px;
+            height: 35px;
+            font-size: 14px;
+            color: #000;
+            background-color: #ffffff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input::placeholder {
+            color: #888888;
+        }
+
+        .input-group input:focus {
+            border-color: #3ab0d1;
+        }
+
+        .button-container {
+            margin-top: 10%;
+        }
+
+        .primary-button {
+            width: 100%;
+            padding: 12px;
+            background: #3ab0d1;
+            border: 1px solid #32a0be;
+            border-radius: 100px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.45);
+            transition: transform 0.1s, opacity 0.1s;
+        }
+
+        .primary-button:hover {
+            transform: scale(1.02);
+            opacity: 0.95;
+        }
+
+        .primary-button:active {
+            transform: scale(1.04);
+            opacity: 0.9;
+        }
+
+        .or-container {
+            margin-top: 8%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .or-line {
+            flex: 1;
+            height: 1px;
+            background: #d0d0d0;
+        }
+
+        .or-text {
+            font-size: 14px;
+            color: #888888;
+        }
+
+        .google-button {
+            margin-top: 6%;
+            width: 100%;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.1s;
+        }
+
+        .google-button:hover {
+            transform: scale(1.02);
+            opacity: 0.95;
+        }
+
+        .google-button:active {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .google-text {
+            font-size: 14px;
+            color: #333333;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="screen">
+            <div class="title-container">
+                <h1 class="title">Create Account</h1>
+                <p class="subtitle">Fill your information below.</p>
+            </div>
+
+            <div class="form-container">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" placeholder="Username">
+                </div>
+
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="Email">
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="Password">
+                </div>
+
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input type="password" placeholder="Confirm Password">
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button class="primary-button">Create Account</button>
+            </div>
+
+            <div class="or-container">
+                <div class="or-line"></div>
+                <span class="or-text">or</span>
+                <div class="or-line"></div>
+            </div>
+
+            <button class="google-button">
+                <svg class="google-icon" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span class="google-text">Continue with Google</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>
+

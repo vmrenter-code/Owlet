@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, FlatList, StyleSheet, useWindowDimensions, Animated, ViewToken } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import InstructionSlides from './InstructionSlides';
 import InstructionItems from './InstructionItems';
@@ -8,6 +9,7 @@ import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import HomeBg from '../components/HomeBg';
 
 export default function ScreeningInstructions() {
+  const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -58,8 +60,7 @@ export default function ScreeningInstructions() {
 
 
         <View style={styles.buttonWrapper}>
-          {/** Route the recording screen when the button is pressed */}
-          <PrimaryBlueButton>Begin Screening</PrimaryBlueButton>
+          <PrimaryBlueButton onPress={() => navigation.navigate('PositionChild')}>Begin Screening</PrimaryBlueButton>
         </View>
       </View>
     </View>

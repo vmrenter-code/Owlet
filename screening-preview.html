@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screening Process Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .description {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .screens-container {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+
+        .screen-wrapper {
+            text-align: center;
+        }
+
+        .screen-label {
+            color: #f0a090;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .screen-sublabel {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .phone-frame {
+            width: 300px;
+            height: 650px;
+            border-radius: 35px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Background image simulation */
+        .camera-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, 
+                rgba(80, 60, 50, 0.9) 0%, 
+                rgba(100, 80, 70, 0.85) 30%,
+                rgba(120, 100, 90, 0.8) 60%,
+                rgba(90, 70, 60, 0.85) 100%
+            );
+        }
+
+        .camera-bg-detected {
+            background: linear-gradient(180deg, 
+                rgba(70, 50, 40, 0.85) 0%, 
+                rgba(90, 70, 60, 0.8) 30%,
+                rgba(140, 110, 100, 0.75) 50%,
+                rgba(100, 80, 70, 0.8) 100%
+            );
+        }
+
+        .screen-content {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px 20px 20px;
+        }
+
+        .back-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: none;
+        }
+
+        .back-arrow {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        .menu-dots {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+            letter-spacing: 3px;
+        }
+
+        .record-indicator {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .record-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 6px;
+            background: #ff4444;
+        }
+
+        /* Instruction text */
+        .instruction-container {
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .instruction-text {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.4;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Circle container */
+        .circle-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .face-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 3px solid #8b7bc7;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 15px;
+        }
+
+        .circle-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background: #5fd4d4;
+        }
+
+        /* Button container */
+        .button-container {
+            padding: 0 40px 70px;
+        }
+
+        .begin-button-disabled {
+            flex: 1;
+            background: #f5f0e8;
+            color: #888;
+            padding: 14px 0;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+
+        .begin-button-active {
+            flex: 1;
+            background: linear-gradient(135deg, #f0a090 0%, #e89585 100%);
+            color: #fff;
+            padding: 14px 0;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(240, 160, 144, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .begin-button-active:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(240, 160, 144, 0.5);
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Screening Process Screens</h1>
+    <p class="description">Face positioning flow for child screening</p>
+    
+    <div class="screens-container">
+        <!-- POSITION CHILD SCREEN -->
+        <div class="screen-wrapper">
+            <div class="screen-label">1. POSITION CHILD</div>
+            <div class="screen-sublabel">Face not detected - Button disabled</div>
+            <div class="phone-frame">
+                <div class="camera-bg"></div>
+                <div class="screen-content">
+                    <div class="header">
+                        <button class="back-button">
+                            <span class="back-arrow">‹</span>
+                        </button>
+                        <div class="record-indicator">
+                            <div class="record-dot"></div>
+                        </div>
+                    </div>
+
+                    <div class="instruction-container">
+                        <p class="instruction-text">Position your child to the center of the circle</p>
+                    </div>
+
+                    <div class="circle-container">
+                        <div class="face-circle">
+                            <div class="circle-indicator"></div>
+                        </div>
+                    </div>
+
+                    <div class="button-container">
+                        <button class="begin-button-disabled">Begin</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- READY TO BEGIN SCREEN -->
+        <div class="screen-wrapper">
+            <div class="screen-label">2. READY TO BEGIN</div>
+            <div class="screen-sublabel">Face detected - Button active</div>
+            <div class="phone-frame">
+                <div class="camera-bg camera-bg-detected"></div>
+                <div class="screen-content">
+                    <div class="header">
+                        <button class="back-button">
+                            <span class="back-arrow">‹</span>
+                        </button>
+                        <span class="menu-dots">•••</span>
+                        <div class="record-indicator">
+                            <div class="record-dot"></div>
+                        </div>
+                    </div>
+
+                    <div class="circle-container">
+                        <div class="face-circle">
+                            <div class="circle-indicator"></div>
+                        </div>
+                    </div>
+
+                    <div class="button-container">
+                        <button class="begin-button-active">Begin</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
