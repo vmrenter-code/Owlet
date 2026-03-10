@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Svg, Path, Circle, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Icon components
+// Icon components. 
 const PersonIcon = () => (
     <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
         <Circle cx={12} cy={8} r={4} stroke="#333" strokeWidth={2} />
