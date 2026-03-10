@@ -1,113 +1,179 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-import  InputFields from '../components/InputFields'
-import PrimaryBlueButton from '../components/PrimaryBlueButton'
-import GoogleButton from '../components/GoogleButton'
+import InputFields from '../components/InputFields';
+import PrimaryBlueButton from '../components/PrimaryBlueButton';
+import GoogleButton from '../components/GoogleButton';
+import HomeBg from '../components/HomeBg';
+
+import { Svg, Path, Rect } from 'react-native-svg';
+
+const UserIcon = ({ width = 20, height = 20, color = "#585858" }) => (
+  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
+    <Path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M5 22c0-4 14-4 14 0" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+const LockIcon = ({ width = 20, height = 20, color = "#585858" }) => (
+  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
+    <Rect x={6} y={11} width={12} height={9} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M9 11V7a3 3 0 0 1 6 0v4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M12 16a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill={color}/>
+  </Svg>
+);
 
 export default function Login() {
-    return (
-        <View style = { styles.container}>
-            <View style = { styles.titleContainer}>
-                <Text style = { styles.titleStyle}>Login</Text>
-                <Text style = { styles.subtitleStyle }>Welcome back.</Text>
-            </View>
-                       
+  const navigation = useNavigation<any>();
 
-            <View style = { styles.divider }>
-                <View>
-                    <Text style = { styles.text }>Username</Text>
-                    <InputFields placeholder= { "Username" }></InputFields>
-                </View>
-                
-                <View>
-                    <Text style = { styles.text }>Password</Text>
-                    <InputFields placeholder= { "Password" }></InputFields>
-                </View>
-            </View>
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={styles.formatBg}>
+        <HomeBg />
+      </View>
 
-            <View style = {styles.linkContainer}>
-                <Text style = { styles.linkStyle }>Forgot Password?</Text>
-            </View>
+      <View style={styles.container}>
+        <View style={styles.centerSection}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleStyle}>Login</Text>
+            <Text style={styles.subtitleStyle}>Your space for early insights.</Text>
+          </View>
 
-            <View style = { styles.buttonContainer }>
-                <PrimaryBlueButton>Login</PrimaryBlueButton>
-            </View>
+          <View style={styles.divider}>
+            <InputFields
+              placeholder="Username"
+              icon={<UserIcon width={20} height={20} />}
+            />
 
-           <View style={styles.orContainer}>
-                <View style={styles.orLine} />
-                    <Text style={styles.orText}>or</Text>
-                <View style={styles.orLine} />
-            </View>
+            <InputFields
+              placeholder="Password"
+              icon={<LockIcon width={20} height={20} />}
+            />
+          </View>
 
-            <GoogleButton></GoogleButton>
-          
+          <View style={styles.linkContainer}>
+            <Text style={styles.linkStyle}>Forgot Password?</Text>
+          </View>
+
+          <View style={styles.orContainer}>
+            <View style={styles.orLine} />
+            <Text style={styles.orText}>or login with</Text>
+            <View style={styles.orLine} />
+          </View>
+
+          <View style={styles.googleContainer}>
+            <GoogleButton />
+          </View>
         </View>
-    )
+
+        <View style={styles.bottomSection}>
+          <View style={{ width: '100%' }}>
+            <PrimaryBlueButton onPress={() => navigation.replace('Home')}>
+              Login
+            </PrimaryBlueButton>
+          </View>
+
+          <Text style={styles.createText}>
+            Need an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Create one</Text>
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-     container: {
-        flex: 1,
-        padding: 30,
-        backgroundColor: '#ffffff'
-    },
+  container: {
+    flex: 1,
+    padding: 30,
+  },
 
-    titleStyle: {
-        fontSize: 30,
-        fontWeight: 'bold'
-    },
+  centerSection: {
+    flex: 1,
+    justifyContent: 'center',
+  },
 
-    subtitleStyle: {
-        fontSize: 15,
-        color: '#555555'
-    },
+  titleStyle: {
+    fontSize: 28,
+    color: '#2E3332',
+    textAlign: 'center',
+    fontFamily: 'NotoSans-SemiBold',
+  },
 
-    linkStyle: {
-        color: '#3ab0d1',
-        fontSize: 13
-    },
+  subtitleStyle: {
+    fontSize: 17,
+    color: '#',
+    textAlign: 'center',
+    fontFamily: 'NotoSans-Regular',
 
-    titleContainer:{
-        gap: 3
-    },
+  },
 
-    divider: {
-        gap: 30,
-        marginTop: '9%'
-    },
+  titleContainer: {
+    gap: 3,
+  },
 
-    buttonContainer: {
-        marginTop: '10%'
-    },
-    
-    linkContainer:{
-        marginTop: '5%',
-        alignItems: 'flex-end'
-    },
+  divider: {
+    gap: 10,
+    marginTop: '9%',
+  },
 
-   orContainer: {
-        marginTop: '8%',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 15
-    },
+ linkContainer: {
+    marginTop: '4%',
+    marginBottom: '3%',
+    alignItems: 'flex-end',
+  },
 
-    text: {
-        marginBottom: '2%',
-        paddingLeft: 3
-    },
+  linkStyle: {
+    color: '#303030',
+    fontSize: 15,
+    fontFamily: 'NotoSans-Regular',
 
-     orLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#d0d0d0'
-    },
+  },
 
-     orText: {
-        fontSize: 14,
-        color: '#888888'
-    },
+ orContainer: {
+    marginTop: '5%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+  },
 
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#303030',
+  },
 
+  orText: {
+    fontSize: 15,
+    color: '#303030',
+    fontFamily: 'NotoSans-Regular'
+
+  },
+
+  googleContainer: {
+    marginTop: 12,
+  },
+
+  bottomSection: {
+    alignItems: 'center',
+    gap: 20,
+    paddingBottom: 0,
+  },
+
+  createText: {
+    fontSize: 15,
+    color: '#2E3332',
+    fontFamily: 'NotoSans-Regular'
+
+  },
+
+  formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
 });
