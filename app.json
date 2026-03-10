@@ -20,7 +20,15 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "ACCESS_FINE_LOCATION",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN"
+      ],
+      "package": "com.anonymous.owlet"
     },
     "web": {
       "favicon": "./assets/favicon.png"
