@@ -1,5 +1,5 @@
 import { View, TextInput, StyleSheet, TextInputProps } from 'react-native';
-import { useState } from 'react';
+import React, { forwardRef } from 'react';
 
 // Merge both versions: support all TextInput props + optional icon
 type InputFieldsProps = TextInputProps & {
@@ -7,24 +7,25 @@ type InputFieldsProps = TextInputProps & {
   icon?: React.ReactNode;
 };
 
-export default function InputFields({ placeholder, icon, ...props }: InputFieldsProps) {
-  const [focused, setFocused] = useState(false);
-
+const InputFields = forwardRef<TextInput, InputFieldsProps>(({ placeholder, icon, ...props }, ref) => {
   return (
-    <View style={[styles.container, focused && styles.glow]}>
+    <View style={styles.container}>
       <TextInput
+        ref={ref}
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor="#585858"
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        autoComplete="off"
+        importantForAutofill="no"
         {...props}
       />
 
       {icon && <View style={styles.iconContainer}>{icon}</View>}
     </View>
   );
-}
+});
+
+export default InputFields;
 
 const styles = StyleSheet.create({
   container: {
@@ -38,20 +39,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  glow: {
-    borderColor: '#ffffff',
-    shadowColor: '#000000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 6,
-  },
-
   input: {
     flex: 1,
     fontSize: 17,
     fontFamily: 'NotoSans-Regular',
-    outlineColor: 'transparent',
+    paddingVertical: 0,
   },
 
   iconContainer: {

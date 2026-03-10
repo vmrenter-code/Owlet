@@ -30,7 +30,6 @@ export default function GoogleButton() {
           }}
           style={styles.googleIcon}
         />
-        <Text style={styles.googleButtonText}></Text>
       </Animated.View>
     </Pressable>
   );
@@ -39,15 +38,17 @@ export default function GoogleButton() {
 const styles = StyleSheet.create({
   googleButton: {
     backgroundColor: '#ffffff',
-    borderRadius: 100,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignSelf: 'center',
     shadowColor: '#00000031',
     shadowOffset: { width: 2, height: 4 },
     shadowRadius: 4,
     borderColor: '#F0F1F1',
     borderWidth: 2,
-    flex: 1,
-    padding: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   googleIcon: {
