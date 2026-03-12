@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react';
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
+    const {screeningId } = route.params;
+    const BASE_URL = 'http://127.0.0.1:4000';
     
     // Get current video number from params (default to 1)
     const videoNumber = route.params?.videoNumber || 1;
@@ -26,13 +28,33 @@ export default function VideoScreen() {
         return () => clearTimeout(timer);
     }, [videoNumber]);
     
-    const handleNext = () => {
-        if (videoNumber < totalVideos) {
-            // Go to next video
-            navigation.push('VideoScreen', { videoNumber: videoNumber + 1 });
-        } else {
-            // All videos complete - navigate to completion screen
+    const handleNext = async () => {
+        try {
+            // Log video session to backend
+            await fetch(`${BASE_URL}/screening/${screeningId}/video`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}) // no extra data needed for test
+            });
+
+            if (videoNumber < totalVideos) {
+            navigation.push('VideoScreen', { videoNumber: videoNumber + 1, screeningId });
+            } else {
+            // Mark screening as completed
+            await fetch(`${BASE_URL}/screening/${screeningId}/complete`, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            });
+
             navigation.navigate('ScreeningComplete');
+            }
+        } catch (error) {
+            console.error('Error logging video session:', error);
         }
     };
 

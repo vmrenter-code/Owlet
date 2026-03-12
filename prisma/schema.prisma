@@ -3,13 +3,12 @@
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
-// prisma/schema.prisma
-datasource db {
-  provider = "postgresql"
-}
-
 generator client {
   provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
 }
 
 model Screening {
@@ -22,8 +21,8 @@ model Screening {
 }
 
 model VideoSession {
-  id            String     @id @default(uuid())
-  screeningId   String
-  createdAt     DateTime   @default(now())
-  screening     Screening  @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+  id          String    @id @default(uuid())
+  screeningId String
+  createdAt   DateTime  @default(now())
+  screening   Screening @relation(fields: [screeningId], references: [id], onDelete: Cascade)
 }
