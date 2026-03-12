@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@lineiconshq/react-native-lineicons": "^0.0.3",
+    "@prisma/client": "^7.5.0",
     "@react-native-async-storage/async-storage": "^3.0.1",
     "@react-navigation/bottom-tabs": "^7.14.0",
     "@react-navigation/elements": "^2.9.5",
@@ -36,6 +37,7 @@
   "private": true,
   "devDependencies": {
     "@types/react": "~19.1.10",
+    "prisma": "^7.5.0",
     "typescript": "~5.9.2"
   }
 }
