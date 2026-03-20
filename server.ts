@@ -1,11 +1,7 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
 
 const app = express();
-const prisma = new PrismaClient();
-
 app.use(cors());
 app.use(express.json());
 
@@ -16,45 +12,27 @@ function getParam(req: express.Request, key: string): string {
 }
 
 // Create a new screening
-app.post('/screening', async (req: express.Request, res: express.Response) => {
-  try {
-    const screening = await prisma.screening.create({ data: {} });
-    res.json(screening);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to create screening' });
-  }
+app.post('/screening', async (req, res) => {
+  console.log('Screening started at:', req.body.startedAt);
+  res.json({ success: true });
 });
 
 // Log a video session
-app.post('/screening/:id/video', async (req: express.Request, res: express.Response) => {
-  const id = getParam(req, 'id'); // always string
-  try {
-    const videoSession = await prisma.videoSession.create({
-      data: { screeningId: id },
-    });
-    res.json(videoSession);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to log video session' });
-  }
+app.post('/screening/:id/video', async (req, res) => {
+  const screeningId = req.params.id;
+  const { videoNumber, completedAt } = req.body;
+  console.log(`Video ${screeningId}:${videoNumber} completed at ${completedAt}`);
+  res.json({ success: true });
 });
 
 // Complete a screening
-app.post('/screening/:id/complete', async (req: express.Request, res: express.Response) => {
-  const id = getParam(req, 'id'); // always string
-  try {
-    const screening = await prisma.screening.update({
-      where: { id },
-      data: { status: 'completed', completedAt: new Date() },
-    });
-    res.json(screening);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to complete screening' });
-  }
+app.post('/screening/:id/complete', async (req, res) => {
+  const screeningId = req.params.id;
+  const { completedAt } = req.body;
+  console.log(`Screening ${screeningId} completed at ${completedAt}`);
+  res.json({ success: true, });
 });
 
-app.listen(4000, '0.0.0.0', () =>
-  console.log('Server running on http://0.0.0.0:4000')
-);
+app.listen(4000, () => {
+  console.log('Server running on port 4000');
+});

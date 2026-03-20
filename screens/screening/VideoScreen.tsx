@@ -9,7 +9,7 @@ export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
     const {screeningId } = route.params;
-    const BASE_URL = 'http://127.0.0.1:4000';
+    const BASE_URL = 'http://localhost:4000';
     
     // Get current video number from params (default to 1)
     const videoNumber = route.params?.videoNumber || 1;
@@ -31,27 +31,40 @@ export default function VideoScreen() {
     const handleNext = async () => {
         try {
             // Log video session to backend
-            await fetch(`${BASE_URL}/screening/${screeningId}/video`, {
+            const response = await fetch(`${BASE_URL}/screening/${screeningId}/video`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({}) // no extra data needed for test
-            });
+            body: JSON.stringify({
+                videoNumber: videoNumber,
+                completedAt: new Date().toISOString(),
+            }),
+        });
+            if (!response.ok) {
+                throw new Error('Failed to log video session');
+            }
+            const data = await response.json();
 
-            if (videoNumber < totalVideos) {
-            navigation.push('VideoScreen', { videoNumber: videoNumber + 1, screeningId });
+            if (data.success) {
+                console.log(`Video ${videoNumber} logged successfully`);
+                if (videoNumber < totalVideos) {
+                    navigation.push('VideoScreen', { videoNumber: videoNumber + 1});
+                } else {
+                    // Mark screening as completed
+                    await fetch(`${BASE_URL}/screening/${screeningId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            completedAt: new Date().toISOString(),
+                        })
+                    });
+                    navigation.navigate('ScreeningComplete');
+                }
             } else {
-            // Mark screening as completed
-            await fetch(`${BASE_URL}/screening/${screeningId}/complete`, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({})
-            });
-
-            navigation.navigate('ScreeningComplete');
+                console.log('Server did not confirm video logging');
             }
         } catch (error) {
             console.error('Error logging video session:', error);
