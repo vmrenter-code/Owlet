@@ -25,7 +25,7 @@ export default function ToolButton({ icon, children, onPress }: Props) {
     <Animated.View style={[styles.card, animatedStyle]}>
       <Pressable
         onPressIn={() => {
-          scale.value = withSpring(0.8);
+          scale.value = withSpring(0.95);
         }}
         onPressOut={() => {
           scale.value = withSpring(1);

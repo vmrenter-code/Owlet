@@ -44,11 +44,10 @@ export default function App() {
         screenOptions={{
           contentStyle: { paddingTop: 0, marginTop: 0, backgroundColor: '#fff' },
           headerBackground: () => <HomeBg />,
-          headerTransparent: false,      // boolean ✅
-          headerShadowVisible: false,    // boolean ✅
+          headerTransparent: false,      
+          headerShadowVisible: false,    
           headerTitle: '',
-          headerTintColor: '#49A3BD',
-          animation: 'slide_from_right',  // optional, safe string
+          headerTintColor: '#49A3BD'
         }}
       >
         <Stack.Screen name="Launch" component={Launch} options={{ headerShown: false }} />

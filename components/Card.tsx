@@ -22,7 +22,7 @@ export default function Card({ children, onPress }: Props) {
   return (
     <Animated.View style={[styles.card, animatedStyle]}>
       <View
-        onTouchStart={() => { scale.value = withSpring(0.8); }}
+        onTouchStart={() => { scale.value = withSpring(0.95); }}
         onTouchEnd={() => { scale.value = withSpring(1); }}
       >
         <View style={styles.topSection} />
