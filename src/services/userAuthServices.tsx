@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
 export const userAuthServices = {
@@ -10,6 +10,7 @@ export const userAuthServices = {
   register: async (username: string, email: string, password: string) => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(result.user, { displayName: username.trim() });
       return { success: true, user: result.user };
     } catch (error: any) {
       let message = 'Something went wrong.';

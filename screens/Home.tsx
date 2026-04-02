@@ -1,5 +1,7 @@
 import { View, StyleSheet, Text, ScrollView, Dimensions, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
@@ -7,10 +9,20 @@ import Card from '../components/Card';
 import ToolButton from '../components/ToolButton';
 import ProfileContainer from '../components/ProfileContainer';
 import BeginCard from '../components/BeginCard';
+import { auth } from '../src/config/firebase';
 import { Svg, Path, Circle } from 'react-native-svg';
 
 export default function Home() {
   const navigation = useNavigation<any>();
+  const [displayName, setDisplayName] = useState('User');
+
+  useEffect(() => {
+    const stopListening = onAuthStateChanged(auth, (user) => {
+      setDisplayName(user?.displayName?.trim() || 'User');
+    });
+
+    return stopListening;
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -39,7 +51,7 @@ export default function Home() {
                     letterSpacing: -0.2
                   }}
                 >
-                  Hi, User!
+                  Hi, {displayName}!
                 </Text>
 
                 <Text
