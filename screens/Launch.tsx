@@ -4,12 +4,15 @@ import { useNavigation } from '@react-navigation/native';
 //Import any components you need
 import PrimaryBlueButton from '../components/PrimaryBlueButton'
 import PrimaryWhiteButton from '../components/PrimaryWhiteButton'
+import AuthPg from '../components/AuthPg';
 
 export default function Launch() {
     const navigation = useNavigation<any>();
     return (
         //Views behave like divs. I used divs to wrap our components into divs to apply layout styles
         <View style = {styles.container}>
+
+            <AuthPg />
             
             <View style = {styles.buttonContainer}>
                 <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>

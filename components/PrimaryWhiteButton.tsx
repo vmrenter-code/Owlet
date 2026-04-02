@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: 'NotoSans-Regular',
     color: '#84BEC4',
     textAlign: 'center',

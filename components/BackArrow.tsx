@@ -21,7 +21,6 @@ const navigation = useNavigation<any>();
 const styles = StyleSheet.create({
      header: {
         paddingTop: 50,
-        paddingHorizontal: 20,
         zIndex: 100
     },
 
@@ -29,7 +28,7 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#ff4a4a',
+        backgroundColor: '#ffffff',
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#000',
@@ -41,7 +40,7 @@ const styles = StyleSheet.create({
 
     backArrow: {
         fontSize: 20,
-        color: '#333',
+        color: '#242424',
     },
 
 

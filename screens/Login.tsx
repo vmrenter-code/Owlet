@@ -5,6 +5,7 @@ import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
 import AuthPg from '../components/AuthPg';
+import BackArrow from '../components/BackArrow';
 
 import { Svg, Path, Rect } from 'react-native-svg';
 
@@ -34,6 +35,8 @@ export default function Login() {
         </View>
 
         <View style={styles.container}>
+            <BackArrow />
+
           <View style={styles.centerSection}>
             <View style={styles.titleContainer}>
               <Text style={styles.titleStyle}>Login</Text>
