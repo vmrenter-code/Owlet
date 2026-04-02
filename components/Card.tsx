@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
-import { View, StyleSheet, Text, Pressable } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
-import { Svg, Path } from 'react-native-svg';
+import { Svg, Path, Circle } from 'react-native-svg';
 
 type Props = {
   children?: ReactNode;
@@ -22,7 +22,7 @@ export default function Card({ children, onPress }: Props) {
   return (
     <Animated.View style={[styles.card, animatedStyle]}>
       <View
-        onTouchStart={() => { scale.value = withSpring(0.8); }}
+        onTouchStart={() => { scale.value = withSpring(0.95); }}
         onTouchEnd={() => { scale.value = withSpring(1); }}
       >
         <View style={styles.topSection} />
@@ -34,12 +34,27 @@ export default function Card({ children, onPress }: Props) {
               <Text style={styles.subHeader}>No Results Yet</Text>
               <View style={styles.headerRow}>
                 <Text style={styles.cardHeader}>Past Screenings</Text>
-                <Svg height="24px" viewBox="0 -960 960 960" width="21px" fill="#161B1A">
-                  <Path d="M480-120q-138 0-240.5-91.5T122-440h82q14 104 92.5 172T480-200q117 0 198.5-81.5T760-480q0-117-81.5-198.5T480-760q-69 0-129 32t-101 88h110v80H120v-240h80v94q51-64 124.5-99T480-840q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-480q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-120Zm112-192L440-464v-216h80v184l128 128-56 56Z"/>
+                <Svg width={16} height={16} viewBox="0 0 24 24">
+                  <Circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="none"
+                    stroke="#161B1A"
+                    strokeWidth={2.7}
+                  />
+                  <Path
+                    d="M12 7v5.5l3.5 3.5"
+                    stroke="#161B1A"
+                    strokeWidth={2.7}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
                 </Svg>
               </View>
               <Text style={styles.cardText}>
-                Your child’s recent screening will appear here.
+                Your child's recent screening will appear here.
               </Text>
             </View>
 
@@ -58,39 +73,42 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     borderRadius: 25,
-    overflow: 'hidden',
-    shadowColor: '#00000025',
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
+    shadowColor: '#000000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 2, height: 4 },
+    shadowRadius: 5,
     backgroundColor: '#fff'
   },
 
   topSection: {
     height: 200,
-    backgroundColor: '#E7DDED'
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    backgroundColor: '#f3edf7'
   },
 
   bottomSection: {
     backgroundColor: '#ffffff',
-    padding: 16
+    padding: 16,
+    borderRadius: 25
   },
 
   subHeader: {
-    fontSize: 15,
-    color: '#5A5F5E',
+    fontSize: 14,
+    color: '#2E3332',
     fontFamily: 'NotoSans-Regular',
     marginBottom: 4
   },
 
   cardHeader: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#161B1A',
     fontFamily: 'NotoSans-SemiBold',
-    marginBottom: 6
+    marginBottom: 4
   },
 
   cardText: {
-    fontSize: 17,
+    fontSize: 16,
     color: '#2E3332',
     fontFamily: 'NotoSans-Regular',
     lineHeight: 22,

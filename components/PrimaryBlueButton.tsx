@@ -26,7 +26,7 @@ export default function PrimaryBlueButton({ children, onPress }: any) {
   return (
     <Pressable
       onPressIn={() => {
-        scale.value = withSpring(0.8);
+        scale.value = withSpring(0.95);
       }}
       onPressOut={() => {
         scale.value = withSpring(1);
@@ -45,17 +45,17 @@ const styles = StyleSheet.create({
   container: {
     padding: 17,
     borderRadius: 100,
-    backgroundColor: '#84BEC4',
+    backgroundColor: '#90d3d3',
     shadowColor: '#00000031',
     shadowOffset: { width: 2, height: 4 },
     shadowRadius: 4,
-    borderColor: '#84BEC4',
+    borderColor: '#93d6d6',
     borderWidth: 2,
   },
 
   text: {
-    fontSize: 17,
-    fontFamily: 'NotoSans-Regular',
+    fontSize: 16,
+    fontFamily: 'NotoSans-SemiBold',
     color: '#ffffff',
     textAlign: 'center',
     fontWeight: '600',

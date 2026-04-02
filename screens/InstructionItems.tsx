@@ -67,14 +67,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontFamily: 'NotoSans-SemiBold',
     color: '#161B1A',
     marginBottom: 16,
   },
 
   description: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#2E3332',
     marginBottom: 20,
   },

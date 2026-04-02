@@ -18,7 +18,7 @@ export default function BeginCard({ children }: Props) {
 
   return (
     <Pressable
-      onPress={() => navigation.replace('ScreeningInstructions')}
+      onPress={() => navigation.navigate('ScreeningInstructions')}
       onPressIn={() => { scale.value = withSpring(0.95); }}
       onPressOut={() => { scale.value = withSpring(1); }}
     >
@@ -33,10 +33,10 @@ export default function BeginCard({ children }: Props) {
           </View>
 
           <View style={styles.buttonWrapper}>
-            <Svg width={30} height={30} viewBox="0 -960 960 960">
+            <Svg width={30} height={30} viewBox="0 0 24 24">
               <Path
                 fill="#FFFFFF"
-                d="M360-240c-24 14-40 4-40-24v-432c0-28 16-38 40-24l336 216c20 12 20 36 0 48L360-240Z"
+                d="M6 4.75C6 3.7 7.187 3.1 8.04 3.697l11.05 7.25a1.75 1.75 0 0 1 0 2.906l-11.05 7.25C7.187 21.9 6 21.3 6 20.25V4.75Z"
               />
             </Svg>
           </View>
@@ -49,15 +49,15 @@ export default function BeginCard({ children }: Props) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: '#84BEC4',
+    backgroundColor: '#90d3d3',
     borderRadius: 25,
-    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#00000025',
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
+    shadowColor: '#000000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 2, height: 4 },
+    shadowRadius: 5,
   },
 
   content: {
@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     flex: 1,
+    padding: 22,
   },
 
   textContainer: {
@@ -79,8 +80,8 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    fontSize: 20,
-    fontFamily: 'NotoSans-SemiBold',
+    fontSize: 18,
+    fontFamily: 'NotoSans-Bold',
     color: '#ffffff',
     marginBottom: 4,
   },
@@ -88,13 +89,11 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     fontFamily: 'NotoSans-Regular',
-    color: '#f0f0f0',
+    color: '#ffffff',
     lineHeight: 20,
   },
 
   buttonWrapper: {
-    width: 50,
-    height: 50,
     borderRadius: 14,
     backgroundColor: '#ffffff00',
     alignItems: 'center',

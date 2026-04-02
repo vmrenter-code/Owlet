@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
-import HomeBg from '../components/HomeBg';
+import AuthPg from '../components/AuthPg';
 
 import { Svg, Path, Rect } from 'react-native-svg';
 
@@ -27,58 +27,60 @@ export default function Login() {
   const navigation = useNavigation<any>();
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.formatBg}>
-        <HomeBg />
-      </View>
-
-      <View style={styles.container}>
-        <View style={styles.centerSection}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleStyle}>Login</Text>
-            <Text style={styles.subtitleStyle}>Your space for early insights.</Text>
-          </View>
-
-          <View style={styles.divider}>
-            <InputFields
-              placeholder="Username"
-              icon={<UserIcon width={20} height={20} />}
-            />
-
-            <InputFields
-              placeholder="Password"
-              icon={<LockIcon width={20} height={20} />}
-            />
-          </View>
-
-          <View style={styles.linkContainer}>
-            <Text style={styles.linkStyle}>Forgot Password?</Text>
-          </View>
-
-          <View style={styles.orContainer}>
-            <View style={styles.orLine} />
-            <Text style={styles.orText}>or login with</Text>
-            <View style={styles.orLine} />
-          </View>
-
-          <View style={styles.googleContainer}>
-            <GoogleButton />
-          </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={{ flex: 1 }}>
+        <View style={styles.formatBg} pointerEvents="none">
+          <AuthPg />
         </View>
 
-        <View style={styles.bottomSection}>
-          <View style={{ width: '100%' }}>
-            <PrimaryBlueButton onPress={() => navigation.replace('Home')}>
-              Login
-            </PrimaryBlueButton>
+        <View style={styles.container}>
+          <View style={styles.centerSection}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleStyle}>Login</Text>
+              <Text style={styles.subtitleStyle}>Your space for early insights.</Text>
+            </View>
+            
+
+            <View style={styles.divider}>
+              <InputFields
+                placeholder="Username"
+                icon={<UserIcon width={20} height={20} />}
+              />
+              <InputFields
+                placeholder="Password"
+                icon={<LockIcon width={20} height={20} />}
+              />
+            </View>
+
+            <View style={styles.linkContainer}>
+              <Text style={styles.linkStyle}>Forgot Password?</Text>
+            </View>
+
+            <View style={styles.orContainer}>
+              <View style={styles.orLine} />
+              <Text style={styles.orText}>or login with</Text>
+              <View style={styles.orLine} />
+            </View>
+
+            <View style={styles.googleContainer}>
+              <GoogleButton />
+            </View>
           </View>
 
-          <Text style={styles.createText}>
-            Need an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Create one</Text>
-          </Text>
+          <View style={styles.bottomSection}>
+            <View style={{ width: '100%' }}>
+              <PrimaryBlueButton onPress={() => navigation.replace('MainTabs')}>
+                Login
+              </PrimaryBlueButton>
+            </View>
+
+            <Text style={styles.createText}>
+              Need an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Create one</Text>
+            </Text>
+          </View>
         </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -102,10 +104,9 @@ const styles = StyleSheet.create({
 
   subtitleStyle: {
     fontSize: 17,
-    color: '#',
+    color: '#2E3332',
     textAlign: 'center',
     fontFamily: 'NotoSans-Regular',
-
   },
 
   titleContainer: {
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     marginTop: '9%',
   },
 
- linkContainer: {
+  linkContainer: {
     marginTop: '4%',
     marginBottom: '3%',
     alignItems: 'flex-end',
@@ -127,10 +128,9 @@ const styles = StyleSheet.create({
     color: '#303030',
     fontSize: 15,
     fontFamily: 'NotoSans-Regular',
-
   },
 
- orContainer: {
+  orContainer: {
     marginTop: '5%',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -147,8 +147,7 @@ const styles = StyleSheet.create({
   orText: {
     fontSize: 15,
     color: '#303030',
-    fontFamily: 'NotoSans-Regular'
-
+    fontFamily: 'NotoSans-Regular',
   },
 
   googleContainer: {
@@ -164,8 +163,7 @@ const styles = StyleSheet.create({
   createText: {
     fontSize: 15,
     color: '#2E3332',
-    fontFamily: 'NotoSans-Regular'
-
+    fontFamily: 'NotoSans-Regular',
   },
 
   formatBg: {

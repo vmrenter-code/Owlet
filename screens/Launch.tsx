@@ -1,48 +1,222 @@
-import {View, Text, StyleSheet} from 'react-native';
+import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-//Import any components you need
-import PrimaryBlueButton from '../components/PrimaryBlueButton'
-import PrimaryWhiteButton from '../components/PrimaryWhiteButton'
+import InputFields from '../components/InputFields';
+import PrimaryBlueButton from '../components/PrimaryBlueButton';
+import GoogleButton from '../components/GoogleButton';
+import AuthPg from '../components/AuthPg';
 
-export default function Launch() {
-    const navigation = useNavigation<any>();
-    return (
-        //Views behave like divs. I used divs to wrap our components into divs to apply layout styles
-        <View style = {styles.container}>
-            
-            <View style = {styles.buttonContainer}>
-                <PrimaryBlueButton onPress={() => navigation.replace('Signup')}>Create Account</PrimaryBlueButton>
-                <PrimaryWhiteButton onPress={() => navigation.replace('Login')}>Login</PrimaryWhiteButton>
-            </View>
-            
+import { Svg, Path, Rect } from 'react-native-svg';
+
+const UserIcon = ({ width = 20, height = 20, color = "#585858" }) => (
+  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
+    <Path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M5 22c0-4 14-4 14 0" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+const LockIcon = ({ width = 20, height = 20, color = "#585858" }) => (
+  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
+    <Rect x={6} y={11} width={12} height={9} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M9 11V7a3 3 0 0 1 6 0v4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M12 16a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill={color}/>
+  </Svg>
+);
+
+export default function Login() {
+  const navigation = useNavigation<any>();
+  const canGoBack = navigation.canGoBack();
+
+{canGoBack && (
+  <View style={styles.header}>
+    <Pressable
+      style={styles.backButton}
+      onPress={() => navigation.goBack()}
+    >
+      <Text style={styles.backArrow}>←</Text>
+    </Pressable>
+  </View>
+)}
+
+  return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={{ flex: 1 }}>
+        <View style={styles.formatBg} pointerEvents="none">
+          <AuthPg />
         </View>
-    );
+
+        <View style={styles.container}>
+          {canGoBack && (
+            <View style={styles.header}>
+              <Pressable
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+              >
+                <Text style={styles.backArrow}>←</Text>
+              </Pressable>
+            </View>
+          )}
+
+          <View style={styles.centerSection}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleStyle}>Login</Text>
+              <Text style={styles.subtitleStyle}>Your space for early insights.</Text>
+            </View>
+
+            <View style={styles.divider}>
+              <InputFields
+                placeholder="Username"
+                icon={<UserIcon width={20} height={20} />}
+              />
+              <InputFields
+                placeholder="Password"
+                icon={<LockIcon width={20} height={20} />}
+              />
+            </View>
+
+            <View style={styles.linkContainer}>
+              <Text style={styles.linkStyle}>Forgot Password?</Text>
+            </View>
+
+            <View style={styles.orContainer}>
+              <View style={styles.orLine} />
+              <Text style={styles.orText}>or login with</Text>
+              <View style={styles.orLine} />
+            </View>
+
+            <View style={styles.googleContainer}>
+              <GoogleButton />
+            </View>
+          </View>
+
+          <View style={styles.bottomSection}>
+            <View style={{ width: '100%' }}>
+              <PrimaryBlueButton onPress={() => navigation.replace('MainTabs')}>
+                Login
+              </PrimaryBlueButton>
+            </View>
+
+            <Text style={styles.createText}>
+              Need an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Create one</Text>
+            </Text>
+          </View>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 30,
-        marginTop: 100,
-        backgroundColor: '#F6F9F7'
-    },
+  container: {
+    flex: 1,
+    padding: 30,
+  },
 
-    text: {
-        fontSize: 30,
-        color: '#49A3BD',
-        fontWeight: 'bold',
-        letterSpacing: 7,
-        transform: [{ translateY: -60}]
-    },
+  header: {
+    paddingTop: 10,
+  },
 
-    buttonContainer: {
-        position: 'absolute',
-        padding: 19,
-        bottom: 30,
-        left: 0,
-        right: 0,
-        gap: 20,
-    },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
 
+  backArrow: {
+    fontSize: 20,
+    color: '#333',
+  },
+
+  centerSection: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+
+  titleStyle: {
+    fontSize: 28,
+    color: '#2E3332',
+    textAlign: 'center',
+    fontFamily: 'NotoSans-SemiBold',
+  },
+
+  subtitleStyle: {
+    fontSize: 17,
+    color: '#2E3332',
+    textAlign: 'center',
+    fontFamily: 'NotoSans-Regular',
+  },
+
+  titleContainer: {
+    gap: 3,
+  },
+
+  divider: {
+    gap: 10,
+    marginTop: '9%',
+  },
+
+  linkContainer: {
+    marginTop: '4%',
+    marginBottom: '3%',
+    alignItems: 'flex-end',
+  },
+
+  linkStyle: {
+    color: '#303030',
+    fontSize: 15,
+    fontFamily: 'NotoSans-Regular',
+  },
+
+  orContainer: {
+    marginTop: '5%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#303030',
+  },
+
+  orText: {
+    fontSize: 15,
+    color: '#303030',
+    fontFamily: 'NotoSans-Regular',
+  },
+
+  googleContainer: {
+    marginTop: 12,
+  },
+
+  bottomSection: {
+    alignItems: 'center',
+    gap: 20,
+    paddingBottom: 0,
+  },
+
+  createText: {
+    fontSize: 15,
+    color: '#2E3332',
+    fontFamily: 'NotoSans-Regular',
+  },
+
+  formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
 });
