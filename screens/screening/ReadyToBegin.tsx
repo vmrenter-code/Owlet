@@ -36,7 +36,6 @@ export default function ReadyToBegin() {
             {/* Face positioning circle - face is now detected */}
             <View style={styles.circleContainer}>
                 <View style={styles.faceCircle}>
-                    <View style={styles.circleIndicator} />
                 </View>
             </View>
 

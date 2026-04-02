@@ -1,6 +1,7 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeApp, getApp, getApps } from "firebase/app";
+import { getAuth, Auth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Firebase configuration using environment variables
 const firebaseConfig = {
@@ -12,11 +13,22 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+
+// Initialize firebase app once, including during fast refresh.
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
 
 // Initialize services
-export const auth = getAuth(app);
+let auth: Auth;
+const firebaseAuth: any = require("firebase/auth");
+try {
+  auth = firebaseAuth.initializeAuth(app, {
+    persistence: firebaseAuth.getReactNativePersistence(AsyncStorage),
+  });
+} catch {
+  // Fallback when auth is already initialized (e.g., fast refresh).
+  auth = getAuth(app);
+}
+export { auth };
 export const db = getFirestore(app);
-
 export default app;
