@@ -8,9 +8,11 @@ import { useState, useEffect } from 'react';
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
+    const { screeningId, videoNumber } = route.params;
+    const BASE_URL = 'http://localhost:4000';
     
     // Get current video number from params (default to 1)
-    const videoNumber = route.params?.videoNumber || 1;
+    //const videoNumber = route.params?.videoNumber || 1;
     const totalVideos = 5;
     
     // Track if video is playing or finished
@@ -26,15 +28,40 @@ export default function VideoScreen() {
         return () => clearTimeout(timer);
     }, [videoNumber]);
     
-    const handleNext = () => {
-        if (videoNumber < totalVideos) {
-            // Go to next video
-            navigation.push('VideoScreen', { videoNumber: videoNumber + 1 });
-        } else {
-            // All videos complete - navigate to completion screen
-            navigation.navigate('ScreeningComplete');
+    const handleNext = async () => {
+        try {
+            const response = await fetch(`${BASE_URL}/screening/video`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                videoNumber,
+                completedAt: new Date().toISOString(),
+            }),
+            });
+
+            if (!response.ok) throw new Error('Failed to log video session');
+
+            const data = await response.json();
+
+            if (data.success) {
+            console.log(`Video ${videoNumber} logged successfully`, data.videoSession);
+            if (videoNumber < totalVideos) {
+                navigation.push('VideoScreen', { videoNumber: videoNumber + 1 });
+            } else {
+                await fetch(`${BASE_URL}/screening/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ completedAt: new Date().toISOString() }),
+                });
+                navigation.navigate('ScreeningComplete');
+            }
+            } else {
+            console.log('Server did not confirm video logging');
+            }
+        } catch (error) {
+            console.error('Error logging video session:', error);
         }
-    };
+        };
 
     return (
         <View style={styles.container}>
