@@ -8,11 +8,11 @@ import { useState, useEffect } from 'react';
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const {screeningId } = route.params;
+    const { screeningId, videoNumber } = route.params;
     const BASE_URL = 'http://localhost:4000';
     
     // Get current video number from params (default to 1)
-    const videoNumber = route.params?.videoNumber || 1;
+    //const videoNumber = route.params?.videoNumber || 1;
     const totalVideos = 5;
     
     // Track if video is playing or finished
@@ -30,46 +30,38 @@ export default function VideoScreen() {
     
     const handleNext = async () => {
         try {
-            // Log video session to backend
-            const response = await fetch(`${BASE_URL}/screening/${screeningId}/video`, {
+            const response = await fetch(`${BASE_URL}/screening/video`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                videoNumber: videoNumber,
+                videoNumber,
                 completedAt: new Date().toISOString(),
             }),
-        });
-            if (!response.ok) {
-                throw new Error('Failed to log video session');
-            }
+            });
+
+            if (!response.ok) throw new Error('Failed to log video session');
+
             const data = await response.json();
 
             if (data.success) {
-                console.log(`Video ${videoNumber} logged successfully`);
-                if (videoNumber < totalVideos) {
-                    navigation.push('VideoScreen', { videoNumber: videoNumber + 1});
-                } else {
-                    // Mark screening as completed
-                    await fetch(`${BASE_URL}/screening/${screeningId}/complete`, {
-                        method: 'POST',
-                        headers: {
-                        'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            completedAt: new Date().toISOString(),
-                        })
-                    });
-                    navigation.navigate('ScreeningComplete');
-                }
+            console.log(`Video ${videoNumber} logged successfully`, data.videoSession);
+            if (videoNumber < totalVideos) {
+                navigation.push('VideoScreen', { videoNumber: videoNumber + 1 });
             } else {
-                console.log('Server did not confirm video logging');
+                await fetch(`${BASE_URL}/screening/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ completedAt: new Date().toISOString() }),
+                });
+                navigation.navigate('ScreeningComplete');
+            }
+            } else {
+            console.log('Server did not confirm video logging');
             }
         } catch (error) {
             console.error('Error logging video session:', error);
         }
-    };
+        };
 
     return (
         <View style={styles.container}>

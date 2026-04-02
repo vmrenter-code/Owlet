@@ -23,10 +23,10 @@ export default function ReadyToBegin() {
             }
             const data = await response.json();
 
-            if (data.success) {
-                console.log('Screening started successfully');
+            if (data.success && data) {
+                console.log('Screening started successfully:', data.screening);
                 // Start the screening process - navigate to first video
-                navigation.navigate('VideoScreen', { videoNumber: 1 });
+                navigation.navigate('VideoScreen', { screeningID: data.screening.id, videoNumber: 1 });
             } else {
                 console.log('Server did not confirm screening start');
             }

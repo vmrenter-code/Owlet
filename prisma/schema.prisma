@@ -15,14 +15,12 @@ model Screening {
   id           String        @id @default(uuid())
   status       String        @default("pending")
   riskScore    Float?
-  videos       VideoSession[]
   createdAt    DateTime      @default(now())
   completedAt  DateTime?
 }
 
 model VideoSession {
   id          String    @id @default(uuid())
-  screeningId String
+  videoNumber Int
   createdAt   DateTime  @default(now())
-  screening   Screening @relation(fields: [screeningId], references: [id], onDelete: Cascade)
 }
