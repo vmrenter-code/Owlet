@@ -1,16 +1,12 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
-import HomeBg from '../components/HomeBg';
+import AuthPg from '../components/AuthPg';
 
 import { Svg, Path, Rect } from 'react-native-svg';
-
-
-export default function Login() {
-  const navigation = useNavigation<any>();
 
 const UserIcon = ({ width = 20, height = 20, color = "#585858" }) => (
   <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
@@ -41,57 +37,59 @@ const CheckCircleIcon = ({ width = 20, height = 20, color = "#585858" }) => (
   </Svg>
 );
 
-
-
+export default function Signup() {
+  const navigation = useNavigation<any>();
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.formatBg}>
-        <HomeBg />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={{ flex: 1 }}>
+        <View style={styles.formatBg} pointerEvents="none">
+          <AuthPg />
+        </View>
+
+        <View style={styles.container}>
+          <View style={styles.centerSection}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleStyle}>Create Your Account</Text>
+              <Text style={styles.subtitleStyle}>Set up your account to begin.</Text>
+            </View>
+
+            <View style={styles.divider}>
+              <InputFields placeholder="Create a unique username" icon={<UserIcon width={20} height={20} />} />
+              <InputFields placeholder="Enter your email" icon={<MailIcon width={20} height={20} />} />
+              <InputFields placeholder="Create your password" icon={<LockIcon width={20} height={20} />} />
+              <InputFields placeholder="Confirm your password" icon={<CheckCircleIcon width={20} height={20} />}  />
+            </View>
+
+            <View style={styles.linkContainer}>
+              <Text style={styles.linkStyle}>Forgot Password?</Text>
+            </View>
+
+            <View style={styles.orContainer}>
+              <View style={styles.orLine} />
+              <Text style={styles.orText}>or continue with</Text>
+              <View style={styles.orLine} />
+            </View>
+
+            <View style={styles.googleContainer}>
+              <GoogleButton />
+            </View>
+          </View>
+
+          <View style={styles.bottomSection}>
+            <View style={{ width: '100%' }}>
+              <PrimaryBlueButton onPress={() => navigation.replace('MainTabs')}>
+                Create Account
+              </PrimaryBlueButton>
+            </View>
+
+            <Text style={styles.createText}>
+              Have an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Sign in</Text>
+            </Text>
+          </View>
+        </View>
       </View>
-
-      <View style={styles.container}>
-        <View style={styles.centerSection}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleStyle}>Create Your Account</Text>
-            <Text style={styles.subtitleStyle}>Set up your account to begin.</Text>
-          </View>
-
-          <View style={styles.divider}>
-            <InputFields placeholder="Create a unique username" icon={<UserIcon width={20} height={20} />} />
-            <InputFields placeholder="Enter your email" icon={<MailIcon width={20} height={20} />} />
-            <InputFields placeholder="Create your password" icon={<LockIcon width={20} height={20} />} />
-            <InputFields placeholder="Confirm your password" icon={<CheckCircleIcon width={20} height={20} />} />
-          </View>
-
-          <View style={styles.linkContainer}>
-            <Text style={styles.linkStyle}>Forgot Password?</Text>
-          </View>
-
-          <View style={styles.orContainer}>
-            <View style={styles.orLine} />
-            <Text style={styles.orText}>or continue with</Text>
-            <View style={styles.orLine} />
-          </View>
-
-          <View style={styles.googleContainer}>
-            <GoogleButton />
-          </View>
-        </View>
-
-        <View style={styles.bottomSection}>
-          <View style={{ width: '100%' }}>
-            <PrimaryBlueButton onPress={() => navigation.replace('Home')}>
-              Create Account
-            </PrimaryBlueButton>
-        </View>
-
-          <Text style={styles.createText}>
-            Have an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Sign in</Text>
-          </Text>
-        </View>
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -108,7 +106,6 @@ const styles = StyleSheet.create({
 
   titleStyle: {
     fontSize: 28,
-    fontWeight: 600,
     color: '#151515',
     textAlign: 'center',
     fontFamily: 'NotoSans-SemiBold',
@@ -118,8 +115,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#2E3332',
     textAlign: 'center',
-    fontFamily: 'NotoSans-Regular'
-
+    fontFamily: 'NotoSans-Regular',
   },
 
   titleContainer: {
@@ -141,7 +137,6 @@ const styles = StyleSheet.create({
     color: '#303030',
     fontSize: 15,
     fontFamily: 'NotoSans-Regular',
-
   },
 
   orContainer: {
@@ -161,8 +156,7 @@ const styles = StyleSheet.create({
   orText: {
     fontSize: 15,
     color: '#303030',
-    fontFamily: 'NotoSans-Regular'
-
+    fontFamily: 'NotoSans-Regular',
   },
 
   googleContainer: {
@@ -178,8 +172,7 @@ const styles = StyleSheet.create({
   createText: {
     fontSize: 15,
     color: '#0B0B0B',
-    fontFamily: 'NotoSans-Regular'
-
+    fontFamily: 'NotoSans-Regular',
   },
 
   formatBg: {

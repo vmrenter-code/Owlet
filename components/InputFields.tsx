@@ -10,7 +10,7 @@ export default function InputFields({ placeholder, icon }: InputFieldsProps) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <View style={[styles.container, focused && styles.glow]}>
+    <View style={[styles.container]}>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
@@ -31,25 +31,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     paddingVertical: 17,
     borderColor: '#F0F1F1',
-    borderWidth: 2,
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
 
-  glow: {
-    borderColor: '#ffffff',           
-    shadowColor: '#000000',           
-    shadowOpacity: 0.15,              
-    shadowRadius: 8,                  
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 6,                    
-  },
 
   input: {
     flex: 1,
     fontSize: 17,
     fontFamily: 'NotoSans-Regular',
-    outlineColor: 'transparent',
   },
 
   iconContainer: {
