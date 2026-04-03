@@ -70,15 +70,17 @@ export default function Home() {
               <Circle cx={16} cy={10} r={1.2} fill="#151515" />
             </Svg>
 
-            <Svg width={24} height={24} viewBox="0 0 30 30" fill="none">
-              <Path
-                d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-                stroke="#151515"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
+            <Pressable onPress={() => navigation.navigate('NotificationCenter')}>
+              <Svg width={24} height={24} viewBox="0 0 30 30" fill="none">
+                <Path
+                  d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                  stroke="#151515"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
+            </Pressable>
 
             <Pressable onPress={() => navigation.navigate('Settings')}>
               <Svg width={24} height={24} viewBox="0 0 29 29" fill="none">
@@ -101,18 +103,20 @@ export default function Home() {
             <BeginCard />
           </View>
 
-          <View style={styles.row}>
+          <Pressable style={styles.row} onPress={() => navigation.navigate('PastScreenings')}>
             <Text style={styles.headerStyle}>Recent History</Text>
             <View style={styles.chevronWrapper}>
               <Svg width={24} height={24} viewBox="0 -960 960 960">
                 <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#0b0c0c" />
               </Svg>
             </View>
-          </View>
+          </Pressable>
 
-          <View style={styles.cardContainer}>
-            <Card />
-          </View>
+          <Pressable onPress={() => navigation.navigate('PastScreenings')}>
+            <View style={styles.cardContainer}>
+              <Card />
+            </View>
+          </Pressable>
 
           <View style={styles.row}>
             <Text style={styles.headerStyle}>Learn More</Text>
