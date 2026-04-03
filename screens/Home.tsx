@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, ScrollView, Dimensions, Pressable } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -27,7 +27,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
 
-      <View style={styles.formatBg}>
+      <View style={styles.formatBg} pointerEvents="none">
         <HomeBg />
       </View>
 
@@ -54,18 +54,18 @@ export default function Home() {
                   Hi, {displayName}!
                 </Text>
 
-                <Text
-                  style={{
-                    fontSize: 15,
-                    color: '#2E3332',
-                    fontFamily: 'NotoSans-Regular',
-                    lineHeight: 17,
-                    letterSpacing: -0.2
-                  }}
-                >
-                  Ready to begin?
-                </Text>
-              </View>
+              <Text
+                style={{
+                  fontSize: 15,
+                  color: '#2E3332',
+                  fontFamily: 'NotoSans-Regular',
+                  lineHeight: 17,
+                  letterSpacing: -0.2
+                }}
+              >
+                Ready to begin?
+              </Text>
+            </View>
           </View>
 
           <View style={styles.iconContainer}>
@@ -82,21 +82,22 @@ export default function Home() {
               <Circle cx={16} cy={10} r={1.2} fill="#151515" />
             </Svg>
 
-            <Svg width={24} height={24} viewBox="0 0 30 30" fill="none">
-              <Path
-                d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-                stroke="#151515"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
+            <Pressable onPress={() => navigation.navigate('NotificationCenter')}>
+              <Svg width={24} height={24} viewBox="0 0 30 30" fill="none">
+                <Path
+                  d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                  stroke="#151515"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
+            </Pressable>
 
             <Pressable onPress={() => navigation.navigate('Settings')}>
               <Svg width={24} height={24} viewBox="0 0 29 29" fill="none">
                 <Path
-                  d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z
-                     M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.07 7.07 0 0 0-1.7-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65c-.63.26-1.21.59-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.49.39 1.07.72 1.7.98l.38 2.65c.06.25.26.42.5.42h4c.24 0 .44-.17.5-.42l.38-2.65c.63-.26 1.21-.59 1.7-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65z"
+                  d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.07 7.07 0 0 0-1.7-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65c-.63.26-1.21.59-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.49.39 1.07.72 1.7.98l.38 2.65c.06.25.26.42.5.42h4c.24 0 .44-.17.5-.42l.38-2.65c.63-.26 1.21-.59 1.7-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65z"
                   stroke="#151515"
                   strokeWidth={2}
                   strokeLinecap="round"
@@ -110,27 +111,27 @@ export default function Home() {
 
         <View>
 
-          <View style={{ marginBottom: 28 }}>
-            <BeginCard/>
+          <View style={{ marginBottom: 22 }}>
+            <BeginCard />
           </View>
 
-          <View style={styles.row}>
+          <Pressable style={styles.row} onPress={() => navigation.navigate('PastScreenings')}>
             <Text style={styles.headerStyle}>Recent History</Text>
-
             <View style={styles.chevronWrapper}>
               <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
                 <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#0b0c0c" />
               </Svg>
             </View>
-          </View>
+          </Pressable>
 
-          <View style={styles.cardContainer}>
-            <Card />
-          </View>
+          <Pressable onPress={() => navigation.navigate('PastScreenings')}>
+            <View style={styles.cardContainer}>
+              <Card />
+            </View>
+          </Pressable>
 
           <View style={styles.row}>
-            <Text style={styles.headerStyle}>Before You Begin</Text>
-
+            <Text style={styles.headerStyle}>Learn More</Text>
             <View style={styles.chevronWrapper}>
               <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
                 <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#0d0e0d" />
@@ -148,8 +149,8 @@ export default function Home() {
                   </Svg>
 
                   <View>
-                    <Text style={styles.toolText}>Instructions</Text>
-                    <Text style={styles.toolSubText}>Parent Guide</Text>
+                    <Text style={styles.toolText}>About Us</Text>
+                    <Text style={styles.toolSubText}>Our Mission</Text>
                   </View>
                 </View>
               </ToolButton>
@@ -182,7 +183,8 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
+    paddingTop: 38
   },
 
   formatBg: {
@@ -191,33 +193,33 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 0
+    zIndex: 0,
   },
 
   bgContainer: {
-    flex: 1
+    flex: 1,
   },
 
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 0
+    paddingBottom: 80,
   },
 
   heroContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 32
+    paddingVertical: 32,
   },
 
   iconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16
+    gap: 16,
   },
 
   headerStyle: {
-    fontSize: 22,
+    fontSize: 20,
     marginBottom: 12,
     letterSpacing: -0.2,
     fontWeight: '600',
@@ -227,59 +229,60 @@ const styles = StyleSheet.create({
 
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-start', 
+    alignItems: 'flex-start',
     width: '100%',
-    gap: 8
+    gap: 8,
   },
+
   chevronWrapper: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4, 
+    marginTop: 4,
   },
 
   cardContainer: {
     marginTop: 12,
     zIndex: 20,
-    marginBottom: 28
+    marginBottom: 22,
   },
 
   toolContainer: {
     marginTop: 12,
     marginBottom: 16,
     flexDirection: 'row',
-    gap: 12
+    gap: 12,
   },
 
   toolItem: {
-    flex: 1
+    flex: 1,
   },
 
   toolBox: {
     flexDirection: 'column',
-    gap: 12
+    gap: 12,
   },
 
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 14
+    gap: 14,
   },
 
   toolText: {
     color: '#161B1A',
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: 'NotoSans-SemiBold',
     letterSpacing: -0.2,
     marginBottom: 4,
-    marginTop: 8
+    marginTop: 8,
   },
 
   toolSubText: {
     color: '#2E3332',
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'NotoSans-Regular',
-    lineHeight: 18
+    lineHeight: 18,
   },
 
   faqStyles: {
@@ -289,6 +292,6 @@ const styles = StyleSheet.create({
 
   infStyles: {
     width: 60,
-    height: 60
-  }
+    height: 60,
+  },
 });

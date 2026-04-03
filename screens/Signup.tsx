@@ -1,11 +1,13 @@
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { userAuthServices } from '../src/services/userAuthServices';
 import { useRef, useState } from 'react';
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
-import HomeBg from '../components/HomeBg';
+import AuthPg from '../components/AuthPg';
+import BackArrow from '../components/BackArrow';
+
 import { Svg, Path, Rect } from 'react-native-svg';
 
 const UserIcon = ({ width = 20, height = 20, color = '#585858' }) => (
@@ -70,99 +72,102 @@ export default function Signup() {
     };
 
     return (
-        <View style={{ flex: 1 }}>
-            <View style={styles.formatBg}>
-                <HomeBg />
-            </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{ flex: 1 }}>
+                <View style={styles.formatBg} pointerEvents="none">
+                    <AuthPg />
+                </View>
 
-            <View style={styles.container}>
-                <View style={styles.centerSection}>
-                    <View style={styles.titleContainer}>
-                        <Text style={styles.titleStyle}>Create Your Account</Text>
-                        <Text style={styles.subtitleStyle}>Set up your account to begin.</Text>
+                <View style={styles.container}>
+                    <BackArrow />
+                    <View style={styles.centerSection}>
+                        <View style={styles.titleContainer}>
+                            <Text style={styles.titleStyle}>Create Your Account</Text>
+                            <Text style={styles.subtitleStyle}>Set up your account to begin.</Text>
+                        </View>
+
+                        <View style={styles.divider}>
+                            <InputFields
+                                placeholder="Create a unique username"
+                                icon={<UserIcon width={20} height={20} />}
+                                value={username}
+                                onChangeText={setUsername}
+                                autoCapitalize="none"
+                                returnKeyType="next"
+                                blurOnSubmit={false}
+                                onSubmitEditing={() => emailRef.current?.focus()}
+                            />
+
+                            <InputFields
+                                placeholder="Enter your email"
+                                icon={<MailIcon width={20} height={20} />}
+                                ref={emailRef}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                returnKeyType="next"
+                                blurOnSubmit={false}
+                                onSubmitEditing={() => passwordRef.current?.focus()}
+                            />
+
+                            <InputFields
+                                placeholder="Create your password"
+                                icon={<LockIcon width={20} height={20} />}
+                                ref={passwordRef}
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                                returnKeyType="next"
+                                blurOnSubmit={false}
+                                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                            />
+
+                            <InputFields
+                                placeholder="Confirm your password"
+                                icon={<CheckCircleIcon width={20} height={20} />}
+                                ref={confirmPasswordRef}
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                secureTextEntry
+                                returnKeyType="done"
+                                onSubmitEditing={handleSignUp}
+                            />
+                        </View>
+
+                        <View style={styles.linkContainer}>
+                            <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                                <Text style={styles.linkStyle}>Forgot Password?</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.orContainer}>
+                            <View style={styles.orLine} />
+                            <Text style={styles.orText}>or continue with</Text>
+                            <View style={styles.orLine} />
+                        </View>
+
+                        <View style={styles.googleContainer}>
+                            <GoogleButton />
+                        </View>
                     </View>
 
-                    <View style={styles.divider}>
-                        <InputFields
-                            placeholder="Create a unique username"
-                            icon={<UserIcon width={20} height={20} />}
-                            value={username}
-                            onChangeText={setUsername}
-                            autoCapitalize="none"
-                            returnKeyType="next"
-                            blurOnSubmit={false}
-                            onSubmitEditing={() => emailRef.current?.focus()}
-                        />
+                    <View style={styles.bottomSection}>
+                        <View style={{ width: '100%' }}>
+                            <PrimaryBlueButton onPress={handleSignUp} disabled={loading}>
+                                {loading ? 'Creating Account...' : 'Create Account'}
+                            </PrimaryBlueButton>
+                        </View>
 
-                        <InputFields
-                            placeholder="Enter your email"
-                            icon={<MailIcon width={20} height={20} />}
-                            ref={emailRef}
-                            value={email}
-                            onChangeText={setEmail}
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                            returnKeyType="next"
-                            blurOnSubmit={false}
-                            onSubmitEditing={() => passwordRef.current?.focus()}
-                        />
-
-                        <InputFields
-                            placeholder="Create your password"
-                            icon={<LockIcon width={20} height={20} />}
-                            ref={passwordRef}
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                            returnKeyType="next"
-                            blurOnSubmit={false}
-                            onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-                        />
-
-                        <InputFields
-                            placeholder="Confirm your password"
-                            icon={<CheckCircleIcon width={20} height={20} />}
-                            ref={confirmPasswordRef}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            secureTextEntry
-                            returnKeyType="done"
-                            onSubmitEditing={handleSignUp}
-                        />
-                    </View>
-
-                    <View style={styles.linkContainer}>
-                        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-                            <Text style={styles.linkStyle}>Forgot Password?</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                            <Text style={styles.createText}>
+                                Have an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Sign in</Text>
+                            </Text>
                         </TouchableOpacity>
                     </View>
-
-                    <View style={styles.orContainer}>
-                        <View style={styles.orLine} />
-                        <Text style={styles.orText}>or continue with</Text>
-                        <View style={styles.orLine} />
-                    </View>
-
-                    <View style={styles.googleContainer}>
-                        <GoogleButton />
-                    </View>
-                </View>
-
-                <View style={styles.bottomSection}>
-                    <View style={{ width: '100%' }}>
-                        <PrimaryBlueButton onPress={handleSignUp} disabled={loading}>
-                            {loading ? 'Creating Account...' : 'Create Account'}
-                        </PrimaryBlueButton>
-                    </View>
-
-                    <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                        <Text style={styles.createText}>
-                            Have an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Sign in</Text>
-                        </Text>
-                    </TouchableOpacity>
                 </View>
             </View>
-        </View>
+        </TouchableWithoutFeedback>
     );
 }
 

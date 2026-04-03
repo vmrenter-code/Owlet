@@ -1,11 +1,12 @@
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useRef, useState } from 'react';
 
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
-import HomeBg from '../components/HomeBg';
+import AuthPg from '../components/AuthPg';
+import BackArrow from '../components/BackArrow';
 import userAuthServices from '../src/services/userAuthServices';
 import { Svg, Path, Rect } from 'react-native-svg';
 
@@ -72,75 +73,80 @@ export default function Login() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.formatBg}>
-        <HomeBg />
-      </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={{ flex: 1 }}>
+        <View style={styles.formatBg} pointerEvents="none">
+          <AuthPg />
+        </View>
 
-      <View style={styles.container}>
-        <View style={styles.centerSection}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.titleStyle}>Login</Text>
-            <Text style={styles.subtitleStyle}>Your space for early insights.</Text>
+        <View style={styles.container}>
+          <BackArrow />
+
+          <View style={styles.centerSection}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.titleStyle}>Login</Text>
+              <Text style={styles.subtitleStyle}>Your space for early insights.</Text>
+            </View>
+
+
+            <View style={styles.divider}>
+              <InputFields
+                placeholder="Username"
+                icon={<UserIcon width={20} height={20} />}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() => passwordRef.current?.focus()}
+              />
+
+              <InputFields
+                placeholder="Password"
+                icon={<LockIcon width={20} height={20} />}
+                ref={passwordRef}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+              />
+            </View>
+
+            <View style={styles.linkContainer}>
+              <TouchableOpacity onPress={handleForgotPassword}>
+                <Text style={styles.linkStyle}>Forgot Password?</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.orContainer}>
+              <View style={styles.orLine} />
+              <Text style={styles.orText}>or login with</Text>
+              <View style={styles.orLine} />
+            </View>
+
+            <View style={styles.googleContainer}>
+              <GoogleButton />
+            </View>
           </View>
 
-          <View style={styles.divider}>
-            <InputFields
-              placeholder="Username"
-              icon={<UserIcon width={20} height={20} />}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              returnKeyType="next"
-              blurOnSubmit={false}
-              onSubmitEditing={() => passwordRef.current?.focus()}
-            />
+          <View style={styles.bottomSection}>
+            <View style={{ width: '100%' }}>
+              <PrimaryBlueButton onPress={handleLogin} disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </PrimaryBlueButton>
+            </View>
 
-            <InputFields
-              placeholder="Password"
-              icon={<LockIcon width={20} height={20} />}
-              ref={passwordRef}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              returnKeyType="done"
-              onSubmitEditing={handleLogin}
-            />
-          </View>
-
-          <View style={styles.linkContainer}>
-            <TouchableOpacity onPress={handleForgotPassword}>
-              <Text style={styles.linkStyle}>Forgot Password?</Text>
+            <TouchableOpacity onPress={handleCreateAccount}>
+              <Text style={styles.createText}>
+                Need an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Create one</Text>
+              </Text>
             </TouchableOpacity>
           </View>
-
-          <View style={styles.orContainer}>
-            <View style={styles.orLine} />
-            <Text style={styles.orText}>or login with</Text>
-            <View style={styles.orLine} />
-          </View>
-
-          <View style={styles.googleContainer}>
-            <GoogleButton />
-          </View>
-        </View>
-
-        <View style={styles.bottomSection}>
-          <View style={{ width: '100%' }}>
-            <PrimaryBlueButton onPress={handleLogin} disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
-            </PrimaryBlueButton>
-          </View>
-
-          <TouchableOpacity onPress={handleCreateAccount}>
-            <Text style={styles.createText}>
-              Need an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Create one</Text>
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -164,7 +170,7 @@ const styles = StyleSheet.create({
 
   subtitleStyle: {
     fontSize: 17,
-    color: '#585858',
+    color: '#2E3332',
     textAlign: 'center',
     fontFamily: 'NotoSans-Regular',
   },

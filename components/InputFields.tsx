@@ -9,7 +9,7 @@ type InputFieldsProps = TextInputProps & {
 
 const InputFields = forwardRef<TextInput, InputFieldsProps>(({ placeholder, icon, ...props }, ref) => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
       <TextInput
         ref={ref}
         style={styles.input}
@@ -34,16 +34,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     paddingVertical: 17,
     borderColor: '#F0F1F1',
-    borderWidth: 2,
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
+
 
   input: {
     flex: 1,
     fontSize: 17,
     fontFamily: 'NotoSans-Regular',
-    paddingVertical: 0,
   },
 
   iconContainer: {

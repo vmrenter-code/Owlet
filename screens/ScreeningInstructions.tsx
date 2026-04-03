@@ -6,7 +6,7 @@ import InstructionSlides from './InstructionSlides';
 import InstructionItems from './InstructionItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
-import HomeBg from '../components/HomeBg';
+import PageBg from '../components/PageBg';
 
 export default function ScreeningInstructions() {
   const navigation = useNavigation<any>();
@@ -30,10 +30,13 @@ export default function ScreeningInstructions() {
 
     <View style={styles.container}>
 
+
       <View style={styles.formatBg}>
-              <HomeBg />
+              <PageBg />
       </View>
-      
+
+
+
       <View style={styles.container}>
         <View style={{ flex: 3 }}>
           <FlatList
@@ -84,7 +87,7 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     width: '100%',
     paddingHorizontal: 28,   
-    marginBottom: 50,        
+    marginBottom: 150,        
     marginTop: 12         
   }
 });

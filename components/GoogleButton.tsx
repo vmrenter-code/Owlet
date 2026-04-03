@@ -1,34 +1,30 @@
-import { Text, StyleSheet, Image, Pressable } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
+import { StyleSheet, Image, Pressable } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
-export default function GoogleButton() {
+type Props = {
+  onPress?: () => void;
+};
+
+export default function GoogleButton({ onPress }: Props) {
   const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
     <Pressable
-      onPressIn={() => {
-        scale.value = withSpring(0.7);
-      }}
-      onPressOut={() => {
-        scale.value = withSpring(1);
-      }}
+      onPress={onPress}
+      onPressIn={() => { scale.value = withSpring(0.7); }}
+      onPressOut={() => { scale.value = withSpring(1); }}
     >
-      <Animated.View style={[styles.googleButton, animatedStyle]}>
+      <Animated.View style={[styles.googleButton, animatedStyle]} collapsable={false}>
         <Image
           source={{
             uri: 'https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png',
           }}
           style={styles.googleIcon}
+          resizeMode="contain"
         />
       </Animated.View>
     </Pressable>
@@ -42,9 +38,9 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     alignSelf: 'center',
-    shadowColor: '#00000031',
-    shadowOffset: { width: 2, height: 4 },
-    shadowRadius: 4,
+    shadowColor: '#00000025',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
     borderColor: '#F0F1F1',
     borderWidth: 2,
     alignItems: 'center',
@@ -52,14 +48,7 @@ const styles = StyleSheet.create({
   },
 
   googleIcon: {
-    width: 25,
-    height: 25,
-  },
-
-  googleButtonText: {
-    fontSize: 14,
-    color: '#757575',
-    fontWeight: '500',
-    textAlign: 'center',
+    width: 24,
+    height: 24,
   },
 });

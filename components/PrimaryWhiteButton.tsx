@@ -26,7 +26,7 @@ export default function PrimaryWhiteButton({ children, onPress }: any) {
   return (
     <Pressable
       onPressIn={() => {
-        scale.value = withSpring(0.9);
+        scale.value = withSpring(0.95);
       }}
       onPressOut={() => {
         scale.value = withSpring(1);
@@ -50,11 +50,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 2, height: 4 },
     shadowRadius: 4,
     borderColor: '#F0F1F1',
-    borderWidth: 2,
+    borderWidth: 1,
   },
 
   text: {
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: 'NotoSans-Regular',
     color: '#84BEC4',
     textAlign: 'center',
