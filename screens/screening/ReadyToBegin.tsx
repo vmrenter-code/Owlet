@@ -6,34 +6,10 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
-    const BASE_URL = 'http://localhost:4000';
 
-    const handleBegin = async () => {
-        try {
-            // Create a new screening in the backend
-            const response = await fetch(`${BASE_URL}/screening`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                startedAt: new Date().toISOString(),
-            }),
-        });
-            if (!response.ok) {
-                throw new Error('Failed to start screening');
-            }
-            const data = await response.json();
-
-            if (data.success && data) {
-                console.log('Screening started successfully:', data.screening);
-                // Start the screening process - navigate to first video
-                navigation.navigate('VideoScreen', { screeningID: data.screening.id, videoNumber: 1 });
-            } else {
-                console.log('Server did not confirm screening start');
-            }
-
-        } catch (error) {
-            console.error('Error starting screening:', error);
-        }
+    const handleBegin = () => {
+        // Start the screening process - navigate to first video
+        navigation.navigate('VideoScreen', { videoNumber: 1 });
     };
 
     return (

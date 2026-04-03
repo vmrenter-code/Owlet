@@ -25,7 +25,7 @@ export default function VideoScreen() {
     
     const handleExitScreening = () => {
         setShowExitModal(false);
-        navigation.navigate('Home');
+        navigation.navigate('MainTabs');
     };
     
     // Save progress when entering this screen

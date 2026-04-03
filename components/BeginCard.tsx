@@ -36,9 +36,13 @@ export default function BeginCard({ children }: Props) {
   }, []);
 
   const handlePress = () => {
+    console.log('BeginCard pressed!');
+    console.log('hasIncompleteScreening:', hasIncompleteScreening);
     if (hasIncompleteScreening) {
+      console.log('Showing resume modal');
       setShowResumeModal(true);
     } else {
+      console.log('Navigating to ScreeningInstructions');
       navigation.replace('ScreeningInstructions');
     }
   };
@@ -124,6 +128,13 @@ export default function BeginCard({ children }: Props) {
               <Text style={styles.startNewButtonText}>Start New</Text>
             </Pressable>
           </View>
+          
+          <Pressable 
+            style={styles.cancelButton}
+            onPress={() => setShowResumeModal(false)}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </Pressable>
         </View>
       </View>
     </Modal>
@@ -259,5 +270,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#666',
+  },
+
+  cancelButton: {
+    marginTop: 12,
+    paddingVertical: 10,
+  },
+
+  cancelButtonText: {
+    fontSize: 14,
+    color: '#999',
+    textDecorationLine: 'underline',
   },
 });
