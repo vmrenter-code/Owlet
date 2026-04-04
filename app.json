@@ -16,7 +16,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Neuroscreen uses the camera so you can align your child for screening."
-      }
+      },
+      "bundleIdentifier": "com.anonymous.owlet"
     },
     "android": {
       "adaptiveIcon": {
