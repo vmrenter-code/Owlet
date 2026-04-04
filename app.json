@@ -13,13 +13,24 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.owlet",
       "infoPlist": {
-        "NSCameraUsageDescription": "Neuroscreen uses the camera so you can align your child for screening."
-      },
-      "bundleIdentifier": "com.anonymous.owlet"
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Neuroscreen uses the camera so you can align your child for screening.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.398374460192-q5umdtk9qkcueu62fhg859v44kr6jate"
+            ]
+          }
+        ]
+      }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
+      "package": "com.anonymous.owlet",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -32,14 +43,27 @@
         "ACCESS_FINE_LOCATION",
         "BLUETOOTH",
         "BLUETOOTH_ADMIN"
-      ],
-      "package": "com.anonymous.owlet"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9d727c89-f399-4f30-8378-ffe09aa08fe5"
+      }
+    }
   }
 }
