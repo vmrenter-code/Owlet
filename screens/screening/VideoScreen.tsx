@@ -42,7 +42,7 @@ export default function VideoScreen() {
         saveProgress();
     }, [videoNumber]);
     
-    // Simulate video finishing after 5 seconds (replace with actual video logic)
+    //  Simulate video finishing after 5 seconds (replace with actual video logic)
     useEffect(() => {
         setIsPlaying(true);
         const timer = setTimeout(() => {
