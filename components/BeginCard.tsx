@@ -36,13 +36,9 @@ export default function BeginCard({ children }: Props) {
   }, []);
 
   const handlePress = () => {
-    console.log('BeginCard pressed!');
-    console.log('hasIncompleteScreening:', hasIncompleteScreening);
     if (hasIncompleteScreening) {
-      console.log('Showing resume modal');
       setShowResumeModal(true);
     } else {
-      console.log('Navigating to ScreeningInstructions');
       navigation.replace('ScreeningInstructions');
     }
   };

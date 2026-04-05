@@ -10,11 +10,9 @@ import { Svg, Path } from 'react-native-svg';
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const { screeningId, videoNumber } = route.params;
-    const BASE_URL = 'http://localhost:4000';
     
     // Get current video number from params (default to 1)
-    //const videoNumber = route.params?.videoNumber || 1;
+    const videoNumber = route.params?.videoNumber || 1;
     const totalVideos = 5;
     
     // Track if video is playing or finished
