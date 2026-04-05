@@ -6,6 +6,8 @@ import React from 'react';
 import Launch from './screens/Launch';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
+import ForgotPassword from './screens/ForgotPassword';
+import Home from './screens/Home';
 import Settings from './screens/Settings';
 import Account from './screens/Account';
 import Notifications from './screens/Notifications';
@@ -56,6 +58,8 @@ export default function App() {
         <Stack.Screen name="Launch" component={Launch} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ headerShown: false }} />
+        <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={Settings} options={{ headerShown: false }} />
         <Stack.Screen name="Account" component={Account} options={{ headerShown: false }} />

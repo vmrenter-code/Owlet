@@ -34,10 +34,10 @@ export default function GoogleButton({ onPress }: Props) {
 const styles = StyleSheet.create({
   googleButton: {
     backgroundColor: '#ffffff',
-    borderRadius: 100,
-    alignSelf: 'center',
     width: 60,
     height: 60,
+    borderRadius: 30,
+    alignSelf: 'center',
     shadowColor: '#00000025',
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,

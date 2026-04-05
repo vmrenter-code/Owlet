@@ -1,5 +1,7 @@
 import { View, StyleSheet, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
@@ -7,10 +9,20 @@ import Card from '../components/Card';
 import ToolButton from '../components/ToolButton';
 import ProfileContainer from '../components/ProfileContainer';
 import BeginCard from '../components/BeginCard';
+import { auth } from '../src/config/firebase';
 import { Svg, Path, Circle } from 'react-native-svg';
 
 export default function Home() {
   const navigation = useNavigation<any>();
+  const [displayName, setDisplayName] = useState('User');
+
+  useEffect(() => {
+    const stopListening = onAuthStateChanged(auth, (user) => {
+      setDisplayName(user?.displayName?.trim() || 'User');
+    });
+
+    return stopListening;
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -30,17 +42,17 @@ export default function Home() {
           <View style={styles.profileContainer}>
             <ProfileContainer />
             <View style={{ flexDirection: 'column' }}>
-              <Text
-                style={{
-                  fontSize: 22,
-                  color: '#151515',
-                  fontFamily: 'NotoSans-SemiBold',
-                  lineHeight: 26,
-                  letterSpacing: -0.2
-                }}
-              >
-                Hi, User!
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 22,
+                    color: '#151515',
+                    fontFamily: 'NotoSans-SemiBold',
+                    lineHeight: 26,
+                    letterSpacing: -0.2
+                  }}
+                >
+                  Hi, {displayName}!
+                </Text>
 
               <Text
                 style={{
@@ -106,7 +118,7 @@ export default function Home() {
           <Pressable style={styles.row} onPress={() => navigation.navigate('PastScreenings')}>
             <Text style={styles.headerStyle}>Recent History</Text>
             <View style={styles.chevronWrapper}>
-              <Svg width={24} height={24} viewBox="0 -960 960 960">
+              <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
                 <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#0b0c0c" />
               </Svg>
             </View>
@@ -121,7 +133,7 @@ export default function Home() {
           <View style={styles.row}>
             <Text style={styles.headerStyle}>Learn More</Text>
             <View style={styles.chevronWrapper}>
-              <Svg width={24} height={24} viewBox="0 -960 960 960">
+              <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
                 <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#0d0e0d" />
               </Svg>
             </View>
@@ -132,9 +144,10 @@ export default function Home() {
             <View style={styles.toolItem}>
               <ToolButton>
                 <View style={styles.toolBox}>
-                  <Svg width={28} height={28} viewBox="0 -960 960 960">
+                  <Svg height={28} width={28} viewBox="0 -960 960 960" fill="none">
                     <Path d="M440-280h80v-240h-80v240Zm68.5-331.5Q520-623 520-640t-11.5-28.5Q497-680 480-680t-28.5 11.5Q440-657 440-640t11.5 28.5Q463-600 480-600t28.5-11.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" fill="#161B1A" />
                   </Svg>
+
                   <View>
                     <Text style={styles.toolText}>About Us</Text>
                     <Text style={styles.toolSubText}>Our Mission</Text>
@@ -146,9 +159,10 @@ export default function Home() {
             <View style={styles.toolItem}>
               <ToolButton>
                 <View style={styles.toolBox}>
-                  <Svg width={28} height={28} viewBox="0 -960 960 960">
+                  <Svg height={28} width={28} viewBox="0 -960 960 960" fill="none">
                     <Path d="M513.5-254.5Q528-269 528-290t-14.5-35.5Q499-340 478-340t-35.5 14.5Q428-311 428-290t14.5 35.5Q457-240 478-240t35.5-14.5ZM442-394h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" fill="#161B1A" />
                   </Svg>
+
                   <View>
                     <Text style={styles.toolText}>Questions?</Text>
                     <Text style={styles.toolSubText}>Find Answers</Text>

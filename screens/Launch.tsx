@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 //Import any components you need
@@ -8,17 +8,23 @@ import AuthPg from '../components/AuthPg';
 
 export default function Launch() {
     const navigation = useNavigation<any>();
+    
     return (
-        //Views behave like divs. I used divs to wrap our components into divs to apply layout styles
-        <View style = {styles.container}>
-
-            <AuthPg />
-            
-            <View style = {styles.buttonContainer}>
-                <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>
-                <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Login</PrimaryWhiteButton>
+        <View style={styles.container}>
+            <View style={styles.background} pointerEvents="none">
+                <AuthPg />
             </View>
-            
+
+            <View style={styles.content}>
+                <View style={styles.textContainer}>
+                    <Text style={styles.text}>owlet</Text>
+                </View>
+
+                <View style={styles.buttonContainer}>
+                    <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>
+                    <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Login</PrimaryWhiteButton>
+                </View>
+            </View>
         </View>
     );
 }
@@ -26,9 +32,10 @@ export default function Launch() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 30,
-        marginTop: 100,
-        backgroundColor: '#F6F9F7'
+    },
+
+    background: {
+        ...StyleSheet.absoluteFillObject,
     },
 
     text: {
@@ -40,12 +47,20 @@ const styles = StyleSheet.create({
     },
 
     buttonContainer: {
-        position: 'absolute',
-        padding: 19,
-        bottom: 30,
-        left: 0,
-        right: 0,
-        gap: 20,
+        marginTop: 'auto',
+        paddingBottom: 70,
+        gap: 50
+    },
+
+    content: {
+        flex: 1,
+        padding: 30,
+    },
+
+    textContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 
 });
