@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
+import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef } from '../../src/services/screeningRecordingService';
 
 // This screen plays videos during the screening process
 // Shows 4 videos sequentially with Stop and Save / Next buttons
@@ -10,9 +12,12 @@ import { Svg, Path } from 'react-native-svg';
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
+    const { screeningId, videoNumber } = route.params;
+    const cameraRef = useRef<CameraView>(null);
+    const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+    const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
+    const BASE_URL = 'http://localhost:4000';
     
-    // Get current video number from params (default to 1)
-    const videoNumber = route.params?.videoNumber || 1;
     const totalVideos = 5;
     
     // Track if video is playing or finished
@@ -20,10 +25,28 @@ export default function VideoScreen() {
     
     // Track exit confirmation modal visibility
     const [showExitModal, setShowExitModal] = useState(false);
+
+    // added readiness tracking to ensure we don't try to start recording before camera is fully ready, which was causing crashes before
+    const [isCameraReady, setIsCameraReady] = useState(false);
+    const [isRefReady, setIsRefReady] = useState(false);
     
     const handleExitScreening = () => {
         setShowExitModal(false);
         navigation.navigate('MainTabs');
+    };
+
+    const handleCameraReady = () => {
+        console.log('Camera ready! videoNumber:', videoNumber);
+        setIsCameraReady(true);
+    };
+
+    // Initialize camera ref
+    const handleCameraRef = (ref: CameraView | null) => {
+        if (ref) {
+            cameraRef.current = ref;
+            initializeCameraRef(ref);
+            setIsRefReady(true);
+        }
     };
     
     // Save progress when entering this screen
@@ -47,25 +70,55 @@ export default function VideoScreen() {
         setIsPlaying(true);
         const timer = setTimeout(() => {
             setIsPlaying(false);
-        }, 5000); // Video "finishes" after 5 seconds
+        }, 3000); // Video "finishes" after 3 seconds
         
         return () => clearTimeout(timer);
     }, [videoNumber]);
+
+    // ✅ safe recording start (no comment changed)
+    useEffect(() => {
+        if (
+            videoNumber === 1 &&
+            isCameraReady &&
+            isRefReady &&
+            !isCurrentlyRecording()
+        ) {
+            console.log('Starting screening recording safely...');
+            startScreeningRecording();
+        }
+    }, [isCameraReady, isRefReady, videoNumber]);
     
     const handleNext = async () => {
         if (videoNumber < totalVideos) {
-            // Go to next video
-            navigation.push('VideoScreen', { videoNumber: videoNumber + 1 });
+            // Go to next video - use replace to keep same screen instance for continuous recording
+            navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId });
         } else {
-            // All videos complete - clear progress and navigate to completion screen
+            // All videos complete - stop recording and save
+            console.log('Video 5 completed, stopping recording...');
+            let recordingPath: string | null = null;
+
+            try {
+                // iOS can occasionally hang while stopping camera recording.
+                // Use a timeout fallback so the user is never stuck on this screen.
+                recordingPath = await Promise.race([
+                    stopScreeningRecording(),
+                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+                ]);
+            } catch (e) {
+                console.log('Error stopping recording, continuing to completion');
+            }
+
+            console.log('Recording saved to:', recordingPath);
+            
             try {
                 await AsyncStorage.setItem('screeningProgress', JSON.stringify({
                     videoNumber: totalVideos,
                     completed: true,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    recordingUri: recordingPath
                 }));
             } catch (e) {
-                console.log('Error clearing progress');
+                console.log('Error saving completion progress');
             }
             navigation.navigate('ScreeningComplete');
         }
@@ -73,6 +126,18 @@ export default function VideoScreen() {
 
     return (
         <View style={styles.container}>
+            {/* Hidden camera for recording - only records, no preview shown */}
+            {cameraPermission?.granted && (
+                <CameraView
+                    ref={handleCameraRef}
+                    style={styles.hiddenCamera}
+                    facing="front"
+                    mode="video"
+                    mute={false}
+                    onCameraReady={handleCameraReady}
+                />
+            )}
+
             {/* Header with exit, progress and troubleshooting */}
             <View style={styles.headerContainer}>
                 {/* Exit button on the far left */}
@@ -203,6 +268,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#2a2a2a',
+    },
+
+    hiddenCamera: {
+        position: 'absolute',
+        width: 10,
+        height: 10,
+        opacity: 0.1,
     },
 
     headerContainer: {
@@ -440,4 +512,3 @@ const styles = StyleSheet.create({
         color: '#ffffff',
     },
 });
-

@@ -1,13 +1,15 @@
 import { View, Text, StyleSheet, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useRef, useState } from 'react';
-
+import React, { useRef, useState, useEffect } from 'react';
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
 import AuthPg from '../components/AuthPg';
 import BackArrow from '../components/BackArrow';
 import userAuthServices from '../src/services/userAuthServices';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { auth } from '../src/config/firebase';
 import { Svg, Path, Rect } from 'react-native-svg';
 
 const UserIcon = ({ width = 20, height = 20, color = '#585858' }) => (
@@ -72,6 +74,32 @@ export default function Login() {
     navigation.navigate('Signup');
   };
 
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '398374460192-ln7hlk3h862ks0a7hl6hcmmbcim7rfhf.apps.googleusercontent.com',
+      iosClientId: '398374460192-q5umdtk9qkcueu62fhg859v44kr6jate.apps.googleusercontent.com',
+    });
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+  try {
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    const signInResult = await GoogleSignin.signIn();
+
+    const idToken = signInResult.data?.idToken ?? (signInResult as any).idToken;
+    
+    if (!idToken) throw new Error('No ID token found');
+
+    const googleCredential = GoogleAuthProvider.credential(idToken);
+    await signInWithCredential(auth, googleCredential);
+
+    navigation.replace('MainTabs');
+  } catch (error) {
+    console.error('Google Sign-In error:', error);
+  }
+};
+
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1 }}>
@@ -127,7 +155,7 @@ export default function Login() {
             </View>
 
             <View style={styles.googleContainer}>
-              <GoogleButton />
+              <GoogleButton onPress={handleGoogleSignIn} />
             </View>
           </View>
 
@@ -149,6 +177,8 @@ export default function Login() {
     </TouchableWithoutFeedback>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
