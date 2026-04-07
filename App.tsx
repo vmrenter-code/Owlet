@@ -19,6 +19,7 @@ import PastScreenings from './screens/PastScreenings';
 import NotificationCenter from './screens/NotificationCenter';
 import ViewResults from './screens/ViewResults';
 import ClinicianNotes from './screens/ClinicianNotes';
+import FAQ from './screens/FAQ';
 import ScreeningInstructions from './screens/ScreeningInstructions';
 import HomeBg from './components/HomeBg';
 import MainTabs from './navigation/MainTabs';
@@ -72,6 +73,7 @@ export default function App() {
         <Stack.Screen name="NotificationCenter" component={NotificationCenter} options={{ headerShown: false }} />
         <Stack.Screen name="ViewResults" component={ViewResults} options={{ headerShown: false }} />
         <Stack.Screen name="ClinicianNotes" component={ClinicianNotes} options={{ headerShown: false }} />
+        <Stack.Screen name="FAQ" component={FAQ} options={{ headerShown: false }} />
         <Stack.Screen name="ScreeningInstructions" component={ScreeningInstructions} options={{ headerShown: false }} />
         <Stack.Screen name="PositionChild" component={PositionChild} options={{ headerShown: false }} />
         <Stack.Screen name="ReadyToBegin" component={ReadyToBegin} options={{ headerShown: false }} />
