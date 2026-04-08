@@ -32,6 +32,7 @@ import VideoScreen from './screens/screening/VideoScreen';
 import ScreeningComplete from './screens/screening/ScreeningComplete';
 import TroubleshootingScreen from './screens/screening/TroubleshootingScreen';
 import TroubleshootingSolution from './screens/screening/TroubleshootingSolution';
+import { ScreeningProvider } from './context/ScreeningContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +48,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+    <ScreeningProvider>
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
@@ -86,6 +88,7 @@ export default function App() {
         <Stack.Screen name="TroubleshootingSolution" component={TroubleshootingSolution} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
+    </ScreeningProvider>
     </GestureHandlerRootView>
   );
 }

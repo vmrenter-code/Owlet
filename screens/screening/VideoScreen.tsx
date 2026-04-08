@@ -5,6 +5,7 @@ import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef } from '../../src/services/screeningRecordingService';
+import { useScreening } from '../../context/ScreeningContext';
 
 // This screen plays videos during the screening process
 // Shows 4 videos sequentially with Stop and Save / Next buttons
@@ -12,7 +13,20 @@ import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, 
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const { screeningId, videoNumber } = route.params;
+    
+    // Get screeningID from context (primary) or route params (fallback)
+    const { screeningID } = useScreening();
+    const videoNumber = route.params?.videoNumber || 1;
+    
+    // Use context screeningID, or fall back to route params if available
+    const currentScreeningID = screeningID || route.params?.screeningId;
+    
+    // Log screeningID for debugging
+    useEffect(() => {
+        console.log('VideoScreen - Current Screening ID:', currentScreeningID);
+        console.log('VideoScreen - Video Number:', videoNumber);
+    }, [currentScreeningID, videoNumber]);
+    
     const cameraRef = useRef<CameraView>(null);
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
@@ -91,7 +105,7 @@ export default function VideoScreen() {
     const handleNext = async () => {
         if (videoNumber < totalVideos) {
             // Go to next video - use replace to keep same screen instance for continuous recording
-            navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId });
+            navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
         } else {
             // All videos complete - stop recording and save
             console.log('Video 5 completed, stopping recording...');

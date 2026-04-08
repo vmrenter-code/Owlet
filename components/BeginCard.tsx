@@ -4,6 +4,7 @@ import { Svg, Path } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useScreening } from '../context/ScreeningContext';
 
 type Props = {
   children?: ReactNode;
@@ -11,6 +12,7 @@ type Props = {
 
 export default function BeginCard({ children }: Props) {
   const navigation = useNavigation<any>();
+  const { startScreening } = useScreening();
   const scale = useSharedValue(1);
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [hasIncompleteScreening, setHasIncompleteScreening] = useState(false);
@@ -39,7 +41,9 @@ export default function BeginCard({ children }: Props) {
     if (hasIncompleteScreening) {
       setShowResumeModal(true);
     } else {
-      navigation.replace('ScreeningInstructions');
+      // Start a new screening and generate screeningID
+      const newScreeningID = startScreening();
+      navigation.replace('ScreeningInstructions', { screeningID: newScreeningID });
     }
   };
 
@@ -57,7 +61,9 @@ export default function BeginCard({ children }: Props) {
     } catch (e) {
       console.log('Error clearing progress');
     }
-    navigation.replace('ScreeningInstructions');
+    // Start a new screening and generate screeningID
+    const newScreeningID = startScreening();
+    navigation.replace('ScreeningInstructions', { screeningID: newScreeningID });
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
