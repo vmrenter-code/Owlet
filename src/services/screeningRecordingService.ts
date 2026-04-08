@@ -3,11 +3,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
 
 let cameraRef: CameraView | null = null;
+let cameraIsReady = false;
+let cameraReadyAt = 0;
 let isRecording = false;
 let recordingStartTime: number | null = null;
 let currentRecordingUri: string | null = null;
 let recordingPromise: Promise<{ uri: string } | undefined> | null = null;
 const recordingsDir = `${FileSystem.documentDirectory}screenings/`;
+const CAMERA_STABILIZATION_DELAY_MS = 250;
 
 const ensureRecordingsDir = async () => {
   const dirInfo = await FileSystem.getInfoAsync(recordingsDir);
@@ -20,9 +23,24 @@ export const initializeCameraRef = (ref: CameraView) => {
   cameraRef = ref;
 };
 
+export const setCameraReady = () => {
+  cameraIsReady = true;
+  cameraReadyAt = Date.now();
+};
+
+export const setCameraNotReady = () => {
+  cameraIsReady = false;
+  cameraReadyAt = 0;
+};
+
 export const startScreeningRecording = async (): Promise<boolean> => {
   if (!cameraRef) {
     console.error('Camera ref not initialized');
+    return false;
+  }
+
+  if (!cameraIsReady) {
+    console.warn('Camera is not ready yet');
     return false;
   }
 
@@ -32,6 +50,11 @@ export const startScreeningRecording = async (): Promise<boolean> => {
   }
 
   try {
+    const elapsedSinceReady = Date.now() - cameraReadyAt;
+    if (elapsedSinceReady < CAMERA_STABILIZATION_DELAY_MS) {
+      await new Promise((resolve) => setTimeout(resolve, CAMERA_STABILIZATION_DELAY_MS - elapsedSinceReady));
+    }
+
     isRecording = true;
     recordingStartTime = Date.now();
     currentRecordingUri = null;

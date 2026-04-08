@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect } from 'react';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 
 // This screen instructs the parent to position their child's face in the center circle
 // The Begin button is disabled until face is detected (navigates to ReadyToBegin)
@@ -9,38 +9,54 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 export default function PositionChild() {
     const navigation = useNavigation<any>();
     const [permission, requestPermission] = useCameraPermissions();
+    const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
 
     useEffect(() => {
         if (!permission || permission.status === 'undetermined') {
             requestPermission();
         }
-    }, [permission, requestPermission]);
+
+        if (!microphonePermission || microphonePermission.status === 'undetermined') {
+            requestMicrophonePermission();
+        }
+    }, [microphonePermission, requestMicrophonePermission, permission, requestPermission]);
+
+    const microphoneBlocked = microphonePermission?.status === 'denied';
+    const microphoneGranted = microphonePermission?.granted;
 
     const renderCameraState = () => {
         if (!permission || permission.status === 'undetermined') {
             return (
                 <View style={styles.permissionStateContainer}>
-                    <Text style={styles.permissionTitle}>Checking camera access...</Text>
+                    <Text style={styles.permissionTitle}>Checking camera and microphone access...</Text>
                 </View>
             );
         }
 
-        if (permission.granted) {
+        if (!microphonePermission || microphonePermission.status === 'undetermined') {
+            return (
+                <View style={styles.permissionStateContainer}>
+                    <Text style={styles.permissionTitle}>Checking microphone access...</Text>
+                </View>
+            );
+        }
+
+        if (permission.granted && microphoneGranted) {
             return <CameraView style={StyleSheet.absoluteFillObject} facing="front" />;
         }
 
-        if (permission.status === 'denied') {
+        if (permission.status === 'denied' || microphoneBlocked) {
             return (
                 <View style={styles.permissionStateContainer}>
-                    <Text style={styles.permissionTitle}>Camera access is required</Text>
+                    <Text style={styles.permissionTitle}>Camera and microphone access are required</Text>
                     <Text style={styles.permissionDescription}>
-                        Allow camera access so you can preview and align your child before starting screening.
+                        Allow camera access so you can preview and align your child, and microphone access so screening video audio can be recorded.
                     </Text>
 
                     <View style={styles.permissionButtonsRow}>
                         <Pressable style={styles.permissionSecondaryButton} onPress={() => Linking.openSettings()}>
                             <Text style={styles.permissionSecondaryButtonText}>
-                                {permission.canAskAgain ? 'Open Settings' : 'Go to Settings'}
+                                {permission.canAskAgain || microphonePermission.canAskAgain ? 'Open Settings' : 'Go to Settings'}
                             </Text>
                         </Pressable>
                     </View>
@@ -77,7 +93,7 @@ export default function PositionChild() {
             </View>
 
             {/* Face positioning circle */}
-            {permission?.granted && (
+            {permission?.granted && microphoneGranted && (
                 <View style={styles.circleContainer}>
                     <View style={styles.faceCircle}>
                     </View>
@@ -87,6 +103,7 @@ export default function PositionChild() {
             <View style={styles.buttonContainer}>
                 <Pressable 
                     style={styles.beginButtonDisabled}
+                    disabled={!permission?.granted || !microphoneGranted}
                     onPress={() => {
                         navigation.navigate('ReadyToBegin');
                     }}
