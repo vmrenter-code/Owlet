@@ -70,7 +70,7 @@ export const startScreeningRecording = async (): Promise<boolean> => {
 
 
  //Stop recording and save video file URI
-
+ 
 export const stopScreeningRecording = async (): Promise<string | null> => {
   if (!cameraRef || !recordingPromise) {
     console.warn('No recording in progress');
@@ -143,3 +143,4 @@ export const isCurrentlyRecording = (): boolean => {
 export const getLastRecordingUri = (): string | null => {
   return currentRecordingUri;
 };
+

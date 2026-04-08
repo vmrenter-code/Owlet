@@ -2,6 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFonts } from 'expo-font';
 import React from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 
 import Launch from './screens/Launch';
 import Login from './screens/Login';
@@ -19,6 +21,7 @@ import PastScreenings from './screens/PastScreenings';
 import NotificationCenter from './screens/NotificationCenter';
 import ViewResults from './screens/ViewResults';
 import ClinicianNotes from './screens/ClinicianNotes';
+import FAQ from './screens/FAQ';
 import ScreeningInstructions from './screens/ScreeningInstructions';
 import HomeBg from './components/HomeBg';
 import MainTabs from './navigation/MainTabs';
@@ -43,6 +46,7 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
@@ -72,6 +76,7 @@ export default function App() {
         <Stack.Screen name="NotificationCenter" component={NotificationCenter} options={{ headerShown: false }} />
         <Stack.Screen name="ViewResults" component={ViewResults} options={{ headerShown: false }} />
         <Stack.Screen name="ClinicianNotes" component={ClinicianNotes} options={{ headerShown: false }} />
+        <Stack.Screen name="FAQ" component={FAQ} options={{ headerShown: false }} />
         <Stack.Screen name="ScreeningInstructions" component={ScreeningInstructions} options={{ headerShown: false }} />
         <Stack.Screen name="PositionChild" component={PositionChild} options={{ headerShown: false }} />
         <Stack.Screen name="ReadyToBegin" component={ReadyToBegin} options={{ headerShown: false }} />
@@ -81,5 +86,12 @@ export default function App() {
         <Stack.Screen name="TroubleshootingSolution" component={TroubleshootingSolution} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

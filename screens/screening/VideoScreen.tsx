@@ -75,7 +75,7 @@ export default function VideoScreen() {
         return () => clearTimeout(timer);
     }, [videoNumber]);
 
-    // safe recording start 
+    // ✅ safe recording start (no comment changed)
     useEffect(() => {
         if (
             videoNumber === 1 &&
