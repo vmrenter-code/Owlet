@@ -1,51 +1,96 @@
-import {View, Text, StyleSheet} from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, FlatList, StyleSheet, useWindowDimensions, Animated, ViewToken } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-//Import any components you need
-import PrimaryBlueButton from '../components/PrimaryBlueButton'
-import PrimaryWhiteButton from '../components/PrimaryWhiteButton'
-import AuthPg from '../components/AuthPg';
+import LaunchSlides from './LaunchSlides';
+import LaunchItems from './LaunchItems';
+import Paginator from '../components/Paginator';
+import PrimaryBlueButton from '../components/PrimaryBlueButton';
+import PageBg from '../components/PageBg';
+import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
 
 export default function Launch() {
-    const navigation = useNavigation<any>();
-    return (
-        //Views behave like divs. I used divs to wrap our components into divs to apply layout styles
-        <View style = {styles.container}>
+  const navigation = useNavigation<any>();
+  const { width } = useWindowDimensions();
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-            <AuthPg />
-            
-            <View style = {styles.buttonContainer}>
-                <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>
-                <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Login</PrimaryWhiteButton>
-            </View>
-            
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const slidesRef = useRef<FlatList>(null);
+
+  const viewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0) {
+        setCurrentIndex(viewableItems[0].index ?? 0);
+      }
+    }
+  ).current;
+
+  const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+
+  return (
+
+    <View style={styles.container}>
+
+
+      <View style={styles.formatBg}>
+              <PageBg />
+      </View>
+
+
+
+      <View style={styles.container}>
+        <View style={{ flex: 3 }}>
+          <FlatList
+            data={LaunchSlides}
+            renderItem={({ item }) => <LaunchItems item={item} />}
+            keyExtractor={(item) => item.id}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ width }}
+            bounces={false}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false }
+            )}
+            scrollEventThrottle={32}
+            onViewableItemsChanged={viewableItemsChanged}
+            viewabilityConfig={viewConfig}
+            ref={slidesRef}
+          />
         </View>
-    );
+
+        <Paginator data={LaunchSlides} scrollX={scrollX} />
+
+
+        <View style={styles.buttonWrapper}>
+          <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>
+          <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Log In</PrimaryWhiteButton>
+        </View>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 30,
-        marginTop: 100,
-        backgroundColor: '#F6F9F7'
-    },
+  container: {
+    flex: 1,
+  },
 
-    text: {
-        fontSize: 30,
-        color: '#49A3BD',
-        fontWeight: 'bold',
-        letterSpacing: 7,
-        transform: [{ translateY: -60}]
-    },
+  formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0
+  },
 
-    buttonContainer: {
-        position: 'absolute',
-        padding: 19,
-        bottom: 30,
-        left: 0,
-        right: 0,
-        gap: 20,
-    },
-
+  buttonWrapper: {
+    width: '100%',
+    paddingHorizontal: 28,   
+    marginBottom: 50,        
+    marginTop: 12,
+    gap: 20         
+  }
 });
