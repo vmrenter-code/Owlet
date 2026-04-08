@@ -15,7 +15,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Neuroscreen uses the camera so you can align your child for screening."
+        "NSCameraUsageDescription": "Neuroscreen uses the camera so you can align your child for screening.",
+        "NSMicrophoneUsageDescription": "Neuroscreen uses the microphone to record audio during screening videos."
       }
     },
     "android": {
@@ -26,6 +27,7 @@
       "edgeToEdgeEnabled": true,
       "permissions": [
         "CAMERA",
+        "RECORD_AUDIO",
         "BLUETOOTH_SCAN",
         "BLUETOOTH_CONNECT",
         "ACCESS_FINE_LOCATION",

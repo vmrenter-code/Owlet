@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
-import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef } from '../../src/services/screeningRecordingService';
+import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
 
 // This screen plays videos during the screening process
 // Shows 4 videos sequentially with Stop and Save / Next buttons
@@ -25,10 +25,21 @@ export default function VideoScreen() {
     
     // Track exit confirmation modal visibility
     const [showExitModal, setShowExitModal] = useState(false);
+    const [isCameraMounted, setIsCameraMounted] = useState(false);
 
     // added readiness tracking to ensure we don't try to start recording before camera is fully ready, which was causing crashes before
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [isRefReady, setIsRefReady] = useState(false);
+
+    useEffect(() => {
+        if (cameraPermission?.status === 'undetermined') {
+            requestCameraPermission?.();
+        }
+
+        if (microphonePermission?.status === 'undetermined') {
+            requestMicrophonePermission?.();
+        }
+    }, [cameraPermission?.status, microphonePermission?.status, requestCameraPermission, requestMicrophonePermission]);
     
     const handleExitScreening = () => {
         setShowExitModal(false);
@@ -37,6 +48,7 @@ export default function VideoScreen() {
 
     const handleCameraReady = () => {
         console.log('Camera ready! videoNumber:', videoNumber);
+        setCameraReady();
         setIsCameraReady(true);
     };
 
@@ -46,6 +58,12 @@ export default function VideoScreen() {
             cameraRef.current = ref;
             initializeCameraRef(ref);
             setIsRefReady(true);
+            setIsCameraMounted(true);
+        } else {
+            setCameraNotReady();
+            setIsCameraMounted(false);
+            setIsRefReady(false);
+            setIsCameraReady(false);
         }
     };
     
@@ -70,23 +88,30 @@ export default function VideoScreen() {
         setIsPlaying(true);
         const timer = setTimeout(() => {
             setIsPlaying(false);
-        }, 3000); // Video "finishes" after 3 seconds
+        }, 5000); // Video "finishes" after 3 seconds
         
         return () => clearTimeout(timer);
     }, [videoNumber]);
 
-    // ✅ safe recording start (no comment changed)
+    // safe recording start
     useEffect(() => {
         if (
             videoNumber === 1 &&
             isCameraReady &&
             isRefReady &&
+            isCameraMounted &&
+            cameraPermission?.granted &&
+            microphonePermission?.granted &&
             !isCurrentlyRecording()
         ) {
             console.log('Starting screening recording safely...');
-            startScreeningRecording();
+            const startTimer = setTimeout(() => {
+                startScreeningRecording();
+            }, 250);
+
+            return () => clearTimeout(startTimer);
         }
-    }, [isCameraReady, isRefReady, videoNumber]);
+    }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted, videoNumber]);
     
     const handleNext = async () => {
         if (videoNumber < totalVideos) {
@@ -127,7 +152,7 @@ export default function VideoScreen() {
     return (
         <View style={styles.container}>
             {/* Hidden camera for recording - only records, no preview shown */}
-            {cameraPermission?.granted && (
+            {cameraPermission?.granted && microphonePermission?.granted && (
                 <CameraView
                     ref={handleCameraRef}
                     style={styles.hiddenCamera}
