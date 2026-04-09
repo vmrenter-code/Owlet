@@ -152,8 +152,9 @@ export default function Home() {
                     <Text style={styles.toolText}>About Us</Text>
                     <Text style={styles.toolSubText}>Our Mission</Text>
                   </View>
+                  </View>
                 </ToolButton>
-              </View>
+            </View>
 
             <View style={styles.toolItem}>
               <ToolButton onPress={() => navigation.navigate('FAQ')}>
