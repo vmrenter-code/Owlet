@@ -6,6 +6,7 @@ import { BlurView } from 'expo-blur';
 
 import Home from '../screens/Home';
 import ScreeningInstructions from '../screens/ScreeningInstructions';
+import FAQ from '../screens/FAQ';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -30,6 +31,7 @@ function HomeStackScreen() {
         name="ScreeningInstructions"
         component={ScreeningInstructions}
       />
+      <HomeStack.Screen name="FAQ" component={FAQ} />
     </HomeStack.Navigator>
   );
 }

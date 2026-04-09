@@ -1,8 +1,10 @@
-import { ReactNode } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { ReactNode, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useScreening } from '../context/ScreeningContext';
 
 type Props = {
   children?: ReactNode;
@@ -10,15 +12,68 @@ type Props = {
 
 export default function BeginCard({ children }: Props) {
   const navigation = useNavigation<any>();
+  const { startScreening } = useScreening();
   const scale = useSharedValue(1);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [hasIncompleteScreening, setHasIncompleteScreening] = useState(false);
+  const [incompleteVideoNumber, setIncompleteVideoNumber] = useState(1);
+
+  // Check for incomplete screening on mount
+  useEffect(() => {
+    const checkIncompleteScreening = async () => {
+      try {
+        const savedProgress = await AsyncStorage.getItem('screeningProgress');
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          if (progress.videoNumber && !progress.completed) {
+            setHasIncompleteScreening(true);
+            setIncompleteVideoNumber(progress.videoNumber);
+          }
+        }
+      } catch (e) {
+        console.log('Error checking screening progress');
+      }
+    };
+    checkIncompleteScreening();
+  }, []);
+
+  const handlePress = () => {
+    if (hasIncompleteScreening) {
+      setShowResumeModal(true);
+    } else {
+      // Start a new screening and generate screeningID
+      const newScreeningID = startScreening();
+      navigation.replace('ScreeningInstructions', { screeningID: newScreeningID });
+    }
+  };
+
+  const handleResume = () => {
+    setShowResumeModal(false);
+    navigation.navigate('VideoScreen', { videoNumber: incompleteVideoNumber });
+  };
+
+  const handleStartNew = async () => {
+    setShowResumeModal(false);
+    // Clear old progress and start fresh
+    try {
+      await AsyncStorage.removeItem('screeningProgress');
+      setHasIncompleteScreening(false);
+    } catch (e) {
+      console.log('Error clearing progress');
+    }
+    // Start a new screening and generate screeningID
+    const newScreeningID = startScreening();
+    navigation.replace('ScreeningInstructions', { screeningID: newScreeningID });
+  };
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
   return (
+    <>
     <Pressable
-      onPress={() => navigation.navigate('ScreeningInstructions')}
+      onPress={handlePress}
       onPressIn={() => { scale.value = withSpring(0.95); }}
       onPressOut={() => { scale.value = withSpring(1); }}
     >
@@ -43,6 +98,49 @@ export default function BeginCard({ children }: Props) {
         </View>
       </Animated.View>
     </Pressable>
+
+    {/* Resume or Start New Modal */}
+    <Modal
+      visible={showResumeModal}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setShowResumeModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Incomplete Screening Found</Text>
+          <Text style={styles.modalMessage}>
+            You have an unfinished screening in progress. Would you like to resume where you left off or start a new screening?
+          </Text>
+          <Text style={styles.modalNote}>
+            Starting a new screening will discard your previous progress.
+          </Text>
+          
+          <View style={styles.modalButtons}>
+            <Pressable 
+              style={styles.resumeButton}
+              onPress={handleResume}
+            >
+              <Text style={styles.resumeButtonText}>Resume</Text>
+            </Pressable>
+            <Pressable 
+              style={styles.startNewButton}
+              onPress={handleStartNew}
+            >
+              <Text style={styles.startNewButtonText}>Start New</Text>
+            </Pressable>
+          </View>
+          
+          <Pressable 
+            style={styles.cancelButton}
+            onPress={() => setShowResumeModal(false)}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 }
 
@@ -98,5 +196,92 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff00',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+
+  modalContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 28,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+
+  modalMessage: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 22,
+  },
+
+  modalNote: {
+    fontSize: 14,
+    color: '#e67e22',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+
+  resumeButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#7FB8C4',
+    alignItems: 'center',
+  },
+
+  resumeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+
+  startNewButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+  },
+
+  startNewButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+  },
+
+  cancelButton: {
+    marginTop: 12,
+    paddingVertical: 10,
+  },
+
+  cancelButtonText: {
+    fontSize: 14,
+    color: '#999',
+    textDecorationLine: 'underline',
   },
 });

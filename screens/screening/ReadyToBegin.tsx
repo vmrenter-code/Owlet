@@ -1,15 +1,19 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useScreening } from '../../context/ScreeningContext';
 
 // This screen appears when face is detected in the circle
 // The Begin button is now active and ready to start the screening
 
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
+    const { screeningID } = useScreening();
 
     const handleBegin = () => {
         // Start the screening process - navigate to first video
-        navigation.navigate('VideoScreen', { videoNumber: 1 });
+        // The screeningID is passed via context, but also as route param for backup
+        console.log('Starting screening with ID:', screeningID);
+        navigation.navigate('VideoScreen', { videoNumber: 1, screeningId: screeningID });
     };
 
     return (
@@ -36,7 +40,6 @@ export default function ReadyToBegin() {
             {/* Face positioning circle - face is now detected */}
             <View style={styles.circleContainer}>
                 <View style={styles.faceCircle}>
-                    <View style={styles.circleIndicator} />
                 </View>
             </View>
 

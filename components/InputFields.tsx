@@ -1,29 +1,31 @@
-import { View, TextInput, StyleSheet } from 'react-native';
-import { useState } from 'react';
+import { View, TextInput, StyleSheet, TextInputProps } from 'react-native';
+import React, { forwardRef } from 'react';
 
-type InputFieldsProps = {
+// Merge both versions: support all TextInput props + optional icon
+type InputFieldsProps = TextInputProps & {
   placeholder?: string;
   icon?: React.ReactNode;
   maxLength?: number;
 };
 
-export default function InputFields({ placeholder, icon, maxLength }: InputFieldsProps) {
-  const [focused, setFocused] = useState(false);
-
+const InputFields = forwardRef<TextInput, InputFieldsProps>(({ placeholder, icon, ...props }, ref) => {
   return (
     <View style={[styles.container]}>
       <TextInput
+        ref={ref}
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor="#585858"
-        maxLength={maxLength}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        autoComplete="off"
+        importantForAutofill="no"
+        {...props}
       />
       {icon && <View style={styles.iconContainer}>{icon}</View>}
     </View>
   );
-}
+});
+
+export default InputFields;
 
 const styles = StyleSheet.create({
   container: {

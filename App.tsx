@@ -2,10 +2,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFonts } from 'expo-font';
 import React from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 
 import Launch from './screens/Launch';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
+import ForgotPassword from './screens/ForgotPassword';
+import Home from './screens/Home';
 import Settings from './screens/Settings';
 import Account from './screens/Account';
 import Notifications from './screens/Notifications';
@@ -13,6 +17,11 @@ import PrivacyData from './screens/PrivacyData';
 import Accessibility from './screens/Accessibility';
 import Support from './screens/Support';
 import Languages from './screens/Languages';
+import PastScreenings from './screens/PastScreenings';
+import NotificationCenter from './screens/NotificationCenter';
+import ViewResults from './screens/ViewResults';
+import ClinicianNotes from './screens/ClinicianNotes';
+import FAQ from './screens/FAQ';
 import ScreeningInstructions from './screens/ScreeningInstructions';
 import HomeBg from './components/HomeBg';
 import MainTabs from './navigation/MainTabs';
@@ -24,6 +33,7 @@ import VideoScreen from './screens/screening/VideoScreen';
 import ScreeningComplete from './screens/screening/ScreeningComplete';
 import TroubleshootingScreen from './screens/screening/TroubleshootingScreen';
 import TroubleshootingSolution from './screens/screening/TroubleshootingSolution';
+import { ScreeningProvider } from './context/ScreeningContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +48,8 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+    <ScreeningProvider>
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
@@ -53,6 +65,8 @@ export default function App() {
         <Stack.Screen name="Launch" component={Launch} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ headerShown: false }} />
+        <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={Settings} options={{ headerShown: false }} />
         <Stack.Screen name="Account" component={Account} options={{ headerShown: false }} />
@@ -61,6 +75,11 @@ export default function App() {
         <Stack.Screen name="Accessibility" component={Accessibility} options={{ headerShown: false }} />
         <Stack.Screen name="Support" component={Support} options={{ headerShown: false }} />
         <Stack.Screen name="Languages" component={Languages} options={{ headerShown: false }} />
+        <Stack.Screen name="PastScreenings" component={PastScreenings} options={{ headerShown: false }} />
+        <Stack.Screen name="NotificationCenter" component={NotificationCenter} options={{ headerShown: false }} />
+        <Stack.Screen name="ViewResults" component={ViewResults} options={{ headerShown: false }} />
+        <Stack.Screen name="ClinicianNotes" component={ClinicianNotes} options={{ headerShown: false }} />
+        <Stack.Screen name="FAQ" component={FAQ} options={{ headerShown: false }} />
         <Stack.Screen name="ScreeningInstructions" component={ScreeningInstructions} options={{ headerShown: false }} />
         <Stack.Screen name="PositionChild" component={PositionChild} options={{ headerShown: false }} />
         <Stack.Screen name="ReadyToBegin" component={ReadyToBegin} options={{ headerShown: false }} />
@@ -72,5 +91,13 @@ export default function App() {
         
       </Stack.Navigator>
     </NavigationContainer>
+    </ScreeningProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

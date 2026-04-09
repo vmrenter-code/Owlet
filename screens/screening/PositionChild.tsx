@@ -1,18 +1,75 @@
-import { View, Text, StyleSheet, Pressable, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useEffect } from 'react';
+import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 
 // This screen instructs the parent to position their child's face in the center circle
 // The Begin button is disabled until face is detected (navigates to ReadyToBegin)
 
 export default function PositionChild() {
     const navigation = useNavigation<any>();
+    const [permission, requestPermission] = useCameraPermissions();
+    const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
+
+    useEffect(() => {
+        if (!permission || permission.status === 'undetermined') {
+            requestPermission();
+        }
+
+        if (!microphonePermission || microphonePermission.status === 'undetermined') {
+            requestMicrophonePermission();
+        }
+    }, [microphonePermission, requestMicrophonePermission, permission, requestPermission]);
+
+    const microphoneBlocked = microphonePermission?.status === 'denied';
+    const microphoneGranted = microphonePermission?.granted;
+
+    const renderCameraState = () => {
+        if (!permission || permission.status === 'undetermined') {
+            return (
+                <View style={styles.permissionStateContainer}>
+                    <Text style={styles.permissionTitle}>Checking camera and microphone access...</Text>
+                </View>
+            );
+        }
+
+        if (!microphonePermission || microphonePermission.status === 'undetermined') {
+            return (
+                <View style={styles.permissionStateContainer}>
+                    <Text style={styles.permissionTitle}>Checking microphone access...</Text>
+                </View>
+            );
+        }
+
+        if (permission.granted && microphoneGranted) {
+            return <CameraView style={StyleSheet.absoluteFillObject} facing="front" />;
+        }
+
+        if (permission.status === 'denied' || microphoneBlocked) {
+            return (
+                <View style={styles.permissionStateContainer}>
+                    <Text style={styles.permissionTitle}>Camera and microphone access are required</Text>
+                    <Text style={styles.permissionDescription}>
+                        Allow camera access so you can preview and align your child, and microphone access so screening video audio can be recorded.
+                    </Text>
+
+                    <View style={styles.permissionButtonsRow}>
+                        <Pressable style={styles.permissionSecondaryButton} onPress={() => Linking.openSettings()}>
+                            <Text style={styles.permissionSecondaryButtonText}>
+                                {permission.canAskAgain || microphonePermission.canAskAgain ? 'Open Settings' : 'Go to Settings'}
+                            </Text>
+                        </Pressable>
+                    </View>
+                </View>
+            );
+        }
+
+        return null;
+    };
 
     return (
         <View style={styles.container}>
-            {/* Placeholder for camera - in production, use expo-camera */}
-            <View style={styles.cameraPlaceholder}>
-                <Text style={styles.cameraText}>Camera View</Text>
-            </View>
+            {renderCameraState()}
 
             {/* Header with back button and record indicator */}
             <View style={styles.header}>
@@ -36,19 +93,18 @@ export default function PositionChild() {
             </View>
 
             {/* Face positioning circle */}
-            <View style={styles.circleContainer}>
-                <View style={styles.faceCircle}>
-                    <View style={styles.circleIndicator} />
+            {permission?.granted && microphoneGranted && (
+                <View style={styles.circleContainer}>
+                    <View style={styles.faceCircle}>
+                    </View>
                 </View>
-            </View>
+            )}
 
-            {/* Begin button - disabled state */}
             <View style={styles.buttonContainer}>
                 <Pressable 
                     style={styles.beginButtonDisabled}
+                    disabled={!permission?.granted || !microphoneGranted}
                     onPress={() => {
-                        // In production, this would only be enabled when face is detected
-                        // For demo, navigate to ReadyToBegin
                         navigation.navigate('ReadyToBegin');
                     }}
                 >
@@ -65,16 +121,46 @@ const styles = StyleSheet.create({
         backgroundColor: '#2a2a2a',
     },
 
-    cameraPlaceholder: {
+    permissionStateContainer: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#3a3a3a',
+        backgroundColor: '#232323',
         justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+    },
+
+    permissionTitle: {
+        color: '#ffffff',
+        fontSize: 22,
+        fontWeight: '600',
+        textAlign: 'center',
+    },
+
+    permissionDescription: {
+        color: '#d6d6d6',
+        fontSize: 16,
+        textAlign: 'center',
+        marginTop: 10,
+        lineHeight: 24,
+    },
+
+    permissionButtonsRow: {
+        width: '100%',
+        marginTop: 24,
+        gap: 12,
+    },
+
+    permissionSecondaryButton: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingVertical: 14,
+        borderRadius: 28,
         alignItems: 'center',
     },
 
-    cameraText: {
-        color: '#666',
-        fontSize: 18,
+    permissionSecondaryButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
     },
 
     header: {
@@ -156,9 +242,11 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
     },
 
-    
-
     buttonContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
         paddingHorizontal: 50,
         paddingBottom: 80,
         zIndex: 10,
