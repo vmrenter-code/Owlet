@@ -1,66 +1,96 @@
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, FlatList, StyleSheet, useWindowDimensions, Animated, ViewToken } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-//Import any components you need
-import PrimaryBlueButton from '../components/PrimaryBlueButton'
-import PrimaryWhiteButton from '../components/PrimaryWhiteButton'
-import AuthPg from '../components/AuthPg';
+import LaunchSlides from './LaunchSlides';
+import LaunchItems from './LaunchItems';
+import Paginator from '../components/Paginator';
+import PrimaryBlueButton from '../components/PrimaryBlueButton';
+import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
+import ScreenBg from '../components/ScreenBg';
 
 export default function Launch() {
-    const navigation = useNavigation<any>();
-    
-    return (
-        <View style={styles.container}>
-            <View style={styles.background} pointerEvents="none">
-                <AuthPg />
-            </View>
+  const navigation = useNavigation<any>();
+  const { width } = useWindowDimensions();
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-            <View style={styles.content}>
-                <View style={styles.textContainer}>
-                    <Text style={styles.text}>owlet</Text>
-                </View>
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const slidesRef = useRef<FlatList>(null);
 
-                <View style={styles.buttonContainer}>
-                    <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>
-                    <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Login</PrimaryWhiteButton>
-                </View>
-            </View>
+  const viewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0) {
+        setCurrentIndex(viewableItems[0].index ?? 0);
+      }
+    }
+  ).current;
+
+  const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+
+  return (
+
+    <View style={styles.container}>
+
+
+      <View style={styles.formatBg}>
+              <ScreenBg />
+      </View>
+
+
+
+      <View style={styles.container}>
+        <View style={{ flex: 3 }}>
+          <FlatList
+            data={LaunchSlides}
+            renderItem={({ item }) => <LaunchItems item={item} />}
+            keyExtractor={(item) => item.id}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ width }}
+            bounces={false}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false }
+            )}
+            scrollEventThrottle={32}
+            onViewableItemsChanged={viewableItemsChanged}
+            viewabilityConfig={viewConfig}
+            ref={slidesRef}
+          />
         </View>
-    );
+
+        <Paginator data={LaunchSlides} scrollX={scrollX} />
+
+
+        <View style={styles.buttonWrapper}>
+          <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>
+          <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Login</PrimaryWhiteButton>
+        </View>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
+  container: {
+    flex: 1,
+  },
 
-    background: {
-        ...StyleSheet.absoluteFillObject,
-    },
+  formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0
+  },
 
-    text: {
-        fontSize: 30,
-        color: '#49A3BD',
-        fontWeight: 'bold',
-        letterSpacing: 7,
-        transform: [{ translateY: -60}]
-    },
-
-    buttonContainer: {
-        marginTop: 'auto',
-        paddingBottom: 70,
-        gap: 50
-    },
-
-    content: {
-        flex: 1,
-        padding: 30,
-    },
-
-    textContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
+  buttonWrapper: {
+    width: '100%',
+    paddingHorizontal: 28,   
+    marginBottom: 50,        
+    marginTop: 12,
+    gap: 20         
+  }
 });
