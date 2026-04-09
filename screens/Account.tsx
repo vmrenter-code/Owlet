@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useState } from 'react';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
@@ -19,15 +20,55 @@ const FoxAvatar = () => (
 
 export default function Account() {
     const navigation = useNavigation<any>();
-    const [userName, setUserName] = useState('');
-    const [userEmail, setUserEmail] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const handleDeleteAccount = () => {
-        console.log('Delete account pressed');
+        if (isDeleting) {
+            return;
+        }
+
+        Alert.alert(
+            'Delete Account?',
+            'This permanently removes your account. This action cannot be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        setIsDeleting(true);
+                        const result = await userAuthServices.deleteAccount();
+                        setIsDeleting(false);
+
+                        if (result.success) {
+                            Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
+                            navigation.reset({ index: 0, routes: [{ name: 'Launch' }] });
+                            return;
+                        }
+
+                        Alert.alert('Unable to Delete Account', result.error ?? 'Please try again.');
+                    },
+                },
+            ]
+        );
     };
 
-    const handleLogout = () => {
-        navigation.navigate('Launch');
+    const handleLogout = async () => {
+        if (isLoggingOut) {
+            return;
+        }
+
+        setIsLoggingOut(true);
+        const result = await userAuthServices.logout();
+        setIsLoggingOut(false);
+
+        if (!result.success) {
+            Alert.alert('Unable to Log Out', result.error ?? 'Please try again.');
+            return;
+        }
+
+        navigation.reset({ index: 0, routes: [{ name: 'Launch' }] });
     };
 
     useEffect(() => {
@@ -127,15 +168,17 @@ export default function Account() {
                     <Pressable
                         style={({ pressed }) => [styles.dangerItem, pressed && styles.dangerItemPressed]}
                         onPress={handleDeleteAccount}
+                        disabled={isDeleting}
                     >
-                        <Text style={styles.dangerText}>Delete Account</Text>
+                        <Text style={styles.dangerText}>{isDeleting ? 'Deleting Account...' : 'Delete Account'}</Text>
                     </Pressable>
 
                     <Pressable
                         style={({ pressed }) => [styles.dangerItem, styles.lastItem, pressed && styles.dangerItemPressed]}
                         onPress={handleLogout}
+                        disabled={isLoggingOut}
                     >
-                        <Text style={styles.dangerText}>Log out</Text>
+                        <Text style={styles.dangerText}>{isLoggingOut ? 'Logging out...' : 'Log out'}</Text>
                     </Pressable>
                 </View>
 
