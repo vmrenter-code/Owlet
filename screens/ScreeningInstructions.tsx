@@ -6,7 +6,7 @@ import InstructionSlides from './InstructionSlides';
 import InstructionItems from './InstructionItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
-import PageBg from '../components/PageBg';
+import ScreenBg from '../components/ScreenBg';
 
 export default function ScreeningInstructions() {
   const navigation = useNavigation<any>();
@@ -32,7 +32,7 @@ export default function ScreeningInstructions() {
 
 
       <View style={styles.formatBg}>
-              <PageBg />
+              <ScreenBg />
       </View>
 
 

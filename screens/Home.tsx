@@ -32,7 +32,7 @@ export default function Home() {
             <View style={{ flexDirection: 'column' }}>
               <Text
                 style={{
-                  fontSize: 22,
+                  fontSize: 18,
                   color: '#151515',
                   fontFamily: 'NotoSans-SemiBold',
                   lineHeight: 26,
@@ -44,7 +44,7 @@ export default function Home() {
 
               <Text
                 style={{
-                  fontSize: 15,
+                  fontSize: 14,
                   color: '#2E3332',
                   fontFamily: 'NotoSans-Regular',
                   lineHeight: 17,

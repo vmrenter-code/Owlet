@@ -57,7 +57,7 @@ export default function Signup() {
             </View>
 
             <View style={styles.divider}>
-              <InputFields placeholder="Create a unique username" icon={<UserIcon width={20} height={20} />} />
+              <InputFields placeholder="Create a unique username" maxLength={15} icon={<UserIcon width={20} height={20} />} />
               <InputFields placeholder="Enter your email" icon={<MailIcon width={20} height={20} />} />
               <InputFields placeholder="Create your password" icon={<LockIcon width={20} height={20} />} />
               <InputFields placeholder="Confirm your password" icon={<CheckCircleIcon width={20} height={20} />}  />

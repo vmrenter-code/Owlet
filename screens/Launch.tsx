@@ -6,8 +6,8 @@ import LaunchSlides from './LaunchSlides';
 import LaunchItems from './LaunchItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
-import PageBg from '../components/PageBg';
 import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
+import ScreenBg from '../components/ScreenBg';
 
 export default function Launch() {
   const navigation = useNavigation<any>();
@@ -33,7 +33,7 @@ export default function Launch() {
 
 
       <View style={styles.formatBg}>
-              <PageBg />
+              <ScreenBg />
       </View>
 
 
@@ -65,7 +65,7 @@ export default function Launch() {
 
         <View style={styles.buttonWrapper}>
           <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>
-          <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Log In</PrimaryWhiteButton>
+          <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Login</PrimaryWhiteButton>
         </View>
       </View>
     </View>

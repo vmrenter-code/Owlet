@@ -4,9 +4,10 @@ import { useState } from 'react';
 type InputFieldsProps = {
   placeholder?: string;
   icon?: React.ReactNode;
+  maxLength?: number;
 };
 
-export default function InputFields({ placeholder, icon }: InputFieldsProps) {
+export default function InputFields({ placeholder, icon, maxLength }: InputFieldsProps) {
   const [focused, setFocused] = useState(false);
 
   return (
@@ -15,10 +16,10 @@ export default function InputFields({ placeholder, icon }: InputFieldsProps) {
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor="#585858"
+        maxLength={maxLength}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
-
       {icon && <View style={styles.iconContainer}>{icon}</View>}
     </View>
   );
@@ -35,7 +36,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-
 
   input: {
     flex: 1,
