@@ -2,6 +2,9 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect, useState } from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+ 
 
 //avatar icon
 const FoxAvatar = () => (
@@ -16,6 +19,8 @@ const FoxAvatar = () => (
 
 export default function Account() {
     const navigation = useNavigation<any>();
+    const [userName, setUserName] = useState('');
+    const [userEmail, setUserEmail] = useState('');
 
     const handleDeleteAccount = () => {
         console.log('Delete account pressed');
@@ -24,6 +29,17 @@ export default function Account() {
     const handleLogout = () => {
         navigation.navigate('Launch');
     };
+
+    useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserName(user.displayName ?? user.email?.split('@')[0] ?? 'User');
+        setUserEmail(user.email ?? '');
+      }
+    });
+    return unsubscribe;
+  }, []);
 
     return (
         <View style={styles.container}>
@@ -59,13 +75,13 @@ export default function Account() {
                     {/* Username */}
                     <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
                         <Text style={styles.itemLabel}>Name</Text>
-                        <Text style={styles.itemValue}>username</Text>
+                        <Text style={styles.itemValue}>{userName}</Text>
                     </Pressable>
 
                     {/* Email */}
                     <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
                         <Text style={styles.itemLabel}>Email</Text>
-                        <Text style={styles.itemValue}>username@gmail.com</Text>
+                        <Text style={styles.itemValue}>{userEmail}</Text>
                     </Pressable>
 
                     {/* Change Password */}
