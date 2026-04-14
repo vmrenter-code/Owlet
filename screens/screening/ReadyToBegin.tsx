@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useScreening } from '../../context/ScreeningContext';
+import { usePolarH9 } from '../../src/services/polarH9Service';
 
 // This screen appears when face is detected in the circle
 // The Begin button is now active and ready to start the screening
@@ -8,6 +9,7 @@ import { useScreening } from '../../context/ScreeningContext';
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
     const { screeningID } = useScreening();
+    const { heartRate, connected, scanning, error, connectToH9 } = usePolarH9();
 
     const handleBegin = () => {
         // Start the screening process - navigate to first video
@@ -42,6 +44,36 @@ export default function ReadyToBegin() {
                 <View style={styles.faceCircle}>
                 </View>
             </View>
+
+            {/* H9 Connection Section */}
+            <View style={styles.h9Container}>
+                {!connected ? (
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.connectButton,
+                            pressed && styles.connectButtonPressed
+                        ]}
+                        onPress={connectToH9}
+                        disabled={scanning}
+                    >
+                        <Text style={styles.connectButtonText}>
+                            {scanning ? '🔍 Scanning for H9...' : '🫀 Connect Polar H9'}
+                        </Text>
+                    </Pressable>
+                ) : (
+                    <View style={styles.connectedBadge}>
+                        <Text style={styles.connectedText}>✅ H9 Connected</Text>
+                        {heartRate && (
+                            <Text style={styles.heartRatePreview}>{heartRate} BPM</Text>
+                        )}
+                    </View>
+                )}
+                {error && <Text style={styles.errorText}>{error}</Text>}
+            </View>
+
+
+
+
 
             {/* Begin button - active state */}
             <View style={styles.buttonContainer}>
@@ -166,6 +198,67 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontSize: 18,
         fontWeight: '600',
+    },
+
+
+    h9Container: {
+        position: 'absolute',
+        bottom: 160,
+        left: 50,
+        right: 50,
+        alignItems: 'center',
+        zIndex: 10,
+    },
+
+    connectButton: {
+        backgroundColor: 'rgba(95, 212, 212, 0.9)',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+
+    connectButtonPressed: {
+        backgroundColor: 'rgba(95, 212, 212, 0.7)',
+    },
+
+    connectButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+
+    connectedBadge: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        alignItems: 'center',
+        gap: 4,
+    },
+
+    connectedText: {
+        color: '#5fd4d4',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+
+    heartRatePreview: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+
+    errorText: {
+        color: '#ff6b6b',
+        fontSize: 13,
+        marginTop: 6,
+        textAlign: 'center',
+    },
+
+    beginButtonDisabled: {
+        backgroundColor: '#888888',
+        opacity: 0.6,
     },
 });
 

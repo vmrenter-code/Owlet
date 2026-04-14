@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
 import { useScreening } from '../../context/ScreeningContext';
+import { usePolarH9 } from '../../src/services/polarH9Service';
 
 // This screen plays videos during the screening process
 // Shows 4 videos sequentially with Stop and Save / Next buttons
@@ -21,6 +22,11 @@ export default function VideoScreen() {
     // Use context screeningID, or fall back to route params if available
     const currentScreeningID = screeningID || route.params?.screeningId;
     
+    //HeartRate
+    const { heartRate, connected, disconnect } = usePolarH9();
+
+
+
     // Log screeningID for debugging
     useEffect(() => {
         console.log('VideoScreen - Current Screening ID:', currentScreeningID);
@@ -132,6 +138,7 @@ export default function VideoScreen() {
             // Go to next video - use replace to keep same screen instance for continuous recording
             navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
         } else {
+            disconnect();
             // All videos complete - stop recording and save
             console.log('Video 5 completed, stopping recording...');
             let recordingPath: string | null = null;
@@ -247,6 +254,14 @@ export default function VideoScreen() {
                     </Text>
                 </View>
             </View>
+
+            {/* Heart Rate Display */}
+    {connected && heartRate && (
+        <View style={styles.heartRateContainer}>
+            <Text style={styles.heartRateLabel}>❤️ Heart Rate</Text>
+            <Text style={styles.heartRateValue}>{heartRate} BPM</Text>
+        </View>
+    )}
 
             {/* Bottom button - only show when video finishes */}
             {!isPlaying && (
@@ -550,4 +565,28 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#ffffff',
     },
+
+    heartRateContainer: {
+    position: 'absolute',
+    top: 110,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+    zIndex: 10,
+},
+
+heartRateLabel: {
+    color: '#ffffff',
+    fontSize: 12,
+    opacity: 0.8,
+},
+
+heartRateValue: {
+    color: '#ff6b6b',
+    fontSize: 22,
+    fontWeight: 'bold',
+},
 });
