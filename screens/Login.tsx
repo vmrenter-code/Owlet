@@ -84,6 +84,7 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    await GoogleSignin.signOut();
     const signInResult = await GoogleSignin.signIn();
 
     const idToken = signInResult.data?.idToken ?? (signInResult as any).idToken;

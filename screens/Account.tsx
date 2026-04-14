@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+//import { useState } from 'react';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
- 
+import React, { useEffect, useState } from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { userAuthServices } from '../src/services/userAuthServices';
+
+
 
 //avatar icon
 const FoxAvatar = () => (
@@ -22,6 +24,8 @@ export default function Account() {
     const navigation = useNavigation<any>();
     const [isDeleting, setIsDeleting] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [userName, setUserName] = useState('');      // ← add this
+    const [userEmail, setUserEmail] = useState('');
 
     const handleDeleteAccount = () => {
         if (isDeleting) {

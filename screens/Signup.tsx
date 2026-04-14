@@ -83,6 +83,7 @@ export default function Signup() {
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      await GoogleSignin.signOut();
       const signInResult = await GoogleSignin.signIn();
       const idToken = signInResult.data?.idToken ?? (signInResult as any).idToken;
       if (!idToken) throw new Error('No ID token found');
