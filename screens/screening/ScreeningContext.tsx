@@ -1,4 +1,5 @@
 import React, { createContext, useState, ReactNode, useContext } from 'react';
+import { usePolarH9 } from '../src/services/polarH9Service';
 
 interface ScreeningContextType {
   screeningId: string | null;
