@@ -57,12 +57,12 @@ export default function ReadyToBegin() {
                         disabled={scanning}
                     >
                         <Text style={styles.connectButtonText}>
-                            {scanning ? '🔍 Scanning for H9...' : '🫀 Connect Polar H9'}
+                            {scanning ? '🔍 Scanning for H9...' : ' Connect Polar H9'}
                         </Text>
                     </Pressable>
                 ) : (
                     <View style={styles.connectedBadge}>
-                        <Text style={styles.connectedText}>✅ H9 Connected</Text>
+                        <Text style={styles.connectedText}> H9 Connected</Text>
                         {heartRate && (
                             <Text style={styles.heartRatePreview}>{heartRate} BPM</Text>
                         )}

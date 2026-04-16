@@ -59,8 +59,8 @@ export function usePolarH9() {
                   return;
                 }
                 if (characteristic?.value) {
-                  const data = Buffer.from(characteristic.value, 'base64');
-                  const hr = data[1]; // Heart rate BPM
+                  const raw = atob(characteristic.value);
+                  const hr = raw.charCodeAt(1); // Heart rate BPM
                   setHeartRate(hr);
                 }
               }
