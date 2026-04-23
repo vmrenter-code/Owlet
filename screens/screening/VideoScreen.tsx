@@ -258,7 +258,7 @@ export default function VideoScreen() {
             {/* Heart Rate Display */}
     {connected && heartRate && (
         <View style={styles.heartRateContainer}>
-            <Text style={styles.heartRateLabel}>❤️ Heart Rate</Text>
+            <Text style={styles.heartRateLabel}> Heart Rate</Text>
             <Text style={styles.heartRateValue}>{heartRate} BPM</Text>
         </View>
     )}
