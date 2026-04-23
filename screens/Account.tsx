@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+import userAuthServices from '../src/services/userAuthServices';
  
 
 //avatar icon
@@ -20,6 +21,8 @@ const FoxAvatar = () => (
 
 export default function Account() {
     const navigation = useNavigation<any>();
+    const [userName, setUserName] = useState('username');
+    const [userEmail, setUserEmail] = useState('username@gmail.com');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
