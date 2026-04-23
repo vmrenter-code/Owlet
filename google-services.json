@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:398374460192:android:5a323a98a84b9402b95545",
         "android_client_info": {
-          "package_name": "com.yourname.owlet"
+          "package_name": "com.anonymous.owlet"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "398374460192-aeg4h3iqllv7nlriasboog3qm10gr6hc.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.yourname.owlet",
+            "package_name": "com.anonymous.owlet",
             "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
@@ -42,7 +42,7 @@
               "client_id": "398374460192-q5umdtk9qkcueu62fhg859v44kr6jate.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.yourname.owlet"
+                "bundle_id": "com.anonymous.owlet"
               }
             }
           ]
