@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
-import AuthPg from '../components/AuthPg';
+import HomeBg from '../components/HomeBg';
 import BackArrow from '../components/BackArrow';
 import userAuthServices from '../src/services/userAuthServices';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -105,7 +105,7 @@ export default function Login() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1 }}>
         <View style={styles.formatBg} pointerEvents="none">
-          <AuthPg />
+          <HomeBg />
         </View>
 
         <View style={styles.container}>

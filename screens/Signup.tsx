@@ -5,7 +5,7 @@ import { userAuthServices } from '../src/services/userAuthServices';
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
-import AuthPg from '../components/AuthPg';
+import HomeBg from '../components/HomeBg';
 import BackArrow from '../components/BackArrow';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
@@ -89,7 +89,7 @@ export default function Signup() {
       if (!idToken) throw new Error('No ID token found');
       const googleCredential = GoogleAuthProvider.credential(idToken);
       await signInWithCredential(auth, googleCredential);
-      navigation.replace('MainTabs');
+      navigation.replace('AboutYourChild');
     } catch (error) {
       console.error('Google Sign-In error:', error);
     }
@@ -99,7 +99,7 @@ export default function Signup() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1 }}>
         <View style={styles.formatBg} pointerEvents="none">
-          <AuthPg />
+          <HomeBg />
         </View>
 
         <View style={styles.container}>
@@ -117,11 +117,7 @@ export default function Signup() {
               <InputFields placeholder="Confirm your password" icon={<CheckCircleIcon width={20} height={20} />}  />
             </View>
 
-            <View style={styles.linkContainer}>
-              <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-                <Text style={styles.linkStyle}>Forgot Password?</Text>
-              </TouchableOpacity>
-            </View>
+          
 
             <View style={styles.orContainer}>
               <View style={styles.orLine} />

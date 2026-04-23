@@ -7,7 +7,8 @@ import LaunchItems from './LaunchItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
-import ScreenBg from '../components/ScreenBg';
+import HomeBg from '../components/HomeBg';
+
 
 export default function Launch() {
   const navigation = useNavigation<any>();
@@ -33,7 +34,7 @@ export default function Launch() {
 
 
       <View style={styles.formatBg}>
-              <ScreenBg />
+              <HomeBg />
       </View>
 
 

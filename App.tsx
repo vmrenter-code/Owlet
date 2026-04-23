@@ -26,6 +26,8 @@ import ScreeningInstructions from './screens/ScreeningInstructions';
 import HomeBg from './components/HomeBg';
 import MainTabs from './navigation/MainTabs';
 import AboutUs from './screens/AboutUs';
+import AboutYourChild from './screens/AboutYourChild';
+import PickProfile from './screens/PickProfile';
 
 import PositionChild from './screens/screening/PositionChild';
 import ReadyToBegin from './screens/screening/ReadyToBegin';
@@ -88,6 +90,8 @@ export default function App() {
         <Stack.Screen name="TroubleshootingScreen" component={TroubleshootingScreen} options={{ headerShown: false }} />
         <Stack.Screen name="TroubleshootingSolution" component={TroubleshootingSolution} options={{ headerShown: false }} />
         <Stack.Screen name="AboutUs" component={AboutUs} options={{ headerShown: false }} />
+        <Stack.Screen name="AboutYourChild" component={AboutYourChild} options={{ headerShown: false }} />
+        <Stack.Screen name="PickProfile" component={PickProfile} options={{ headerShown: false }} />
         
       </Stack.Navigator>
     </NavigationContainer>

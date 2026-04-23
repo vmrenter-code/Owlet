@@ -8,6 +8,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { userAuthServices } from '../src/services/userAuthServices';
 
 
+ 
 
 //avatar icon
 const FoxAvatar = () => (
@@ -22,10 +23,11 @@ const FoxAvatar = () => (
 
 export default function Account() {
     const navigation = useNavigation<any>();
+    const [userName, setUserName] = useState('username');
+    const [userEmail, setUserEmail] = useState('username@gmail.com');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const [userName, setUserName] = useState('');      // ← add this
-    const [userEmail, setUserEmail] = useState('');
+   
 
     const handleDeleteAccount = () => {
         if (isDeleting) {
