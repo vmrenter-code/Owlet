@@ -1,27 +1,15 @@
 import { View, TextInput, StyleSheet } from 'react-native';
 import { useState } from 'react';
 
-type InputFieldsProps = {
+type LargeInputProps = {
   placeholder?: string;
   icon?: React.ReactNode;
   maxLength?: number;
   multiline?: boolean;
   height?: number;
-  value?: string;
-  onChangeText?: (text: string) => void;
-  keyboardType?: 'default' | 'number-pad' | 'email-address' | 'phone-pad';
 };
 
-export default function InputFields({ 
-  placeholder, 
-  icon, 
-  maxLength, 
-  multiline, 
-  height = 140,
-  value,
-  onChangeText,
-  keyboardType = 'default',
-}: InputFieldsProps) {
+export default function LargeInput({ placeholder, icon, maxLength, multiline, height = 140 }: LargeInputProps) {
   const [focused, setFocused] = useState(false);
 
   return (
@@ -38,10 +26,6 @@ export default function InputFields({
         placeholderTextColor="#585858"
         maxLength={maxLength}
         multiline={multiline}
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        underlineColorAndroid="transparent"
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
@@ -54,7 +38,8 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     borderRadius: 100,
-    padding: 17,
+    paddingHorizontal: 17,
+    paddingVertical: 14,
     borderColor: '#F0F1F1',
     borderWidth: 1,
     flexDirection: 'row',
@@ -67,8 +52,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'NotoSans-Regular',
     color: '#2E3332',
-    padding: 0,
-    margin: 0,
+    padding: 0,   
+    margin: 0,   
   },
 
   iconContainer: {
