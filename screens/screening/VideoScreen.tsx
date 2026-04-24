@@ -4,11 +4,21 @@ import { useState, useEffect, useRef } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
+import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
 import { useScreening } from '../../context/ScreeningContext';
 
+// Video sources for each screening video
+const videoSources: { [key: number]: any } = {
+    1: require('../../assets/videos/Video1.mp4'),
+    2: require('../../assets/videos/Video2.mp4'),
+    3: require('../../assets/videos/Video3.mp4'),
+    4: require('../../assets/videos/Video4.mp4'),
+    5: require('../../assets/videos/Video5.mp4'),
+};
+
 // This screen plays videos during the screening process
-// Shows 4 videos sequentially with Stop and Save / Next buttons
+// Shows 5 videos sequentially with Stop and Save / Next buttons
 
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
@@ -97,14 +107,9 @@ export default function VideoScreen() {
         saveProgress();
     }, [videoNumber]);
     
-    // Simulate video finishing after 5 seconds (replace with actual video logic)
+    // Reset playing state when video number changes
     useEffect(() => {
         setIsPlaying(true);
-        const timer = setTimeout(() => {
-            setIsPlaying(false);
-        }, 5000); // Video "finishes" after 3 seconds
-        
-        return () => clearTimeout(timer);
     }, [videoNumber]);
 
     // safe recording start
@@ -236,14 +241,23 @@ export default function VideoScreen() {
                 </Pressable>
             </View>
 
-            {/* Video placeholder */}
+            {/* Video Player */}
             <View style={styles.videoContainer}>
-                <View style={styles.videoPlaceholder}>
+                <Video
+                    source={videoSources[videoNumber]}
+                    style={styles.video}
+                    resizeMode={ResizeMode.CONTAIN}
+                    shouldPlay={isPlaying}
+                    isLooping={false}
+                    onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
+                        if (status.isLoaded && status.didJustFinish) {
+                            setIsPlaying(false);
+                        }
+                    }}
+                />
+                <View style={styles.videoOverlay}>
                     <Text style={styles.videoPlaceholderText}>
                         Video {videoNumber} of {totalVideos}
-                    </Text>
-                    <Text style={styles.videoStatusText}>
-                        {isPlaying ? '▶ Playing...' : '✓ Finished'}
                     </Text>
                 </View>
             </View>
@@ -413,6 +427,19 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
 
+    video: {
+        ...StyleSheet.absoluteFillObject,
+    },
+
+    videoOverlay: {
+        position: 'absolute',
+        top: 60,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        zIndex: 2,
+    },
+
     videoPlaceholder: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: '#4a4a4a',
@@ -422,10 +449,13 @@ const styles = StyleSheet.create({
     },
 
     videoPlaceholderText: {
-        color: '#888',
-        fontSize: 24,
+        color: '#ffffff',
+        fontSize: 18,
         fontWeight: '600',
-        marginBottom: 10,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
     },
 
     videoStatusText: {

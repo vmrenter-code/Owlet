@@ -32,6 +32,7 @@ import VideoScreen from './screens/screening/VideoScreen';
 import ScreeningComplete from './screens/screening/ScreeningComplete';
 import TroubleshootingScreen from './screens/screening/TroubleshootingScreen';
 import TroubleshootingSolution from './screens/screening/TroubleshootingSolution';
+import EKGPlacement from './screens/screening/EKGPlacement';
 import { ScreeningProvider } from './context/ScreeningContext';
 
 const Stack = createNativeStackNavigator();
@@ -80,6 +81,7 @@ export default function App() {
         <Stack.Screen name="ClinicianNotes" component={ClinicianNotes} options={{ headerShown: false }} />
         <Stack.Screen name="FAQ" component={FAQ} options={{ headerShown: false }} />
         <Stack.Screen name="ScreeningInstructions" component={ScreeningInstructions} options={{ headerShown: false }} />
+        <Stack.Screen name="EKGPlacement" component={EKGPlacement} options={{ headerShown: false }} />
         <Stack.Screen name="PositionChild" component={PositionChild} options={{ headerShown: false }} />
         <Stack.Screen name="ReadyToBegin" component={ReadyToBegin} options={{ headerShown: false }} />
         <Stack.Screen name="VideoScreen" component={VideoScreen} options={{ headerShown: false }} />
