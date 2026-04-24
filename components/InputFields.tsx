@@ -5,6 +5,7 @@ import React, { forwardRef } from 'react';
 type InputFieldsProps = TextInputProps & {
   placeholder?: string;
   icon?: React.ReactNode;
+  maxLength?: number;
 };
 
 const InputFields = forwardRef<TextInput, InputFieldsProps>(({ placeholder, icon, ...props }, ref) => {
@@ -19,7 +20,6 @@ const InputFields = forwardRef<TextInput, InputFieldsProps>(({ placeholder, icon
         importantForAutofill="no"
         {...props}
       />
-
       {icon && <View style={styles.iconContainer}>{icon}</View>}
     </View>
   );
@@ -38,7 +38,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-
 
   input: {
     flex: 1,

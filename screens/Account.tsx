@@ -1,7 +1,11 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+import userAuthServices from '../src/services/userAuthServices';
+ 
 
 //avatar icon
 const FoxAvatar = () => (
@@ -16,14 +20,69 @@ const FoxAvatar = () => (
 
 export default function Account() {
     const navigation = useNavigation<any>();
+    const [userName, setUserName] = useState('username');
+    const [userEmail, setUserEmail] = useState('username@gmail.com');
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const handleDeleteAccount = () => {
-        console.log('Delete account pressed');
+        if (isDeleting) {
+            return;
+        }
+
+        Alert.alert(
+            'Delete Account?',
+            'This permanently removes your account. This action cannot be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        setIsDeleting(true);
+                        const result = await userAuthServices.deleteAccount();
+                        setIsDeleting(false);
+
+                        if (result.success) {
+                            Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
+                            navigation.reset({ index: 0, routes: [{ name: 'Launch' }] });
+                            return;
+                        }
+
+                        Alert.alert('Unable to Delete Account', result.error ?? 'Please try again.');
+                    },
+                },
+            ]
+        );
     };
 
-    const handleLogout = () => {
-        navigation.navigate('Launch');
+    const handleLogout = async () => {
+        if (isLoggingOut) {
+            return;
+        }
+
+        setIsLoggingOut(true);
+        const result = await userAuthServices.logout();
+        setIsLoggingOut(false);
+
+        if (!result.success) {
+            Alert.alert('Unable to Log Out', result.error ?? 'Please try again.');
+            return;
+        }
+
+        navigation.reset({ index: 0, routes: [{ name: 'Launch' }] });
     };
+
+    useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserName(user.displayName ?? user.email?.split('@')[0] ?? 'User');
+        setUserEmail(user.email ?? '');
+      }
+    });
+    return unsubscribe;
+  }, []);
 
     return (
         <View style={styles.container}>
@@ -59,13 +118,13 @@ export default function Account() {
                     {/* Username */}
                     <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
                         <Text style={styles.itemLabel}>Name</Text>
-                        <Text style={styles.itemValue}>username</Text>
+                        <Text style={styles.itemValue}>{userName}</Text>
                     </Pressable>
 
                     {/* Email */}
                     <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
                         <Text style={styles.itemLabel}>Email</Text>
-                        <Text style={styles.itemValue}>username@gmail.com</Text>
+                        <Text style={styles.itemValue}>{userEmail}</Text>
                     </Pressable>
 
                     {/* Change Password */}
@@ -111,15 +170,17 @@ export default function Account() {
                     <Pressable
                         style={({ pressed }) => [styles.dangerItem, pressed && styles.dangerItemPressed]}
                         onPress={handleDeleteAccount}
+                        disabled={isDeleting}
                     >
-                        <Text style={styles.dangerText}>Delete Account</Text>
+                        <Text style={styles.dangerText}>{isDeleting ? 'Deleting Account...' : 'Delete Account'}</Text>
                     </Pressable>
 
                     <Pressable
                         style={({ pressed }) => [styles.dangerItem, styles.lastItem, pressed && styles.dangerItemPressed]}
                         onPress={handleLogout}
+                        disabled={isLoggingOut}
                     >
-                        <Text style={styles.dangerText}>Log out</Text>
+                        <Text style={styles.dangerText}>{isLoggingOut ? 'Logging out...' : 'Log out'}</Text>
                     </Pressable>
                 </View>
 

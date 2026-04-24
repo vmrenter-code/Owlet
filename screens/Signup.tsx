@@ -110,49 +110,10 @@ export default function Signup() {
             </View>
 
             <View style={styles.divider}>
-              <InputFields
-                placeholder="Create a unique username"
-                icon={<UserIcon width={20} height={20} />}
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                returnKeyType="next"
-                blurOnSubmit={false}
-                onSubmitEditing={() => emailRef.current?.focus()}
-              />
-              <InputFields
-                placeholder="Enter your email"
-                icon={<MailIcon width={20} height={20} />}
-                ref={emailRef}
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                returnKeyType="next"
-                blurOnSubmit={false}
-                onSubmitEditing={() => passwordRef.current?.focus()}
-              />
-              <InputFields
-                placeholder="Create your password"
-                icon={<LockIcon width={20} height={20} />}
-                ref={passwordRef}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                returnKeyType="next"
-                blurOnSubmit={false}
-                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-              />
-              <InputFields
-                placeholder="Confirm your password"
-                icon={<CheckCircleIcon width={20} height={20} />}
-                ref={confirmPasswordRef}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-                returnKeyType="done"
-                onSubmitEditing={handleSignUp}
-              />
+              <InputFields placeholder="Create a unique username" maxLength={15} icon={<UserIcon width={20} height={20} />} />
+              <InputFields placeholder="Enter your email" icon={<MailIcon width={20} height={20} />} />
+              <InputFields placeholder="Create your password" icon={<LockIcon width={20} height={20} />} />
+              <InputFields placeholder="Confirm your password" icon={<CheckCircleIcon width={20} height={20} />}  />
             </View>
 
             <View style={styles.linkContainer}>

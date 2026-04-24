@@ -18,9 +18,9 @@ export default function ProfileContainer({ children }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
-    width: 48,
-    height: 48,
+    borderRadius: 100,
+    width: 40,
+    height: 40,
     shadowColor: '#000000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 2, height: 4 },

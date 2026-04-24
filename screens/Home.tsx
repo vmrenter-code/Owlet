@@ -56,7 +56,7 @@ export default function Home() {
 
               <Text
                 style={{
-                  fontSize: 15,
+                  fontSize: 14,
                   color: '#2E3332',
                   fontFamily: 'NotoSans-Regular',
                   lineHeight: 17,
@@ -152,8 +152,8 @@ export default function Home() {
                     <Text style={styles.toolText}>About Us</Text>
                     <Text style={styles.toolSubText}>Our Mission</Text>
                   </View>
-                </View>
-              </ToolButton>
+                  </View>
+                </ToolButton>
             </View>
 
             <View style={styles.toolItem}>

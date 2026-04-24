@@ -46,11 +46,12 @@ const styles = StyleSheet.create({
     padding: 17,
     borderRadius: 100,
     backgroundColor: '#90d3d3',
-    shadowColor: '#00000031',
+    shadowColor: '#000000',
+    shadowOpacity: 0.1,
     shadowOffset: { width: 2, height: 4 },
-    shadowRadius: 4,
-    borderColor: '#93d6d6',
-    borderWidth: 2,
+    shadowRadius: 2.5,
+    borderColor: '#94cece',
+    borderWidth: 1,
   },
 
   text: {
