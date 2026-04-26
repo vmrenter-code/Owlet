@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import express from 'express';
+import { randomUUID } from 'crypto';
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg';
 import cors from 'cors';
@@ -25,20 +26,35 @@ function getParam(req: express.Request, key: string): string {
 
 // Create a new screening
 app.post('/screening', async (req, res) => {
-  try {
-    const { startedAt } = req.body;
+  const { startedAt } = req.body;
+  const createdAt = startedAt ? new Date(startedAt) : new Date();
 
+  try {
     const screening = await prisma.screening.create({
       data: {
         status: 'pending',
-        createdAt: startedAt ? new Date(startedAt) : new Date(),
+        createdAt,
       }
     });
 
-    res.json({ success: true, screening });
+    res.json({ success: true, screening, persisted: true });
   } catch (err) {
     console.error('Error creating screening:', err);
-    res.status(500).json({ success: false, error: 'Failed to create screening' });
+
+    const fallbackScreening = {
+      id: randomUUID(),
+      status: 'pending',
+      createdAt,
+      completedAt: null,
+    };
+
+    // Return a temporary ID so mobile upload flow can continue even if DB is unavailable.
+    res.status(200).json({
+      success: true,
+      screening: fallbackScreening,
+      persisted: false,
+      warning: 'Database unavailable; returned fallback screening ID',
+    });
   }
 });
 

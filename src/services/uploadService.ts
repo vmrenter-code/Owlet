@@ -1,5 +1,3 @@
-import * as FileSystem from 'expo-file-system/legacy';
-
 export interface PresignUploadRequest {
 	screeningId: string;
 	videoNumber: number;
@@ -32,13 +30,40 @@ export async function requestPresignedUploadUrl(
 	baseUrl: string,
 	body: PresignUploadRequest
 ): Promise<PresignUploadResponse> {
-	const response = await fetch(`${baseUrl}/screening/upload-url`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify(body),
+	if (!body.screeningId) {
+		throw new Error('Missing screeningId for upload request');
+	}
+
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), 10000);
+
+	console.log('[Upload] Requesting presigned URL...', {
+		baseUrl,
+		screeningId: body.screeningId,
+		videoNumber: body.videoNumber,
+		contentType: body.contentType,
 	});
+
+	let response: Response;
+	try {
+		response = await fetch(`${baseUrl}/screening/upload-url`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			signal: controller.signal,
+			body: JSON.stringify(body),
+		});
+	} catch (error) {
+		if (error instanceof Error && error.name === 'AbortError') {
+			throw new Error(`Timed out contacting backend at ${baseUrl}`);
+		}
+		throw error;
+	} finally {
+		clearTimeout(timeout);
+	}
+
+	console.log('[Upload] Presigned URL response status:', response.status);
 
 	if (!response.ok) {
 		throw new Error(`Failed to get upload URL: ${response.status}`);
@@ -57,22 +82,62 @@ export async function uploadFileToPresignedUrl(
 	contentType: string,
 	fileUri: string
 ): Promise<void> {
-	const uploadResult = await FileSystem.uploadAsync(uploadUrl, fileUri, {
-		httpMethod: 'PUT',
-		uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-		headers: {
-			'Content-Type': contentType,
-		},
+	console.log('[Upload] Starting S3 PUT upload...', {
+		contentType,
+		fileUri,
 	});
 
-	if (uploadResult.status < 200 || uploadResult.status > 299) {
-		throw new Error(`S3 upload failed: ${uploadResult.status}`);
+	const localFileResponse = await fetch(fileUri);
+	console.log('[Upload] Local file fetch status:', localFileResponse.status);
+	if (!localFileResponse.ok) {
+		throw new Error(`Failed to read local recording file: ${localFileResponse.status}`);
+	}
+
+	const fileBlob = await localFileResponse.blob();
+	console.log('[Upload] Local file blob prepared', {
+		size: fileBlob.size,
+		type: fileBlob.type,
+	});
+
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), 120000);
+
+	let uploadResponse: Response;
+	try {
+		uploadResponse = await fetch(uploadUrl, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': contentType,
+			},
+			body: fileBlob,
+			signal: controller.signal,
+		});
+	} catch (error) {
+		if (error instanceof Error && error.name === 'AbortError') {
+			throw new Error('S3 upload timed out after 120 seconds');
+		}
+		throw error;
+	} finally {
+		clearTimeout(timeout);
+	}
+
+	console.log('[Upload] S3 PUT status:', uploadResponse.status);
+
+	if (!uploadResponse.ok) {
+		const errorText = await uploadResponse.text();
+		throw new Error(`S3 upload failed: ${uploadResponse.status} ${errorText}`);
 	}
 }
 ////this uses the above two functions to request a presigned url and then upload the file, returning the object key or an error message
 export async function uploadScreeningVideo(input: UploadVideoInput): Promise<UploadVideoResult> {
 	try {
 		const contentType = input.contentType ?? 'video/mp4';
+		console.log('[Upload] uploadScreeningVideo begin', {
+			screeningId: input.screeningId,
+			videoNumber: input.videoNumber,
+			recordingUri: input.recordingUri,
+			baseUrl: input.baseUrl,
+		});
 
 		const presign = await requestPresignedUploadUrl(input.baseUrl, {
 			screeningId: input.screeningId,
@@ -80,12 +145,17 @@ export async function uploadScreeningVideo(input: UploadVideoInput): Promise<Upl
 			contentType,
 		});
 
-		const fileInfo = await FileSystem.getInfoAsync(input.recordingUri);
-		if (!fileInfo.exists) {
-			throw new Error('Recording file does not exist');
-		}
+		console.log('[Upload] Presigned URL received', {
+			objectKey: presign.objectKey,
+			expiresInSeconds: presign.expiresInSeconds,
+		});
+
+		console.log('[Upload] Using recording URI', {
+			recordingUri: input.recordingUri,
+		});
 
 		await uploadFileToPresignedUrl(presign.uploadUrl, contentType, input.recordingUri);
+		console.log('[Upload] uploadScreeningVideo complete');
 
 		return {
 			success: true,
