@@ -1,10 +1,13 @@
-import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
+import { uploadScreeningVideo } from '../../src/services/uploadService';
+
+const createLocalScreeningId = () => `local_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
 // This screen plays videos during the screening process
 // Shows 4 videos sequentially with Stop and Save / Next buttons
@@ -12,13 +15,18 @@ import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, 
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const { screeningId, videoNumber } = route.params;
+    const { screeningId, videoNumber: initialVideoNumber = 1 } = route.params ?? {};
     const cameraRef = useRef<CameraView>(null);
+    const hasAttemptedRecordingStartRef = useRef(false);
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
-    const BASE_URL = 'http://localhost:4000';
+    const BASE_URL =
+        process.env.EXPO_PUBLIC_API_BASE_URL ??
+        (Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000');
     
     const totalVideos = 5;
+    const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
+    const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
     
     // Track if video is playing or finished
     const [isPlaying, setIsPlaying] = useState(true);
@@ -30,6 +38,61 @@ export default function VideoScreen() {
     // added readiness tracking to ensure we don't try to start recording before camera is fully ready, which was causing crashes before
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [isRefReady, setIsRefReady] = useState(false);
+
+    useEffect(() => {
+        setCurrentVideoNumber(initialVideoNumber);
+    }, [initialVideoNumber]);
+
+    useEffect(() => {
+        if (screeningId) {
+            setActiveScreeningId(screeningId);
+        }
+    }, [screeningId]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const ensureScreeningId = async () => {
+            if (activeScreeningId) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/screening`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ startedAt: new Date().toISOString() }),
+                });
+
+                if (!response.ok) {
+                    console.log('Failed to create screening session:', response.status);
+                    if (isMounted) {
+                        setActiveScreeningId(createLocalScreeningId());
+                    }
+                    return;
+                }
+
+                const payload = await response.json();
+                const createdId = payload?.screening?.id ?? createLocalScreeningId();
+                if (isMounted) {
+                    setActiveScreeningId(createdId);
+                }
+            } catch (error) {
+                console.log('Error creating screening session in VideoScreen:', error);
+                if (isMounted) {
+                    setActiveScreeningId(createLocalScreeningId());
+                }
+            }
+        };
+
+        ensureScreeningId();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [activeScreeningId, BASE_URL]);
 
     useEffect(() => {
         if (cameraPermission?.status === 'undetermined') {
@@ -47,13 +110,13 @@ export default function VideoScreen() {
     };
 
     const handleCameraReady = () => {
-        console.log('Camera ready! videoNumber:', videoNumber);
+        console.log('Camera ready! videoNumber:', currentVideoNumber);
         setCameraReady();
         setIsCameraReady(true);
     };
 
     // Initialize camera ref
-    const handleCameraRef = (ref: CameraView | null) => {
+    const handleCameraRef = useCallback((ref: CameraView | null) => {
         if (ref) {
             cameraRef.current = ref;
             initializeCameraRef(ref);
@@ -65,14 +128,15 @@ export default function VideoScreen() {
             setIsRefReady(false);
             setIsCameraReady(false);
         }
-    };
+    }, []);
     
     // Save progress when entering this screen
     useEffect(() => {
         const saveProgress = async () => {
             try {
                 await AsyncStorage.setItem('screeningProgress', JSON.stringify({
-                    videoNumber: videoNumber,
+                    screeningId: activeScreeningId,
+                    videoNumber: currentVideoNumber,
                     completed: false,
                     timestamp: Date.now()
                 }));
@@ -81,7 +145,7 @@ export default function VideoScreen() {
             }
         };
         saveProgress();
-    }, [videoNumber]);
+    }, [activeScreeningId, currentVideoNumber]);
     
     // Simulate video finishing after 5 seconds (replace with actual video logic)
     useEffect(() => {
@@ -91,36 +155,49 @@ export default function VideoScreen() {
         }, 5000); // Video "finishes" after 3 seconds
         
         return () => clearTimeout(timer);
-    }, [videoNumber]);
+    }, [currentVideoNumber]);
 
     // safe recording start
     useEffect(() => {
         if (
-            videoNumber === 1 &&
             isCameraReady &&
             isRefReady &&
             isCameraMounted &&
             cameraPermission?.granted &&
             microphonePermission?.granted &&
-            !isCurrentlyRecording()
+            !isCurrentlyRecording() &&
+            !hasAttemptedRecordingStartRef.current
         ) {
+            hasAttemptedRecordingStartRef.current = true;
             console.log('Starting screening recording safely...');
             const startTimer = setTimeout(() => {
-                startScreeningRecording();
+                startScreeningRecording().then((started) => {
+                    if (!started) {
+                        hasAttemptedRecordingStartRef.current = false;
+                    }
+                });
             }, 250);
 
             return () => clearTimeout(startTimer);
         }
-    }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted, videoNumber]);
+    }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted]);
     
     const handleNext = async () => {
-        if (videoNumber < totalVideos) {
-            // Go to next video - use replace to keep same screen instance for continuous recording
-            navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId });
+        if (currentVideoNumber < totalVideos) {
+            setCurrentVideoNumber(currentVideoNumber + 1);
         } else {
             // All videos complete - stop recording and save
             console.log('Video 5 completed, stopping recording...');
             let recordingPath: string | null = null;
+            let uploadedObjectKey: string | null = null;
+
+            if (!isCurrentlyRecording()) {
+                console.log('Recording not active at finish. Attempting recovery start...');
+                const recovered = await startScreeningRecording();
+                if (recovered) {
+                    await new Promise((resolve) => setTimeout(resolve, 1200));
+                }
+            }
 
             try {
                 // iOS can occasionally hang while stopping camera recording.
@@ -134,13 +211,34 @@ export default function VideoScreen() {
             }
 
             console.log('Recording saved to:', recordingPath);
+
+            if (recordingPath && activeScreeningId) {
+                const uploadResult = await uploadScreeningVideo({
+                    baseUrl: BASE_URL,
+                    screeningId: activeScreeningId,
+                    videoNumber: totalVideos,
+                    recordingUri: recordingPath,
+                    contentType: 'video/mp4',
+                });
+
+                if (uploadResult.success) {
+                    uploadedObjectKey = uploadResult.objectKey ?? null;
+                    console.log('S3 upload complete:', uploadResult.objectKey);
+                } else {
+                    console.log('S3 upload failed:', uploadResult.error);
+                }
+            } else {
+                console.log('Skipping upload. Missing recording or screeningId.');
+            }
             
             try {
                 await AsyncStorage.setItem('screeningProgress', JSON.stringify({
+                    screeningId: activeScreeningId,
                     videoNumber: totalVideos,
                     completed: true,
                     timestamp: Date.now(),
-                    recordingUri: recordingPath
+                    recordingUri: recordingPath,
+                    s3ObjectKey: uploadedObjectKey,
                 }));
             } catch (e) {
                 console.log('Error saving completion progress');
@@ -188,25 +286,25 @@ export default function VideoScreen() {
                             <View
                                 style={[
                                     styles.progressDot,
-                                    num === videoNumber && styles.progressDotActive,
-                                    num < videoNumber && styles.progressDotComplete,
-                                    num > videoNumber && styles.progressDotPending,
+                                    num === currentVideoNumber && styles.progressDotActive,
+                                    num < currentVideoNumber && styles.progressDotComplete,
+                                    num > currentVideoNumber && styles.progressDotPending,
                                 ]}
                             >
                                 <Text style={[
                                     styles.progressNumber,
-                                    num === videoNumber && styles.progressNumberActive,
-                                    num < videoNumber && styles.progressNumberComplete,
-                                    num > videoNumber && styles.progressNumberPending,
+                                    num === currentVideoNumber && styles.progressNumberActive,
+                                    num < currentVideoNumber && styles.progressNumberComplete,
+                                    num > currentVideoNumber && styles.progressNumberPending,
                                 ]}>
-                                    {num < videoNumber ? '✓' : num}
+                                    {num < currentVideoNumber ? '✓' : num}
                                 </Text>
                             </View>
                             {/* Connecting line (except after last dot) */}
                             {index < 4 && (
                                 <View style={[
                                     styles.progressLine,
-                                    num < videoNumber && styles.progressLineComplete,
+                                    num < currentVideoNumber && styles.progressLineComplete,
                                 ]} />
                             )}
                         </View>
@@ -216,7 +314,7 @@ export default function VideoScreen() {
                 {/* Troubleshooting button on the right */}
                 <Pressable 
                     style={styles.troubleshootButton}
-                    onPress={() => navigation.navigate('TroubleshootingScreen', { videoNumber })}
+                    onPress={() => navigation.navigate('TroubleshootingScreen', { videoNumber: currentVideoNumber })}
                 >
                     <Text style={styles.troubleshootIcon}>!</Text>
                 </Pressable>
@@ -226,7 +324,7 @@ export default function VideoScreen() {
             <View style={styles.videoContainer}>
                 <View style={styles.videoPlaceholder}>
                     <Text style={styles.videoPlaceholderText}>
-                        Video {videoNumber} of {totalVideos}
+                        Video {currentVideoNumber} of {totalVideos}
                     </Text>
                     <Text style={styles.videoStatusText}>
                         {isPlaying ? '▶ Playing...' : '✓ Finished'}
@@ -245,7 +343,7 @@ export default function VideoScreen() {
                         onPress={handleNext}
                     >
                         <Text style={styles.buttonText}>
-                            {videoNumber < totalVideos ? 'Next' : 'Finish and Submit'}
+                            {currentVideoNumber < totalVideos ? 'Next' : 'Finish and Submit'}
                         </Text>
                     </Pressable>
                 </View>

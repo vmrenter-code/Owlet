@@ -1,6 +1,5 @@
 import { CameraView } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system/legacy';
 
 let cameraRef: CameraView | null = null;
 let cameraIsReady = false;
@@ -9,15 +8,7 @@ let isRecording = false;
 let recordingStartTime: number | null = null;
 let currentRecordingUri: string | null = null;
 let recordingPromise: Promise<{ uri: string } | undefined> | null = null;
-const recordingsDir = `${FileSystem.documentDirectory}screenings/`;
 const CAMERA_STABILIZATION_DELAY_MS = 250;
-
-const ensureRecordingsDir = async () => {
-  const dirInfo = await FileSystem.getInfoAsync(recordingsDir);
-  if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(recordingsDir, { intermediates: true });
-  }
-};
 
 export const initializeCameraRef = (ref: CameraView) => {
   cameraRef = ref;
@@ -115,16 +106,7 @@ export const stopScreeningRecording = async (): Promise<string | null> => {
     }
 
     currentRecordingUri = video.uri;
-
-    // Move recording out of cache and into app documents storage.
-    await ensureRecordingsDir();
     const timestampKey = new Date().toISOString().replace(/[:.]/g, '-');
-    const persistentUri = `${recordingsDir}screening_${timestampKey}.mp4`;
-    await FileSystem.moveAsync({
-      from: video.uri,
-      to: persistentUri,
-    });
-    currentRecordingUri = persistentUri;
 
     // Save recording metadata to AsyncStorage for later retrieval
     try {

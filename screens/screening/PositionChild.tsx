@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 
@@ -8,6 +8,8 @@ import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo
 
 export default function PositionChild() {
     const navigation = useNavigation<any>();
+    const route = useRoute<any>();
+    const screeningId = route.params?.screeningId;
     const [permission, requestPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
 
@@ -105,7 +107,7 @@ export default function PositionChild() {
                     style={styles.beginButtonDisabled}
                     disabled={!permission?.granted || !microphoneGranted}
                     onPress={() => {
-                        navigation.navigate('ReadyToBegin');
+                        navigation.navigate('ReadyToBegin', { screeningId });
                     }}
                 >
                     <Text style={styles.beginButtonText}>Begin</Text>
