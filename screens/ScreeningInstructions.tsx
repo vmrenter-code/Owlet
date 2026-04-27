@@ -63,7 +63,7 @@ export default function ScreeningInstructions() {
 
 
         <View style={styles.buttonWrapper}>
-          <PrimaryBlueButton onPress={() => navigation.navigate('PositionChild')}>Begin Screening</PrimaryBlueButton>
+          <PrimaryBlueButton onPress={() => navigation.navigate('EKGPlacement')}>Begin Screening</PrimaryBlueButton>
         </View>
       </View>
     </View>
