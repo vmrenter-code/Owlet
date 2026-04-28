@@ -59,10 +59,27 @@ export default function PastScreenings() {
     useEffect(() => {
     const getLatestId = async () => {
         try {
-            const keys = await AsyncStorage.getAllKeys();
-            const hrKey = keys.find(k => k.startsWith('heartRateLog_'));
-            if (hrKey) {
-                setLatestScreeningId(hrKey.replace('heartRateLog_', ''));
+            // Get the most recent screening ID from screeningProgress
+            const savedProgress = await AsyncStorage.getItem('screeningProgress');
+            if (savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                if (progress.completed) {
+                    // Check if a heart rate log exists for this specific screening
+                    const keys = await AsyncStorage.getAllKeys();
+                    const hrKey = keys.find(k => k.startsWith('heartRateLog_') && k !== 'heartRateLog_null');
+                    
+                    // Find the most recent by sorting keys by timestamp in the screening ID
+                    const hrKeys = keys.filter(k => k.startsWith('heartRateLog_') && k !== 'heartRateLog_null');
+                    if (hrKeys.length > 0) {
+                        // Sort by timestamp embedded in screening ID (screening_TIMESTAMP_xxx)
+                        hrKeys.sort((a, b) => {
+    const tsA = parseInt(a.split('_')[2]) || 0;
+    const tsB = parseInt(b.split('_')[2]) || 0;
+    return tsB - tsA;
+});
+                        setLatestScreeningId(hrKeys[0].replace('heartRateLog_', ''));
+                    }
+                }
             }
         } catch (e) {
             console.log('Error fetching latest screening');
@@ -70,6 +87,7 @@ export default function PastScreenings() {
     };
     getLatestId();
 }, []);
+
 
     const handleResumeScreening = () => {
         navigation.navigate('VideoScreen', { videoNumber: incompleteVideoNumber });

@@ -1,5 +1,4 @@
-import React, { createContext, useState, ReactNode, useContext } from 'react';
-import { usePolarH9 } from '../src/services/polarH9Service';
+import React, { createContext, useState, ReactNode, useContext, useRef } from 'react';import { usePolarH9 } from '../src/services/polarH9Service';
 export interface HeartRateDataPoint {
   time: number; // seconds elapsed since screening started
   bpm: number;
@@ -32,7 +31,8 @@ export const ScreeningProvider = ({ children }: { children: ReactNode }) => {
   const [screeningId, setScreeningId] = useState<string | null>(null);
   const [videoNumber, setVideoNumber] = useState(1);
   const [heartRateLog, setHeartRateLog] = useState<HeartRateDataPoint[]>([]);
-  const [screeningStartTime, setScreeningStartTime] = useState<number | null>(null);
+  const [screeningStartTime, setScreeningStartTime_internal] = useState<number | null>(null);
+  const screeningStartTimeRef = useRef<number | null>(null);
 
   const { heartRate, connected, scanning, error, connectToH9, disconnect } = usePolarH9();
 
@@ -43,15 +43,22 @@ export const ScreeningProvider = ({ children }: { children: ReactNode }) => {
 };
 
   const addHeartRateDataPoint = (bpm: number) => {
-    const elapsed = screeningStartTime
-      ? Math.floor((Date.now() - screeningStartTime) / 1000)
-      : 0;
+    const elapsed = screeningStartTimeRef.current
+        ? Math.floor((Date.now() - screeningStartTimeRef.current) / 1000)
+        : 0;
+    console.log('elapsed time:', elapsed, 'startTime:', screeningStartTimeRef.current);
     setHeartRateLog(prev => [...prev, { time: elapsed, bpm }]);
-  };
+};
+
+const setScreeningStartTime = (time: number) => {
+    screeningStartTimeRef.current = time;
+    setScreeningStartTime_internal(time);
+};
 
   const clearHeartRateLog = () => {
     setHeartRateLog([]);
-    setScreeningStartTime(null);
+    screeningStartTimeRef.current = null;
+    setScreeningStartTime_internal(null);
   };
 
   return (

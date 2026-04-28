@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Svg, Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
-import { usePolarH9 } from '../../src/services/polarH9Service';
+import { useScreening } from '../../context/ScreeningContext';
 
 const PlayIcon = () => (
     <Svg width={60} height={60} viewBox="0 0 24 24" fill="none">
@@ -16,8 +16,7 @@ const PlayIcon = () => (
 
 export default function EKGPlacement() {
     const navigation = useNavigation<any>();
-    const { heartRate, connected, scanning, error, connectToH9 } = usePolarH9();
-
+const { heartRate, connected, scanning, error, connectToH9 } = useScreening();
     const handleBeginScreening = () => {
         navigation.navigate('PositionChild');
     };

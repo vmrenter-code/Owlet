@@ -26,7 +26,12 @@ export default function VideoScreen() {
     
     // Get screeningID from context (primary) or route params (fallback)
 const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
-    
+const heartRateLogRef = useRef<typeof heartRateLog>([]);
+const heartRateRef = useRef<number | null>(null); // add this
+useEffect(() => {
+    heartRateRef.current = heartRate;
+}, [heartRate]);
+    console.log('VideoScreen render - connected:', connected, 'heartRate:', heartRate);
     // Use context screeningID, or fall back to route params if available
     const currentScreeningID = screeningID || route.params?.screeningId;
     const videoNumber = route.params?.videoNumber || 1;
@@ -41,6 +46,7 @@ const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHear
     }, [currentScreeningID, videoNumber]);
 
     useEffect(() => {
+    console.log('Video number changed to:', videoNumber, '- clearing?', videoNumber === 1);
     if (videoNumber === 1) {
         clearHeartRateLog();
         setScreeningStartTime(Date.now());
@@ -48,16 +54,26 @@ const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHear
 }, [videoNumber]);
 
 useEffect(() => {
-    if (!connected || !heartRate) return;
+    console.log('heartRateLog updated, length:', heartRateLog.length);
+    heartRateLogRef.current = heartRateLog;
+}, [heartRateLog]);
+
+useEffect(() => {
+    console.log('Heart rate effect fired - connected:', connected);
+    if (!connected) return;
 
     const interval = setInterval(() => {
-        if (heartRate) {
-            addHeartRateDataPoint(heartRate);
+        const currentBpm = heartRateRef.current;
+        if (currentBpm) {
+            console.log('Adding data point:', currentBpm, 'BPM');
+            addHeartRateDataPoint(currentBpm);
         }
     }, 1000);
 
     return () => clearInterval(interval);
-}, [connected, heartRate]);
+}, [connected]); // heartRate removed from dependency array
+
+
     
     const cameraRef = useRef<CameraView>(null);
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -155,50 +171,49 @@ useEffect(() => {
     }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted, videoNumber]);
     
     const handleNext = async () => {
-        if (videoNumber < totalVideos) {
-            // Go to next video - use replace to keep same screen instance for continuous recording
-            navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
-        } else {
-            disconnect();
-            // All videos complete - stop recording and save
-            console.log('Video 5 completed, stopping recording...');
-            let recordingPath: string | null = null;
-
-            try {
-                // iOS can occasionally hang while stopping camera recording.
-                // Use a timeout fallback so the user is never stuck on this screen.
-                recordingPath = await Promise.race([
-                    stopScreeningRecording(),
-                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
-                ]);
-            } catch (e) {
-                console.log('Error stopping recording, continuing to completion');
-            }
-
-            console.log('Recording saved to:', recordingPath);
-            
-            try {
-                await AsyncStorage.setItem('screeningProgress', JSON.stringify({
-                    videoNumber: totalVideos,
-                    completed: true,
-                    timestamp: Date.now(),
-                    recordingUri: recordingPath
-                }));
-            } catch (e) {
-                console.log('Error saving completion progress');
-            }
-            // After the AsyncStorage.setItem for screeningProgress, add:
-try {
-    await AsyncStorage.setItem(
-        `heartRateLog_${currentScreeningID}`,
-        JSON.stringify(heartRateLog)
-    );
-} catch (e) {
-    console.log('Error saving heart rate log');
-}
-            navigation.navigate('ScreeningComplete');
+    if (videoNumber < totalVideos) {
+        navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
+    } else {
+        // Stop recording
+        console.log('Video 5 completed, stopping recording...');
+        let recordingPath: string | null = null;
+        try {
+            recordingPath = await Promise.race([
+                stopScreeningRecording(),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+            ]);
+        } catch (e) {
+            console.log('Error stopping recording, continuing to completion');
         }
-    };
+        console.log('Recording saved to:', recordingPath);
+
+        // Save screening progress
+        try {
+            await AsyncStorage.setItem('screeningProgress', JSON.stringify({
+                videoNumber: totalVideos,
+                completed: true,
+                timestamp: Date.now(),
+                recordingUri: recordingPath
+            }));
+        } catch (e) {
+            console.log('Error saving completion progress');
+        }
+
+        // Save heart rate log BEFORE disconnecting
+        try {
+            console.log('Saving heart rate log, length:', heartRateLogRef.current.length);
+            await AsyncStorage.setItem(
+                `heartRateLog_${currentScreeningID}`,
+                JSON.stringify(heartRateLogRef.current)
+            );
+        } catch (e) {
+            console.log('Error saving heart rate log');
+        }
+
+        disconnect(); // disconnect AFTER saving
+        navigation.navigate('ScreeningComplete');
+    }
+};
 
     return (
         <View style={styles.container}>
