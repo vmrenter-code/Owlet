@@ -291,10 +291,9 @@ export default function VideoScreen() {
             navigation.navigate('ScreeningComplete');
         }
     };
-
+//hidden camera. must have it to run without preview
     return (
         <View style={styles.container}>
-            {/* Hidden camera for recording - only records, no preview shown */}
             {cameraPermission?.granted && microphonePermission?.granted && (
                 <CameraView
                     ref={handleCameraRef}
