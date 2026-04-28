@@ -70,6 +70,7 @@ export default function FAQ() {
             <ScrollView 
                 showsVerticalScrollIndicator={false}
                 style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
             >
                 {/* FAQ Items */}
                 {faqData.map((item) => (
@@ -78,8 +79,6 @@ export default function FAQ() {
                         <Text style={styles.answer}>{item.answer}</Text>
                     </View>
                 ))}
-
-                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
@@ -130,6 +129,10 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
         paddingHorizontal: 20,
+    },
+
+    scrollContent: {
+        paddingBottom: 140,
     },
 
     faqItem: {

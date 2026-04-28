@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, Dimensions } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useState, useEffect, useRef } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -37,7 +37,17 @@ export default function VideoScreen() {
         console.log('VideoScreen - Video Number:', videoNumber);
     }, [currentScreeningID, videoNumber]);
     
+    // Cleanup: stop video when component unmounts
+    useEffect(() => {
+        return () => {
+            if (videoRef.current) {
+                videoRef.current.stopAsync();
+            }
+        };
+    }, []);
+    
     const cameraRef = useRef<CameraView>(null);
+    const videoRef = useRef<Video>(null);
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
     const BASE_URL = 'http://localhost:4000';
@@ -65,7 +75,11 @@ export default function VideoScreen() {
         }
     }, [cameraPermission?.status, microphonePermission?.status, requestCameraPermission, requestMicrophonePermission]);
     
-    const handleExitScreening = () => {
+    const handleExitScreening = async () => {
+        // Stop the video before exiting
+        if (videoRef.current) {
+            await videoRef.current.stopAsync();
+        }
         setShowExitModal(false);
         navigation.navigate('MainTabs');
     };
@@ -133,6 +147,11 @@ export default function VideoScreen() {
     }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted, videoNumber]);
     
     const handleNext = async () => {
+        // Stop the current video before navigating
+        if (videoRef.current) {
+            await videoRef.current.stopAsync();
+        }
+        
         if (videoNumber < totalVideos) {
             // Go to next video - use replace to keep same screen instance for continuous recording
             navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
@@ -244,6 +263,7 @@ export default function VideoScreen() {
             {/* Video Player */}
             <View style={styles.videoContainer}>
                 <Video
+                    ref={videoRef}
                     source={videoSources[videoNumber]}
                     style={styles.video}
                     resizeMode={ResizeMode.CONTAIN}
@@ -255,11 +275,21 @@ export default function VideoScreen() {
                         }
                     }}
                 />
-                <View style={styles.videoOverlay}>
-                    <Text style={styles.videoPlaceholderText}>
-                        Video {videoNumber} of {totalVideos}
+            </View>
+
+            {/* Skip button - always visible */}
+            <View style={styles.skipButtonContainer}>
+                <Pressable 
+                    style={({ pressed }) => [
+                        styles.skipButton,
+                        pressed && styles.buttonPressed
+                    ]}
+                    onPress={handleNext}
+                >
+                    <Text style={styles.skipButtonText}>
+                        {videoNumber < totalVideos ? 'Skip →' : 'Finish →'}
                     </Text>
-                </View>
+                </Pressable>
             </View>
 
             {/* Bottom button - only show when video finishes */}
@@ -425,19 +455,34 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 1,
+        overflow: 'hidden',
+        top: 100,
     },
 
     video: {
-        ...StyleSheet.absoluteFillObject,
+        position: 'absolute',
+        width: Dimensions.get('window').height,
+        height: Dimensions.get('window').width,
+        transform: [{ rotate: '90deg' }],
     },
 
-    videoOverlay: {
+    videoLabelContainer: {
         position: 'absolute',
-        top: 60,
+        top: 110,
         left: 0,
         right: 0,
         alignItems: 'center',
-        zIndex: 2,
+        zIndex: 10,
+    },
+
+    videoLabelText: {
+        color: 'rgba(255,255,255,0.6)',
+        fontSize: 14,
+        fontWeight: '500',
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
     },
 
     videoPlaceholder: {
@@ -461,6 +506,26 @@ const styles = StyleSheet.create({
     videoStatusText: {
         color: '#5fd4d4',
         fontSize: 18,
+    },
+
+    skipButtonContainer: {
+        position: 'absolute',
+        bottom: 100,
+        right: 20,
+        zIndex: 10,
+    },
+
+    skipButton: {
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+    },
+
+    skipButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
     },
 
     buttonContainer: {

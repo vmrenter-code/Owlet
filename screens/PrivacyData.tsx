@@ -79,19 +79,6 @@ export default function PrivacyData() {
                 {/* Title */}
                 <Text style={styles.title}>Privacy & Data</Text>
 
-                {/* Links Section */}
-                <View style={styles.section}>
-                    <Pressable style={({ pressed }) => [styles.linkItem, pressed && styles.linkItemPressed]}>
-                        <Text style={styles.linkLabel}>Terms of Service</Text>
-                        <Text style={styles.linkArrow}>›</Text>
-                    </Pressable>
-
-                    <Pressable style={({ pressed }) => [styles.linkItem, styles.lastItem, pressed && styles.linkItemPressed]}>
-                        <Text style={styles.linkLabel}>Privacy Policy</Text>
-                        <Text style={styles.linkArrow}>›</Text>
-                    </Pressable>
-                </View>
-
                 {/* What We Collect Section */}
                 <Text style={styles.sectionTitle}>What Information We Collect</Text>
                 <View style={styles.section}>

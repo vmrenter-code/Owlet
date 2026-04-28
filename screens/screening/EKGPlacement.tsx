@@ -5,10 +5,10 @@ import { Svg, Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const PlayIcon = () => (
-    <Svg width={60} height={60} viewBox="0 0 24 24" fill="none">
+    <Svg width={50} height={50} viewBox="0 0 24 24" fill="none">
         <Path 
             d="M8 5v14l11-7L8 5z" 
-            fill="#C4C4C4"
+            fill="#d0d0d0"
         />
     </Svg>
 );
@@ -22,42 +22,38 @@ export default function EKGPlacement() {
 
     return (
         <View style={styles.container}>
+            {/* Background gradient */}
             <LinearGradient
-                colors={['#8BC0CF', '#ffffff']}
-                style={styles.background}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 0.4 }}
+                colors={['#e8f4f8', '#f5f5f5']}
+                style={styles.gradient}
             />
-            
-            <View style={styles.content}>
-                {/* Video Player Area */}
-                <View style={styles.videoContainer}>
-                    <Pressable style={styles.playButton}>
-                        <PlayIcon />
-                    </Pressable>
-                </View>
 
-                {/* Instructions Card */}
-                <View style={styles.instructionsCard}>
-                    <Text style={styles.title}>EKG Placement</Text>
-                    <Text style={styles.description}>
-                        Please follow the video to place the EKG wearable on your child.
-                    </Text>
+            {/* Video Player Area */}
+            <View style={styles.videoContainer}>
+                <Pressable style={styles.playButton}>
+                    <PlayIcon />
+                </Pressable>
+            </View>
 
-                    {/* Begin Screening Button */}
-                    <Pressable 
-                        style={({ pressed }) => [
-                            styles.beginButton,
-                            pressed && styles.beginButtonPressed
-                        ]}
-                        onPress={handleBeginScreening}
-                    >
-                        <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" style={styles.buttonIcon}>
-                            <Path d="M8 5v14l11-7L8 5z" fill="#ffffff" />
-                        </Svg>
-                        <Text style={styles.beginButtonText}>Begin Screening</Text>
-                    </Pressable>
-                </View>
+            {/* Instructions */}
+            <View style={styles.instructionContainer}>
+                <Text style={styles.instructionTitle}>EKG Placement</Text>
+                <Text style={styles.instructionText}>
+                    Please follow the video to place the EKG wearable on your child.
+                </Text>
+            </View>
+
+            {/* Begin Screening Button */}
+            <View style={styles.buttonContainer}>
+                <Pressable 
+                    style={({ pressed }) => [
+                        styles.beginButton,
+                        pressed && styles.beginButtonPressed
+                    ]}
+                    onPress={handleBeginScreening}
+                >
+                    <Text style={styles.beginButtonText}>Begin Screening</Text>
+                </Pressable>
             </View>
         </View>
     );
@@ -66,83 +62,86 @@ export default function EKGPlacement() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#f5f5f5',
     },
-    background: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        height: '100%',
+
+    gradient: {
+        ...StyleSheet.absoluteFillObject,
     },
-    content: {
-        flex: 1,
-        paddingTop: 60,
-        paddingHorizontal: 20,
-    },
+
     videoContainer: {
         flex: 1,
-        maxHeight: 300,
+        maxHeight: '60%',
+        marginTop: 0,
+        marginHorizontal: 0,
         backgroundColor: '#ffffff',
-        borderRadius: 20,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.08,
         shadowRadius: 8,
         elevation: 3,
     },
+
     playButton: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: 'rgba(200, 200, 200, 0.2)',
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: 'rgba(200, 200, 200, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    instructionsCard: {
-        backgroundColor: '#ffffff',
-        borderRadius: 20,
-        padding: 24,
-        marginBottom: 100,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
+
+    instructionContainer: {
+        paddingHorizontal: 28,
+        paddingTop: 30,
     },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
+
+    instructionTitle: {
         color: '#1a1a1a',
+        fontSize: 24,
+        fontWeight: '700',
         marginBottom: 12,
         fontFamily: 'NotoSans-Bold',
     },
-    description: {
-        fontSize: 16,
+
+    instructionText: {
         color: '#666666',
+        fontSize: 16,
+        fontWeight: '400',
         lineHeight: 24,
-        marginBottom: 40,
         fontFamily: 'NotoSans-Regular',
     },
+
+    buttonContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        paddingHorizontal: 28,
+        paddingBottom: 100,
+    },
+
     beginButton: {
-        backgroundColor: '#8BC0CF',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: '#7FB8C9',
         paddingVertical: 16,
         borderRadius: 30,
-        gap: 8,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 3,
     },
+
     beginButtonPressed: {
-        backgroundColor: '#7AB0BF',
+        backgroundColor: '#6BA8B9',
         transform: [{ scale: 0.98 }],
     },
-    buttonIcon: {
-        marginRight: 4,
-    },
+
     beginButtonText: {
         color: '#ffffff',
         fontSize: 18,

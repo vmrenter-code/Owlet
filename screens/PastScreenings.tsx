@@ -81,7 +81,10 @@ export default function PastScreenings() {
             {/* Title */}
             <Text style={styles.title}>Past Screenings</Text>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
                 {/* Resume Screening Card - only shows when there's an incomplete screening */}
                 {hasIncompleteScreening && (
                     <Pressable 
@@ -90,7 +93,7 @@ export default function PastScreenings() {
                     >
                         <View style={styles.resumeContent}>
                             <Text style={styles.resumeTitle}>Resume Screening</Text>
-                            <Text style={styles.resumeSubtitle}>Click here to continue</Text>
+                            <Text style={styles.resumeSubtitle}>Continue where you left off</Text>
                         </View>
                         <View style={styles.playButton}>
                             <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
@@ -110,26 +113,38 @@ export default function PastScreenings() {
                                 index === pastScreeningsData.length - 1 && styles.lastItem
                             ]}
                         >
-                            <Text style={styles.dateText}>{screening.date}</Text>
-                            <Text style={styles.durationText}>duration: {screening.duration}</Text>
-                            
+                            <View style={styles.itemHeader}>
+                                <Text style={styles.dateText}>{screening.date}</Text>
+                                <View style={[styles.statusBadge, screening.hasResults ? styles.statusBadgeComplete : styles.statusBadgeReview]}>
+                                    <Text style={[styles.statusBadgeText, screening.hasResults ? styles.statusBadgeTextComplete : styles.statusBadgeTextReview]}>
+                                        {screening.status}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <Text style={styles.durationText}>Session length: {screening.duration}</Text>
+
                             {!screening.hasResults ? (
-                                <Text style={styles.statusText}>Status-{screening.status}</Text>
+                                <Text style={styles.pendingText}>Results will appear once clinician review is complete.</Text>
                             ) : (
                                 <View style={styles.linksContainer}>
-                                    <Pressable onPress={() => navigation.navigate('ViewResults', { screeningId: screening.id, date: screening.date })}>
+                                    <Pressable
+                                        style={({ pressed }) => [styles.actionButton, pressed && styles.actionButtonPressed]}
+                                        onPress={() => navigation.navigate('ViewResults', { screeningId: screening.id, date: screening.date })}
+                                    >
                                         <Text style={styles.linkText}>View results</Text>
                                     </Pressable>
-                                    <Pressable onPress={() => navigation.navigate('ClinicianNotes', { screeningId: screening.id, date: screening.date })}>
-                                        <Text style={styles.linkText}>View clinician notes</Text>
+                                    <Pressable
+                                        style={({ pressed }) => [styles.actionButton, pressed && styles.actionButtonPressed]}
+                                        onPress={() => navigation.navigate('ClinicianNotes', { screeningId: screening.id, date: screening.date })}
+                                    >
+                                        <Text style={styles.linkText}>Clinician notes</Text>
                                     </Pressable>
                                 </View>
                             )}
                         </View>
                     ))}
                 </View>
-
-                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
@@ -163,72 +178,129 @@ const styles = StyleSheet.create({
 
     title: {
         fontSize: 22,
-        fontWeight: 'bold',
-        color: '#333',
+        fontWeight: '700',
+        color: '#1f2a2f',
         paddingHorizontal: 25,
         paddingTop: 24,
         paddingBottom: 16,
     },
 
+    scrollContent: {
+        paddingBottom: 140,
+    },
+
     section: {
-        backgroundColor: '#ffffff',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
         marginHorizontal: 20,
-        marginBottom: 8,
-        borderRadius: 16,
+        marginBottom: 12,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(127, 184, 196, 0.15)',
     },
 
     screeningItem: {
-        paddingVertical: 24,
+        paddingVertical: 20,
         paddingHorizontal: 24,
         borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
+        borderBottomColor: '#eef3f4',
     },
 
     lastItem: {
         borderBottomWidth: 0,
     },
 
+    itemHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
+
     dateText: {
-        fontSize: 24,
-        fontWeight: '400',
-        color: '#333',
-        marginBottom: 6,
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#223037',
         letterSpacing: -0.3,
+    },
+
+    statusBadge: {
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+    },
+
+    statusBadgeComplete: {
+        backgroundColor: '#e9f8ee',
+    },
+
+    statusBadgeReview: {
+        backgroundColor: '#fff5df',
+    },
+
+    statusBadgeText: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
+
+    statusBadgeTextComplete: {
+        color: '#1f8b4d',
+    },
+
+    statusBadgeTextReview: {
+        color: '#9a6b00',
     },
 
     durationText: {
         fontSize: 14,
-        color: '#666',
-        marginBottom: 4,
+        color: '#627177',
+        marginBottom: 10,
     },
 
-    statusText: {
-        fontSize: 14,
-        color: '#333',
-        marginTop: 2,
+    pendingText: {
+        fontSize: 13,
+        color: '#6b7579',
+        lineHeight: 18,
     },
 
     linksContainer: {
-        marginTop: 4,
-        gap: 4,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 2,
+    },
+
+    actionButton: {
+        backgroundColor: '#eef7f9',
+        borderRadius: 999,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+    },
+
+    actionButtonPressed: {
+        backgroundColor: '#e2f0f3',
     },
 
     linkText: {
-        fontSize: 14,
-        color: '#5BA3B0',
-        textDecorationLine: 'underline',
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#2f7d8f',
     },
 
     resumeCard: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#7FB8C4',
+        backgroundColor: '#5f9eac',
         marginHorizontal: 20,
         marginBottom: 16,
-        borderRadius: 16,
+        borderRadius: 20,
         padding: 20,
+        shadowColor: '#2c6c78',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.22,
+        shadowRadius: 14,
+        elevation: 4,
     },
 
     resumeContent: {
@@ -237,7 +309,7 @@ const styles = StyleSheet.create({
 
     resumeTitle: {
         fontSize: 18,
-        fontWeight: '600',
+        fontWeight: '700',
         color: '#ffffff',
         marginBottom: 4,
     },
