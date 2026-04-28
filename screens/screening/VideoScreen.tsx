@@ -7,7 +7,6 @@ import { Svg, Path } from 'react-native-svg';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
 import { useScreening } from '../../context/ScreeningContext';
-import { usePolarH9 } from '../../src/services/polarH9Service';
 
 // Video sources for each screening video
 const videoSources: { [key: number]: any } = {
@@ -26,15 +25,13 @@ export default function VideoScreen() {
     const route = useRoute<any>();
     
     // Get screeningID from context (primary) or route params (fallback)
-    const { screeningID } = useScreening();
-    const videoNumber = route.params?.videoNumber || 1;
+const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
     
     // Use context screeningID, or fall back to route params if available
     const currentScreeningID = screeningID || route.params?.screeningId;
-    
-    //HeartRate
-    const { heartRate, connected, disconnect } = usePolarH9();
+    const videoNumber = route.params?.videoNumber || 1;
 
+    //HeartRate
 
 
     // Log screeningID for debugging
@@ -42,6 +39,25 @@ export default function VideoScreen() {
         console.log('VideoScreen - Current Screening ID:', currentScreeningID);
         console.log('VideoScreen - Video Number:', videoNumber);
     }, [currentScreeningID, videoNumber]);
+
+    useEffect(() => {
+    if (videoNumber === 1) {
+        clearHeartRateLog();
+        setScreeningStartTime(Date.now());
+    }
+}, [videoNumber]);
+
+useEffect(() => {
+    if (!connected || !heartRate) return;
+
+    const interval = setInterval(() => {
+        if (heartRate) {
+            addHeartRateDataPoint(heartRate);
+        }
+    }, 1000);
+
+    return () => clearInterval(interval);
+}, [connected, heartRate]);
     
     const cameraRef = useRef<CameraView>(null);
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -171,6 +187,15 @@ export default function VideoScreen() {
             } catch (e) {
                 console.log('Error saving completion progress');
             }
+            // After the AsyncStorage.setItem for screeningProgress, add:
+try {
+    await AsyncStorage.setItem(
+        `heartRateLog_${currentScreeningID}`,
+        JSON.stringify(heartRateLog)
+    );
+} catch (e) {
+    console.log('Error saving heart rate log');
+}
             navigation.navigate('ScreeningComplete');
         }
     };

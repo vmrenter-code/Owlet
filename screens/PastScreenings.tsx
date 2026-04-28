@@ -33,6 +33,7 @@ export default function PastScreenings() {
     const navigation = useNavigation<any>();
     const [hasIncompleteScreening, setHasIncompleteScreening] = useState(false);
     const [incompleteVideoNumber, setIncompleteVideoNumber] = useState(1);
+    const [latestScreeningId, setLatestScreeningId] = useState<string | null>(null);
 
     // Check for incomplete screening on mount
     // Resume button only shows if user has NOT pressed "Finish and Submit"
@@ -54,6 +55,21 @@ export default function PastScreenings() {
         };
         checkIncompleteScreening();
     }, []);
+
+    useEffect(() => {
+    const getLatestId = async () => {
+        try {
+            const keys = await AsyncStorage.getAllKeys();
+            const hrKey = keys.find(k => k.startsWith('heartRateLog_'));
+            if (hrKey) {
+                setLatestScreeningId(hrKey.replace('heartRateLog_', ''));
+            }
+        } catch (e) {
+            console.log('Error fetching latest screening');
+        }
+    };
+    getLatestId();
+}, []);
 
     const handleResumeScreening = () => {
         navigation.navigate('VideoScreen', { videoNumber: incompleteVideoNumber });
@@ -98,7 +114,23 @@ export default function PastScreenings() {
                             </Svg>
                         </View>
                     </Pressable>
+
+                    
                 )}
+
+                {latestScreeningId && (
+    <Pressable
+        style={styles.recentHeartRateCard}
+        onPress={() => navigation.navigate('HeartRateGraph', {
+            screeningId: latestScreeningId,
+            date: 'Most Recent Screening'
+        })}
+    >
+        <Text style={styles.recentHeartRateTitle}>View Latest Heart Rate Graph</Text>
+    </Pressable>
+)}
+
+
 
                 {/* Screenings List */}
                 <View style={styles.section}>
@@ -122,6 +154,9 @@ export default function PastScreenings() {
                                     </Pressable>
                                     <Pressable onPress={() => navigation.navigate('ClinicianNotes', { screeningId: screening.id, date: screening.date })}>
                                         <Text style={styles.linkText}>View clinician notes</Text>
+                                    </Pressable>
+                                    <Pressable onPress={() => navigation.navigate('HeartRateGraph', { screeningId: screening.id, date: screening.date })}>
+                                        <Text style={styles.linkText}>View heart rate</Text>
                                     </Pressable>
                                 </View>
                             )}
@@ -256,4 +291,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    recentHeartRateCard: {
+    backgroundColor: '#fff0f0',
+    marginHorizontal: 20,
+    marginBottom: 16,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#ffcccc',
+},
+recentHeartRateTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ff6b6b',
+},
 });
