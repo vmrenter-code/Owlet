@@ -268,7 +268,7 @@ export default function VideoScreen() {
 
                 if (uploadResult.success) {
                     uploadedObjectKey = uploadResult.objectKey ?? null;
-                    console.log('S3 upload complete:', uploadResult.objectKey);
+                    console.log('S3 upload complete. Processing will start automatically:', uploadResult.objectKey);
                 } else {
                     console.log('S3 upload failed:', uploadResult.error);
                 }

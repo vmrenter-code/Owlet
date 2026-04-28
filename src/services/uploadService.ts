@@ -25,6 +25,11 @@ export interface UploadVideoResult {
 	objectKey?: string;
 	error?: string;
 }
+
+export interface QueueVideoResult {
+	success: boolean;
+	error?: string;
+}
 // sends  a post to request a presigned url, then reads the video file 
 export async function requestPresignedUploadUrl(
 	baseUrl: string,

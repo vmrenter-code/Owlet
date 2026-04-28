@@ -7,6 +7,7 @@ import cors from 'cors';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 
+
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
 });
@@ -141,6 +142,30 @@ app.post('/screening/upload-url', async (req, res) => {
   } catch (err) {
     console.error('Error creating upload URL:', err);
     res.status(500).json({ success: false, error: 'Failed to create upload URL' });
+  }
+});
+
+// Receive results (CSV) from EC2 worker
+app.post('/screening/:id/results', async (req, res) => {
+  try {
+    const screeningId = getParam(req, 'id');
+    const { videoNumber, csvS3Key } = req.body;
+
+    if (videoNumber === undefined || !csvS3Key) {
+      return res.status(400).json({
+        success: false,
+        error: 'videoNumber and csvS3Key are required',
+      });
+    }
+
+    console.log(`Results received: screening=${screeningId}, video=${videoNumber}, csvKey=${csvS3Key}`);
+
+    // TODO: Store results in database (e.g., update Screening with risk_score)
+    // For now, just log success
+    return res.json({ success: true, message: 'Results received and stored' });
+  } catch (err) {
+    console.error('Error receiving results:', err);
+    return res.status(500).json({ success: false, error: 'Failed to store results' });
   }
 });
 
