@@ -8,7 +8,7 @@ import GoogleButton from '../components/GoogleButton';
 import AuthPg from '../components/AuthPg';
 import BackArrow from '../components/BackArrow';
 
-import { Svg, Path, Rect } from 'react-native-svg';
+import { Svg, Path, Rect, Circle } from 'react-native-svg';
 
 const UserIcon = ({ width = 20, height = 20, color = '#585858' }) => (
     <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
@@ -39,6 +39,22 @@ const CheckCircleIcon = ({ width = 20, height = 20, color = '#585858' }) => (
     </Svg>
 );
 
+const PasswordStatusIcon = ({ status }: { status: 'met' | 'pending' | 'unmet' }) => {
+    const strokeColor = status === 'met' ? '#2E9F5E' : status === 'unmet' ? '#D06868' : '#B9BDBD';
+    const fillColor = status === 'met' ? '#2E9F5E' : 'none';
+
+    return (
+        <Svg width={20} height={20} viewBox="0 0 26 26" fill="none">
+            <Circle cx={13} cy={13} r={10} fill={fillColor} stroke={strokeColor} strokeWidth={2} />
+            {status === 'met' ? (
+                <Path d="M8.5 13.2l3.1 3.1 6-6.4" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+            ) : (
+                <Path d="M13 8.5v5.2" stroke={strokeColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            )}
+        </Svg>
+    );
+};
+
 export default function Signup() {
     const navigation = useNavigation<any>();
     const [username, setUsername] = useState('');
@@ -46,13 +62,26 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isPasswordFocused, setIsPasswordFocused] = useState(false);
     const emailRef = useRef<any>(null);
     const passwordRef = useRef<any>(null);
     const confirmPasswordRef = useRef<any>(null);
 
+    const passwordLengthStatus = password.length >= 6 ? 'met' : 'unmet';
+    const passwordMatchStatus = confirmPassword.length === 0 ? 'pending' : password === confirmPassword ? 'met' : 'unmet';
+    const showPasswordRequirements = isPasswordFocused && password.length > 0;
+    const passwordRequirements = [
+        { label: 'At least 6 characters', status: passwordLengthStatus },
+    ] as const;
+
     const handleSignUp = async () => {
         if (!username || !email || !password || !confirmPassword) {
             Alert.alert('Error', 'Please fill in all fields.');
+            return;
+        }
+
+        if (password.length < 6) {
+            Alert.alert('Error', 'Password must be at least 6 characters.');
             return;
         }
 
@@ -111,28 +140,50 @@ export default function Signup() {
                                 onSubmitEditing={() => passwordRef.current?.focus()}
                             />
 
-                            <InputFields
-                                placeholder="Create your password"
-                                icon={<LockIcon width={20} height={20} />}
-                                ref={passwordRef}
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry
-                                returnKeyType="next"
-                                blurOnSubmit={false}
-                                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-                            />
+                            <View style={styles.passwordFieldWrapper}>
+                                {showPasswordRequirements && (
+                                    <View style={styles.passwordHelpCardOverlay}>
+                                        <Text style={styles.passwordHelpTitle}>Password requirements</Text>
+                                        <View style={styles.passwordHelpList}>
+                                            {passwordRequirements.map((item) => (
+                                                <View key={item.label} style={styles.passwordHelpRow}>
+                                                    <PasswordStatusIcon status={item.status} />
+                                                    <Text style={[styles.passwordHelpText, item.status === 'met' && styles.passwordHelpTextMet, item.status === 'unmet' && styles.passwordHelpTextUnmet]}>
+                                                        {item.label}
+                                                    </Text>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    </View>
+                                )}
+
+                                <InputFields
+                                    placeholder="Create your password"
+                                    icon={<LockIcon width={20} height={20} />}
+                                    ref={passwordRef}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    onFocus={() => setIsPasswordFocused(true)}
+                                    onBlur={() => setIsPasswordFocused(false)}
+                                    secureTextEntry
+                                    returnKeyType="next"
+                                    blurOnSubmit={false}
+                                    onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                                />
+                            </View>
 
                             <InputFields
                                 placeholder="Confirm your password"
-                                icon={<CheckCircleIcon width={20} height={20} />}
+                                icon={<CheckCircleIcon width={20} height={20} color={passwordMatchStatus === 'met' ? '#2E9F5E' : passwordMatchStatus === 'unmet' ? '#D06868' : '#585858'} />}
                                 ref={confirmPasswordRef}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
+                                onBlur={() => setIsPasswordFocused(false)}
                                 secureTextEntry
                                 returnKeyType="done"
                                 onSubmitEditing={handleSignUp}
                             />
+
                         </View>
 
                         <View style={styles.linkContainer}>
@@ -203,6 +254,66 @@ const styles = StyleSheet.create({
     divider: {
         gap: 10,
         marginTop: '9%',
+        position: 'relative',
+        zIndex: 1,
+    },
+
+    passwordFieldWrapper: {
+        position: 'relative',
+        overflow: 'visible',
+        zIndex: 2,
+    },
+
+    passwordHelpCardOverlay: {
+        position: 'absolute',
+        bottom: '100%',
+        left: 0,
+        right: 0,
+        marginBottom: 8,
+        zIndex: 25,
+        backgroundColor: '#F7FBFA',
+        borderColor: '#DDE7E6',
+        borderWidth: 1,
+        borderRadius: 100,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        gap: 6,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 6,
+    },
+
+    passwordHelpTitle: {
+        fontSize: 13,
+        color: '#1F2423',
+        fontFamily: 'NotoSans-SemiBold',
+    },
+
+    passwordHelpList: {
+        gap: 6,
+    },
+
+    passwordHelpRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+
+    passwordHelpText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#5F6665',
+        fontFamily: 'NotoSans-Regular',
+    },
+
+    passwordHelpTextMet: {
+        color: '#2E9F5E',
+    },
+
+    passwordHelpTextUnmet: {
+        color: '#D06868',
     },
 
     linkContainer: {
