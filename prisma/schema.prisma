@@ -11,16 +11,49 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id          String   @id @default(uuid())
+  firebaseUid String   @unique
+  name        String?
+  children    Child[]
+  createdAt   DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  screenings   Screening[]
+
+  notifications Boolean  @default(true)
+  language      String   @default("en")
+  accessibility Boolean  @default(false)
+}
+
+model Child {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  name          String?
+  birthday      DateTime?
+  createdAt     DateTime  @default(now())
+  screenings    Screening[]
+}
+
 model Screening {
   id           String        @id @default(uuid())
+  userId       String?
+  user         User?          @relation(fields: [userId], references: [id])
+  childId      String?
+  child        Child?         @relation(fields: [childId], references: [id])
   status       String        @default("pending")
   riskScore    Float?
   createdAt    DateTime      @default(now())
   completedAt  DateTime?
+
+  videoSessions VideoSession[]
 }
 
 model VideoSession {
   id          String    @id @default(uuid())
   videoNumber Int
   createdAt   DateTime  @default(now())
+  
+  screeningId String
+  screening   Screening  @relation(fields: [screeningId], references: [id])
 }

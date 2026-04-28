@@ -1,7 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFonts } from 'expo-font';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 
@@ -34,8 +34,13 @@ import ScreeningComplete from './screens/screening/ScreeningComplete';
 import TroubleshootingScreen from './screens/screening/TroubleshootingScreen';
 import TroubleshootingSolution from './screens/screening/TroubleshootingSolution';
 import { ScreeningProvider } from './context/ScreeningContext';
+import { ChildProvider } from './context/ChildContext';
 
 const Stack = createNativeStackNavigator();
+
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+const BASE_URL = 'http://localhost:4000';
+
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -46,9 +51,29 @@ export default function App() {
   });
 
   if (!fontsLoaded) return null;
+/*
+  useEffect(() => {
+    const auth = getAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+      console.log("USER LOGGED IN:", user.uid);
+      const token = await user.getIdToken();
+
+    const res = await fetch(`${BASE_URL}/users/sync`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    });
+
+    return unsubscribe;
+  }, []);*/
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+    <ChildProvider>
     <ScreeningProvider>
     <NavigationContainer>
       <Stack.Navigator
@@ -92,6 +117,7 @@ export default function App() {
       </Stack.Navigator>
     </NavigationContainer>
     </ScreeningProvider>
+    </ChildProvider>
     </GestureHandlerRootView>
   );
 }

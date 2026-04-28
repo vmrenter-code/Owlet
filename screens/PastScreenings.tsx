@@ -4,45 +4,25 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
+import { getAuth } from 'firebase/auth';
+import { useChild } from '../context/ChildContext';
 
-const pastScreeningsData = [
-    {
-        id: 1,
-        date: '03/04/2026',
-        duration: '~13mins',
-        status: 'In Review',
-        hasResults: false,
-    },
-    {
-        id: 2,
-        date: '02/22/2026',
-        duration: '~12mins',
-        status: 'Complete',
-        hasResults: true,
-    },
-    {
-        id: 3,
-        date: '01/12/2026',
-        duration: '~13mins',
-        status: 'Complete',
-        hasResults: true,
-    },
-];
+const BASE_URL = 'http://localhost:4000'; // Update to your backend URL
 
 export default function PastScreenings() {
     const navigation = useNavigation<any>();
     const [hasIncompleteScreening, setHasIncompleteScreening] = useState(false);
     const [incompleteVideoNumber, setIncompleteVideoNumber] = useState(1);
+    const [pastScreenings, setPastScreenings] = useState<any[]>([]);
+    const { selectedChild } = useChild();
 
     // Check for incomplete screening on mount
-    // Resume button only shows if user has NOT pressed "Finish and Submit"
     useEffect(() => {
         const checkIncompleteScreening = async () => {
             try {
                 const savedProgress = await AsyncStorage.getItem('screeningProgress');
                 if (savedProgress) {
                     const progress = JSON.parse(savedProgress);
-                    // Only show resume if screening was started but NOT completed (didn't press "Finish and Submit")
                     if (progress.videoNumber && !progress.completed) {
                         setHasIncompleteScreening(true);
                         setIncompleteVideoNumber(progress.videoNumber);
@@ -53,6 +33,35 @@ export default function PastScreenings() {
             }
         };
         checkIncompleteScreening();
+    }, []);
+
+    // Fetch past screenings from the backend
+    useEffect(() => {
+        const fetchPastScreenings = async () => {
+            try {
+                const user = getAuth().currentUser;
+                if (!user || !selectedChild) return;
+                const token = await user.getIdToken();
+
+                const response = await fetch(
+                    `${BASE_URL}/screenings?childId=${selectedChild.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                if (!response.ok) throw new Error('Failed to fetch screenings');
+                const data = await response.json();
+                // Assuming backend returns: { success: true, screenings: [...] }
+                if (data.success && data.screenings) {
+                    setPastScreenings(data.screenings);
+                }
+            } catch (err) {
+                console.error('Error fetching past screenings:', err);
+            }
+        };
+        fetchPastScreenings();
     }, []);
 
     const handleResumeScreening = () => {
@@ -70,24 +79,16 @@ export default function PastScreenings() {
             
             {/* Header */}
             <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
+                <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                     <Text style={styles.backArrow}>←</Text>
                 </Pressable>
             </View>
 
-            {/* Title */}
             <Text style={styles.title}>Past Screenings</Text>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Resume Screening Card - only shows when there's an incomplete screening */}
                 {hasIncompleteScreening && (
-                    <Pressable 
-                        style={styles.resumeCard}
-                        onPress={handleResumeScreening}
-                    >
+                    <Pressable style={styles.resumeCard} onPress={handleResumeScreening}>
                         <View style={styles.resumeContent}>
                             <Text style={styles.resumeTitle}>Resume Screening</Text>
                             <Text style={styles.resumeSubtitle}>Click here to continue</Text>
@@ -100,27 +101,31 @@ export default function PastScreenings() {
                     </Pressable>
                 )}
 
-                {/* Screenings List */}
                 <View style={styles.section}>
-                    {pastScreeningsData.map((screening, index) => (
+                    {pastScreenings.map((screening, index) => (
                         <View 
                             key={screening.id} 
                             style={[
                                 styles.screeningItem,
-                                index === pastScreeningsData.length - 1 && styles.lastItem
+                                index === pastScreenings.length - 1 && styles.lastItem
                             ]}
                         >
-                            <Text style={styles.dateText}>{screening.date}</Text>
-                            <Text style={styles.durationText}>duration: {screening.duration}</Text>
-                            
-                            {!screening.hasResults ? (
-                                <Text style={styles.statusText}>Status-{screening.status}</Text>
-                            ) : (
+                            <Text style={styles.dateText}>
+                                {new Date(screening.createdAt).toLocaleDateString()}
+                            </Text>
+                            <Text style={styles.durationText}>
+                                Duration: {screening.duration ?? '~12mins'}
+                            </Text>
+                            <Text style={styles.statusText}>
+                                Status: {screening.completedAt ? 'Complete' : 'In Review'}
+                            </Text>
+
+                            {screening.completedAt && (
                                 <View style={styles.linksContainer}>
-                                    <Pressable onPress={() => navigation.navigate('ViewResults', { screeningId: screening.id, date: screening.date })}>
+                                    <Pressable onPress={() => navigation.navigate('ViewResults', { screeningId: screening.id })}>
                                         <Text style={styles.linkText}>View results</Text>
                                     </Pressable>
-                                    <Pressable onPress={() => navigation.navigate('ClinicianNotes', { screeningId: screening.id, date: screening.date })}>
+                                    <Pressable onPress={() => navigation.navigate('ClinicianNotes', { screeningId: screening.id })}>
                                         <Text style={styles.linkText}>View clinician notes</Text>
                                     </Pressable>
                                 </View>

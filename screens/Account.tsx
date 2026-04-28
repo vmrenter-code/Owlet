@@ -1,9 +1,11 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, TextInput, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+import { get } from 'node:http';
+import { useChild } from '../context/ChildContext';
  
 
 //avatar icon
@@ -18,9 +20,15 @@ const FoxAvatar = () => (
 );
 
 export default function Account() {
+    const BASE_URL = 'http://localhost:4000';
     const navigation = useNavigation<any>();
     const [userName, setUserName] = useState('');
     const [userEmail, setUserEmail] = useState('');
+
+    const [editingChildName, setEditingChildName] = useState('');
+    const [editingChildBday, setEditingChildBday] = useState('');
+
+    const { children, selectedChild, setSelectedChild, updateChildren } = useChild();
 
     const handleDeleteAccount = () => {
         console.log('Delete account pressed');
@@ -39,7 +47,70 @@ export default function Account() {
       }
     });
     return unsubscribe;
-  }, []);
+    }, []);
+
+    useEffect(() => {
+        if (!selectedChild) return;
+
+        setEditingChildName(selectedChild.name || '');
+        setEditingChildBday(
+            selectedChild.birthday
+                ? new Date(selectedChild.birthday).toLocaleDateString()
+                : ''
+        );
+    }, [selectedChild]);
+
+    // Save child updates
+    const saveChildUpdates = async () => {
+        const user = getAuth().currentUser;
+        if (!user || !selectedChild) return;
+
+        const token = await user.getIdToken();
+        if (!selectedChild) {
+            console.error("No child selected");
+            return;
+        }
+        await fetch(`${BASE_URL}/children/${selectedChild.id}`, {
+            method: 'PUT',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: editingChildName,
+                birthday: editingChildBday ? new Date(editingChildBday).toISOString() : null,
+            }),
+        });
+        await updateChildren();
+    };
+
+    // Create new child profile
+    const createChildProfile = async () => {
+        const user = getAuth().currentUser;
+        if (!user) {
+            console.log('No user logged in');
+            return;
+        }
+
+        const token = await user.getIdToken();
+        const res = await fetch(`${BASE_URL}/children`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: 'New Child',
+                birthday: null,
+            }),
+        });
+        const data = await res.json();
+        const newChild = data.child;
+        await updateChildren();
+        if (newChild) {
+            setSelectedChild(newChild);
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -98,16 +169,28 @@ export default function Account() {
 
                 <View style={styles.section}>
                     {/* Name */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                    <View style={styles.accountItem}>
                         <Text style={styles.itemLabel}>Name</Text>
-                        <Text style={styles.itemValue}>Babyy</Text>
-                    </Pressable>
+                        <TextInput
+                            style={styles.itemValue}
+                            placeholder="Enter name"
+                            value={editingChildName}
+                            onChangeText={setEditingChildName}
+                            onBlur={saveChildUpdates}
+                        />
+                    </View>
 
                     {/* Birth Date */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                    <View style={styles.accountItem}>
                         <Text style={styles.itemLabel}>Birth Date</Text>
-                        <Text style={styles.itemValue}>03/08/2020</Text>
-                    </Pressable>
+                        <TextInput
+                            style={styles.itemValue}
+                            placeholder="MM/DD/YYYY"
+                            value={editingChildBday}
+                            onChangeText={setEditingChildBday}
+                            onBlur={saveChildUpdates}
+                        />
+                    </View>
 
                     {/* Race & Ethnicity */}
                     <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
@@ -116,9 +199,32 @@ export default function Account() {
                     </Pressable>
 
                     {/* Switch Child Profile */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, styles.lastItem, pressed && styles.accountItemPressed]}>
-                        <Text style={styles.itemLabel}>Switch Child Profile</Text>
-                        <Text style={styles.itemArrow}>›</Text>
+                    <View style={styles.accountItem}>
+                        <Text style={styles.itemLabel}>Switch Child</Text>
+                    </View>
+
+                    {children.map((child) => (
+                        <Pressable
+                            key={child.id}
+                            onPress={() => {
+                                setSelectedChild(child);
+                                setEditingChildName(child.name || '');
+                                setEditingChildBday(
+                                    child.birthday
+                                        ? new Date(child.birthday).toLocaleDateString()
+                                        : ''
+                                );
+                            }}
+                        >
+                            <Text style={{ padding: 8 }}>
+                                {child.name || "Unnamed Child"}
+                            </Text>
+                        </Pressable>
+                    ))}
+
+                    {/* Add Child */}
+                    <Pressable onPress={createChildProfile} style={styles.accountItem}>
+                        <Text style={styles.itemLabel}>Add New Child</Text>
                     </Pressable>
                 </View>
 

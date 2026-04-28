@@ -2,6 +2,7 @@
 
 # firebase config
 .env
+firebase-service-account.json
 # dependencies
 node_modules/
 

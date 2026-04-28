@@ -1,19 +1,72 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useScreening } from '../../context/ScreeningContext';
+import { useChild } from '../../context/ChildContext';
+import { getAuth } from 'firebase/auth'; 
 
 // This screen appears when face is detected in the circle
 // The Begin button is now active and ready to start the screening
 
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
+    const BASE_URL = 'http://localhost:4000';
     const { screeningID } = useScreening();
+    const { selectedChild } = useChild();
 
-    const handleBegin = () => {
+    const handleBegin = async () => {
         // Start the screening process - navigate to first video
         // The screeningID is passed via context, but also as route param for backup
         console.log('Starting screening with ID:', screeningID);
-        navigation.navigate('VideoScreen', { videoNumber: 1, screeningId: screeningID });
+        try {
+            const user = getAuth().currentUser;
+            if (!user) {
+                console.error("No logged-in user");
+                return;
+            }
+            const token = await user.getIdToken();
+            if (!selectedChild) {
+                console.error("No child selected");
+                return;
+            }
+
+            // Create a new screening in the backend
+            const response = await fetch(`${BASE_URL}/screening`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                screeningID: screeningID,
+                startedAt: new Date().toISOString(),
+                childId: selectedChild.id,
+            }),
+        });
+            /*
+            if (!response.ok) {
+                throw new Error('Failed to start screening');
+            }
+            const data = await response.json();*/
+            const text = await response.text();
+            console.log("🔥 RAW RESPONSE:", text);
+
+            if (!response.ok) {
+            throw new Error(`Failed: ${text}`);
+            }
+
+            const data = JSON.parse(text);
+
+            if (data.success && data) {
+                console.log('Screening started successfully:', data.screening);
+                // Start the screening process - navigate to first video
+                navigation.navigate('VideoScreen', { videoNumber: 1, screeningID: screeningID });
+            } else {
+                console.log('Server did not confirm screening start');
+            }
+
+        } catch (error) {
+            console.error('Error starting screening:', error);
+        }
     };
 
     return (
