@@ -240,13 +240,28 @@ export default function VideoScreen() {
                 </View>
 
                 {/* Troubleshooting button on the right */}
-                <Pressable 
-                    style={styles.troubleshootButton}
-                    onPress={() => navigation.navigate('TroubleshootingScreen', { videoNumber })}
-                >
-                    <Text style={styles.troubleshootIcon}>!</Text>
-                </Pressable>
+<Pressable 
+    style={styles.troubleshootButton}
+    onPress={() => navigation.navigate('TroubleshootingScreen', { videoNumber })}
+>
+    <Text style={styles.troubleshootIcon}>!</Text>
+</Pressable>
+
+{/* Skip button - for debug testing */}
+<Pressable
+    style={styles.skipButton}
+    onPress={handleNext}
+>
+    <Text style={styles.skipIcon}>⏭</Text>
+</Pressable>
+
+
+
             </View>
+
+        
+
+            
 
             {/* Video Player */}
             <View style={styles.videoContainer}>
@@ -434,6 +449,21 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
     },
+
+    skipButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+    },
+
+skipIcon: {
+    color: '#ffffff',
+    fontSize: 18,
+},
 
     videoContainer: {
         ...StyleSheet.absoluteFillObject,

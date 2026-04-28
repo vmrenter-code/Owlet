@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Svg, Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { usePolarH9 } from '../../src/services/polarH9Service';
 
 const PlayIcon = () => (
     <Svg width={60} height={60} viewBox="0 0 24 24" fill="none">
@@ -15,6 +16,7 @@ const PlayIcon = () => (
 
 export default function EKGPlacement() {
     const navigation = useNavigation<any>();
+    const { heartRate, connected, scanning, error, connectToH9 } = usePolarH9();
 
     const handleBeginScreening = () => {
         navigation.navigate('PositionChild');
@@ -43,6 +45,32 @@ export default function EKGPlacement() {
                     <Text style={styles.description}>
                         Please follow the video to place the EKG wearable on your child.
                     </Text>
+
+                    {/* H9 Connection Section */}
+                    <View style={styles.h9Container}>
+                        {!connected ? (
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.connectButton,
+                                    pressed && styles.connectButtonPressed
+                                ]}
+                                onPress={connectToH9}
+                                disabled={scanning}
+                            >
+                                <Text style={styles.connectButtonText}>
+                                    {scanning ? '🔍 Scanning for H9...' : ' Connect Polar H9'}
+                                </Text>
+                            </Pressable>
+                        ) : (
+                            <View style={styles.connectedBadge}>
+                                <Text style={styles.connectedText}> H9 Connected</Text>
+                                {heartRate && (
+                                    <Text style={styles.heartRatePreview}>{heartRate} BPM</Text>
+                                )}
+                            </View>
+                        )}
+                        {error && <Text style={styles.errorText}>{error}</Text>}
+                    </View>
 
                     {/* Begin Screening Button */}
                     <Pressable 
@@ -124,8 +152,51 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#666666',
         lineHeight: 24,
-        marginBottom: 40,
+        marginBottom: 24,
         fontFamily: 'NotoSans-Regular',
+    },
+    h9Container: {
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    connectButton: {
+        backgroundColor: 'rgba(95, 212, 212, 0.9)',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+    connectButtonPressed: {
+        backgroundColor: 'rgba(95, 212, 212, 0.7)',
+    },
+    connectButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    connectedBadge: {
+        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        alignItems: 'center',
+        gap: 4,
+    },
+    connectedText: {
+        color: '#5fd4d4',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    heartRatePreview: {
+        color: '#1a1a1a',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    errorText: {
+        color: '#ff6b6b',
+        fontSize: 13,
+        marginTop: 6,
+        textAlign: 'center',
     },
     beginButton: {
         backgroundColor: '#8BC0CF',
