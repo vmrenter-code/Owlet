@@ -48,6 +48,7 @@ def process_video(local_path: str, screening_id: str, video_number: int) -> dict
 
         cmd = [
             OWLET_PYTHON,
+            '-u',
             str(owlet_script),
             '--subject_video',
             local_path,
@@ -57,20 +58,38 @@ def process_video(local_path: str, screening_id: str, video_number: int) -> dict
         if OWLET_EXPERIMENT_INFO and Path(OWLET_EXPERIMENT_INFO).exists():
             cmd.extend(['--experiment_info', OWLET_EXPERIMENT_INFO])
 
-        proc = subprocess.run(
+        logger.info('OWLET command: %s', ' '.join(cmd))
+        proc = subprocess.Popen(
             cmd,
             cwd=OWLET_ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
-            capture_output=True,
-            timeout=1800,
-            check=False,
+            bufsize=1,
+            env={**os.environ, 'PYTHONUNBUFFERED': '1'},
         )
-        if proc.stdout:
-            logger.info('OWLET stdout:\n%s', proc.stdout)
-        if proc.stderr:
-            logger.warning('OWLET stderr:\n%s', proc.stderr)
-        if proc.returncode != 0:
-            return {'success': False, 'error': f'OWLET exit code {proc.returncode}'}
+
+        assert proc.stdout is not None
+        last_output = time.time()
+        try:
+            for line in iter(proc.stdout.readline, ''):
+                if not line:
+                    break
+                line = line.rstrip()
+                if line:
+                    last_output = time.time()
+                    logger.info('OWLET: %s', line)
+
+                # Emit a heartbeat if OWLET is still alive but quiet.
+                if time.time() - last_output > 120:
+                    logger.info('OWLET still running (no output for 2min) screening=%s video=%s', screening_id, video_number)
+                    last_output = time.time()
+        except Exception as e:
+            logger.warning('Error reading OWLET output: %s', e)
+
+        return_code = proc.wait(timeout=7200)  # 2-hour timeout
+        if return_code != 0:
+            return {'success': False, 'error': f'OWLET exit code {return_code}'}
 
         # Locate the freshest CSV produced by OWLET run.
         search_dirs = [Path(local_path).parent, Path(OWLET_ROOT), Path('/tmp')]
