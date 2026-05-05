@@ -2,16 +2,13 @@
 import json
 import logging
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
+from urllib.parse import unquote_plus
 
 import boto3
-try:
-    # Import OWLET eyetracker if available
-    from eyetracker import analyze_video
-except ImportError:
-    analyze_video = None
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger('neuroscreen-worker')
@@ -34,31 +31,61 @@ Path(VIDEOS_DIR).mkdir(parents=True, exist_ok=True)
 s3_client = boto3.client('s3', region_name=AWS_REGION)
 sqs_client = boto3.client('sqs', region_name=AWS_REGION)
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:4000')
+OWLET_ROOT = os.getenv('OWLET_ROOT', str(Path.home() / 'OWLET'))
+OWLET_EXPERIMENT_INFO = os.getenv('OWLET_EXPERIMENT_INFO')
+OWLET_PYTHON = os.getenv('OWLET_PYTHON', sys.executable)
 
 
 def process_video(local_path: str, screening_id: str, video_number: int) -> dict:
-    """Run OWLET eyetracker on video and return CSV results."""
+    """Run OWLET.py on video and return CSV results."""
     try:
-        if not analyze_video:
-            logger.warning('OWLET eyetracker not available, skipping analysis')
-            return {'success': False, 'error': 'eyetracker module not imported'}
-        
-        logger.info('Running OWLET eyetracker on screening=%s video=%s', screening_id, video_number)
-        
-        # Run eyetracker analysis
-        result = analyze_video(local_path)
-        
-        # Assume result has a CSV file path or content
-        if hasattr(result, 'csv_path'):
-            csv_path = result.csv_path
-        elif hasattr(result, 'to_csv'):
-            # If result is a DataFrame, save it
-            csv_path = os.path.join(VIDEOS_DIR, f'{screening_id}_video_{video_number}_results.csv')
-            result.to_csv(csv_path, index=False)
-        else:
-            logger.error('OWLET result has no CSV output')
-            return {'success': False, 'error': 'No CSV output from eyetracker'}
-        
+        owlet_script = Path(OWLET_ROOT) / 'OWLET.py'
+        if not owlet_script.exists():
+            return {'success': False, 'error': f'OWLET.py not found at {owlet_script}'}
+
+        logger.info('Running OWLET.py on screening=%s video=%s', screening_id, video_number)
+        started_at = time.time()
+
+        cmd = [
+            OWLET_PYTHON,
+            str(owlet_script),
+            '--subject_video',
+            local_path,
+            '--cnn',
+        ]
+
+        if OWLET_EXPERIMENT_INFO and Path(OWLET_EXPERIMENT_INFO).exists():
+            cmd.extend(['--experiment_info', OWLET_EXPERIMENT_INFO])
+
+        proc = subprocess.run(
+            cmd,
+            cwd=OWLET_ROOT,
+            text=True,
+            capture_output=True,
+            timeout=1800,
+            check=False,
+        )
+        if proc.stdout:
+            logger.info('OWLET stdout:\n%s', proc.stdout)
+        if proc.stderr:
+            logger.warning('OWLET stderr:\n%s', proc.stderr)
+        if proc.returncode != 0:
+            return {'success': False, 'error': f'OWLET exit code {proc.returncode}'}
+
+        # Locate the freshest CSV produced by OWLET run.
+        search_dirs = [Path(local_path).parent, Path(OWLET_ROOT), Path('/tmp')]
+        csv_candidates = []
+        for search_dir in search_dirs:
+            if not search_dir.exists():
+                continue
+            for candidate in search_dir.rglob('*.csv'):
+                if candidate.stat().st_mtime >= started_at - 2:
+                    csv_candidates.append(candidate)
+
+        if not csv_candidates:
+            return {'success': False, 'error': 'OWLET completed but no CSV output found'}
+
+        csv_path = str(max(csv_candidates, key=lambda p: p.stat().st_mtime))
         logger.info('✓ OWLET analysis complete. CSV: %s', csv_path)
         return {
             'success': True,
@@ -118,6 +145,15 @@ def handle_message(message: dict) -> bool:
     try:
         body = json.loads(message['Body'])
 
+        # S3 sends test events when notification configuration is created/updated.
+        if body.get('Event') == 's3:TestEvent':
+            logger.info('Received s3:TestEvent, deleting message and skipping')
+            sqs_client.delete_message(
+                QueueUrl=SQS_QUEUE_URL,
+                ReceiptHandle=message['ReceiptHandle'],
+            )
+            return True
+
         # Parse S3 Event Notification format from bucket event
         # Format: {Records: [{s3: {object: {key: "..."}}}]}
         s3_key = None
@@ -127,7 +163,7 @@ def handle_message(message: dict) -> bool:
         if 'Records' in body:
             for record in body['Records']:
                 if record.get('eventSource') == 'aws:s3':
-                    s3_key = record['s3']['object']['key']
+                    s3_key = unquote_plus(record['s3']['object']['key'])
                     break
 
         if not s3_key:
