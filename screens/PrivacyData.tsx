@@ -79,35 +79,85 @@ export default function PrivacyData() {
                 {/* Title */}
                 <Text style={styles.title}>Privacy & Data</Text>
 
-                {/* Links Section */}
-                <View style={styles.section}>
-                    <Pressable style={({ pressed }) => [styles.linkItem, pressed && styles.linkItemPressed]}>
-                        <Text style={styles.linkLabel}>Terms of Service</Text>
-                        <Text style={styles.linkArrow}>›</Text>
-                    </Pressable>
-
-                    <Pressable style={({ pressed }) => [styles.linkItem, styles.lastItem, pressed && styles.linkItemPressed]}>
-                        <Text style={styles.linkLabel}>Privacy Policy</Text>
-                        <Text style={styles.linkArrow}>›</Text>
-                    </Pressable>
-                </View>
-
-                {/* Data Practices Section */}
-                <Text style={styles.sectionTitle}>Data Practices</Text>
-
+                {/* What We Collect Section */}
+                <Text style={styles.sectionTitle}>What Information We Collect</Text>
                 <View style={styles.section}>
                     <View style={styles.textContainer}>
                         <Text style={styles.bodyText}>
-                            We collect and process your data to provide screening services and improve our application. 
-                            Your child's screening videos are securely stored and analyzed to provide developmental insights. 
-                            We do not share your personal information with third parties without your consent. 
-                            You can request deletion of your data at any time through the Account settings.
+                            <Text style={styles.boldText}>Video & Gaze Data:</Text> While your child engages with the app's activities, we use the device's camera to record eye movements and attention patterns.{'\n\n'}
+                            <Text style={styles.boldText}>Physiological Data (ECG):</Text> If a compatible heart rate monitor is connected, we collect Electrocardiogram (ECG) data to understand your child's physiological responses and focus levels.{'\n\n'}
+                            <Text style={styles.boldText}>Parent-Child Interaction Data:</Text> During specific assessments, the camera may record interactions between you and your child for analysis.{'\n\n'}
+                            <Text style={styles.boldText}>Basic Demographics:</Text> Information such as your child's age and developmental milestones.{'\n\n'}
+                            <Text style={styles.boldText}>Technical Data:</Text> Device type and operating system version.
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Data Transmission Section */}
+                <Text style={styles.sectionTitle}>How We Handle Video Footage</Text>
+                <View style={styles.section}>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.bodyText}>
+                            The app securely transmits raw video footage to our protected research servers for analysis.{'\n\n'}
+                            <Text style={styles.boldText}>Encryption:</Text> All video is encrypted using AES-256 both during transit and at rest.{'\n\n'}
+                            <Text style={styles.boldText}>Restricted Access:</Text> Only authorized members of the research team can access these files.{'\n\n'}
+                            <Text style={styles.boldText}>Retention:</Text> Video files are stored only as long as necessary and are deleted or permanently de-identified.
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Data Use Section */}
+                <Text style={styles.sectionTitle}>How We Use This Data</Text>
+                <View style={styles.section}>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.bodyText}>
+                            • Refine machine learning models to detect early ADHD and neurodevelopmental risk.{'\n'}
+                            • Provide researchers with objective "attention metrics" to improve screening accuracy.{'\n'}
+                            • Improve the usability and performance of the app.
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Security & Compliance Section */}
+                <Text style={styles.sectionTitle}>Data Security & Compliance</Text>
+                <View style={styles.section}>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.bodyText}>
+                            <Text style={styles.boldText}>HIPAA & GDPR Compliance:</Text> We adhere to HIPAA and GDPR standards for data encryption and storage.{'\n\n'}
+                            <Text style={styles.boldText}>Anonymization:</Text> We de-identify data whenever possible to protect your child's identity.{'\n\n'}
+                            <Text style={styles.boldText}>Secure Storage:</Text> All data is stored on encrypted, cloud-based servers with restricted access.
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Your Rights Section */}
+                <Text style={styles.sectionTitle}>Your Rights</Text>
+                <View style={styles.section}>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.bodyText}>
+                            <Text style={styles.boldText}>Voluntary Participation:</Text> You can stop using the app and withdraw at any time.{'\n\n'}
+                            <Text style={styles.boldText}>Data Access:</Text> You may request to see what data has been collected or ask for deletion.{'\n\n'}
+                            <Text style={styles.boldText}>Camera Access:</Text> The app only accesses the camera during active screening sessions.
                         </Text>
                     </View>
 
                     <View style={[styles.toggleItem, styles.lastItem]}>
                         <Text style={styles.linkLabel}>I accept these terms</Text>
                         <CustomSwitch value={acceptTerms} onValueChange={handleAcceptTerms} />
+                    </View>
+                </View>
+
+                {/* Contact Section */}
+                <Text style={styles.sectionTitle}>Contact Us</Text>
+                <View style={styles.section}>
+                    <View style={[styles.textContainer, styles.lastItem]}>
+                        <Text style={styles.bodyText}>
+                            WILD Lab{'\n'}
+                            University of California, Irvine{'\n'}
+                            Principal Investigator: Dr. Denise Werchan, PhD{'\n'}
+                            Email: uciwildlab@gmail.com{'\n'}
+                            Website: https://faculty.sites.uci.edu/werchanlab/
+                        </Text>
                     </View>
                 </View>
 
@@ -208,6 +258,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
         lineHeight: 20,
+    },
+
+    boldText: {
+        fontWeight: '600',
     },
 
     toggleItem: {

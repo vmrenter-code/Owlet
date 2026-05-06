@@ -1,14 +1,24 @@
-import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, Dimensions } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useState, useEffect, useRef } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
+import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
 import { useScreening } from '../../context/ScreeningContext';
 
+// Video sources for each screening video
+const videoSources: { [key: number]: any } = {
+    1: require('../../assets/videos/Video1.mp4'),
+    2: require('../../assets/videos/Video2.mp4'),
+    3: require('../../assets/videos/Video3.mp4'),
+    4: require('../../assets/videos/Video4.mp4'),
+    5: require('../../assets/videos/Video5.mp4'),
+};
+
 // This screen plays videos during the screening process
-// Shows 4 videos sequentially with Stop and Save / Next buttons
+// Shows 5 videos sequentially with Stop and Save / Next buttons
 
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
@@ -27,7 +37,17 @@ export default function VideoScreen() {
         console.log('VideoScreen - Video Number:', videoNumber);
     }, [currentScreeningID, videoNumber]);
     
+    // Cleanup: stop video when component unmounts
+    useEffect(() => {
+        return () => {
+            if (videoRef.current) {
+                videoRef.current.stopAsync();
+            }
+        };
+    }, []);
+    
     const cameraRef = useRef<CameraView>(null);
+    const videoRef = useRef<Video>(null);
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
     const BASE_URL = 'http://localhost:4000';
@@ -55,7 +75,11 @@ export default function VideoScreen() {
         }
     }, [cameraPermission?.status, microphonePermission?.status, requestCameraPermission, requestMicrophonePermission]);
     
-    const handleExitScreening = () => {
+    const handleExitScreening = async () => {
+        // Stop the video before exiting
+        if (videoRef.current) {
+            await videoRef.current.stopAsync();
+        }
         setShowExitModal(false);
         navigation.navigate('MainTabs');
     };
@@ -97,14 +121,9 @@ export default function VideoScreen() {
         saveProgress();
     }, [videoNumber]);
     
-    // Simulate video finishing after 5 seconds (replace with actual video logic)
+    // Reset playing state when video number changes
     useEffect(() => {
         setIsPlaying(true);
-        const timer = setTimeout(() => {
-            setIsPlaying(false);
-        }, 5000); // Video "finishes" after 3 seconds
-        
-        return () => clearTimeout(timer);
     }, [videoNumber]);
 
     // safe recording start
@@ -128,6 +147,11 @@ export default function VideoScreen() {
     }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted, videoNumber]);
     
     const handleNext = async () => {
+        // Stop the current video before navigating
+        if (videoRef.current) {
+            await videoRef.current.stopAsync();
+        }
+        
         if (videoNumber < totalVideos) {
             // Go to next video - use replace to keep same screen instance for continuous recording
             navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
@@ -236,16 +260,36 @@ export default function VideoScreen() {
                 </Pressable>
             </View>
 
-            {/* Video placeholder */}
+            {/* Video Player */}
             <View style={styles.videoContainer}>
-                <View style={styles.videoPlaceholder}>
-                    <Text style={styles.videoPlaceholderText}>
-                        Video {videoNumber} of {totalVideos}
+                <Video
+                    ref={videoRef}
+                    source={videoSources[videoNumber]}
+                    style={styles.video}
+                    resizeMode={ResizeMode.CONTAIN}
+                    shouldPlay={isPlaying}
+                    isLooping={false}
+                    onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
+                        if (status.isLoaded && status.didJustFinish) {
+                            setIsPlaying(false);
+                        }
+                    }}
+                />
+            </View>
+
+            {/* Skip button - always visible */}
+            <View style={styles.skipButtonContainer}>
+                <Pressable 
+                    style={({ pressed }) => [
+                        styles.skipButton,
+                        pressed && styles.buttonPressed
+                    ]}
+                    onPress={handleNext}
+                >
+                    <Text style={styles.skipButtonText}>
+                        {videoNumber < totalVideos ? 'Skip →' : 'Finish →'}
                     </Text>
-                    <Text style={styles.videoStatusText}>
-                        {isPlaying ? '▶ Playing...' : '✓ Finished'}
-                    </Text>
-                </View>
+                </Pressable>
             </View>
 
             {/* Bottom button - only show when video finishes */}
@@ -411,6 +455,34 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 1,
+        overflow: 'hidden',
+        top: 100,
+    },
+
+    video: {
+        position: 'absolute',
+        width: Dimensions.get('window').height,
+        height: Dimensions.get('window').width,
+        transform: [{ rotate: '90deg' }],
+    },
+
+    videoLabelContainer: {
+        position: 'absolute',
+        top: 110,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        zIndex: 10,
+    },
+
+    videoLabelText: {
+        color: 'rgba(255,255,255,0.6)',
+        fontSize: 14,
+        fontWeight: '500',
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
     },
 
     videoPlaceholder: {
@@ -422,15 +494,38 @@ const styles = StyleSheet.create({
     },
 
     videoPlaceholderText: {
-        color: '#888',
-        fontSize: 24,
+        color: '#ffffff',
+        fontSize: 18,
         fontWeight: '600',
-        marginBottom: 10,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
     },
 
     videoStatusText: {
         color: '#5fd4d4',
         fontSize: 18,
+    },
+
+    skipButtonContainer: {
+        position: 'absolute',
+        bottom: 100,
+        right: 20,
+        zIndex: 10,
+    },
+
+    skipButton: {
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+    },
+
+    skipButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
     },
 
     buttonContainer: {

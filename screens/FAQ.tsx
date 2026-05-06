@@ -5,78 +5,38 @@ import { LinearGradient } from 'expo-linear-gradient';
 const faqData = [
     {
         id: 1,
-        question: 'What is NeuroScreen?',
-        answer: 'NeuroScreen is an AI-powered tool that screens for early neurodevelopmental differences.',
+        question: 'What is the goal of the NeuroScreen research project?',
+        answer: 'The goal is to help families identify early signs of ADHD and related neurodevelopmental risks in infants and toddlers. By using short, video-based assessments, we aim to spot these signs years earlier than current clinical methods, allowing for support when it can make the biggest difference.',
     },
     {
         id: 2,
-        question: 'Is this a diagnosis?',
-        answer: 'No. NeuroScreen provides screening insights, not a medical diagnosis.',
+        question: "What if my child won't sit still or look at the screen?",
+        answer: "That's perfectly okay! We know toddlers are active. Our \"Deep Learning\" models are being designed specifically to handle the wiggles, turns, and distractions that come naturally with being a young child.",
     },
     {
         id: 3,
-        question: 'What age is this for?',
-        answer: 'Designed for infants and toddlers, typically 6 months–3 years.',
+        question: 'Do I get a "score" or a diagnosis right away?',
+        answer: 'Because NeuroScreen is currently a research tool, it is not a replacement for a professional medical diagnosis. The app helps us develop the technology that will one day be used by doctors. We will provide updates on the study\'s progress, but you should always consult your pediatrician for specific concerns about your child.',
     },
     {
         id: 4,
-        question: 'How long does screening take?',
-        answer: 'About 5–10 minutes.',
+        question: 'What does the heart rate monitor (ECG) tell you?',
+        answer: 'Focus and attention are closely linked to the body\'s nervous system. The ECG helps us see if a child is calm, excited, or over-stimulated during a task. This physiological data helps us understand the effort your child is using to pay attention.',
     },
     {
         id: 5,
-        question: 'How accurate are the results?',
-        answer: 'Results are indicators, not definitive. Follow up with a professional if concerned.',
+        question: 'Where does my video footage go?',
+        answer: 'Your video and heart rate data are encrypted and sent securely to our protected research servers. Think of it like a digital vault—only authorized researchers have the "key" to view the data for analysis. We never sell your data to third parties or advertisers.',
     },
     {
         id: 6,
-        question: 'How does the AI work?',
-        answer: 'It analyzes behavior patterns from guided activities.',
+        question: 'Can I change my mind and delete my data?',
+        answer: 'Absolutely. Your participation is entirely voluntary. If you decide you no longer want to be part of the study, you can stop using the app at any time and request that your family\'s data be deleted from our active research records.',
     },
     {
         id: 7,
-        question: 'Can the AI be wrong?',
-        answer: 'Yes. Development varies, and results are not conclusive.',
-    },
-    {
-        id: 8,
-        question: 'Is my data safe?',
-        answer: 'Yes. All data is encrypted and private.',
-    },
-    {
-        id: 9,
-        question: 'Do you store videos?',
-        answer: 'Videos may be temporarily stored for analysis. You can delete them anytime.',
-    },
-    {
-        id: 10,
-        question: 'Who can see my results?',
-        answer: 'Only you, unless you choose to share them.',
-    },
-    {
-        id: 11,
-        question: 'What if I get a high-risk result?',
-        answer: 'We recommend consulting a pediatrician or specialist.',
-    },
-    {
-        id: 12,
-        question: 'Can I retake the screening?',
-        answer: 'Yes. You can retake it anytime.',
-    },
-    {
-        id: 13,
-        question: 'Do I need special equipment?',
-        answer: 'No. Just your phone camera.',
-    },
-    {
-        id: 14,
-        question: 'Will this label my child?',
-        answer: 'No. NeuroScreen provides guidance, not labels.',
-    },
-    {
-        id: 15,
-        question: 'Why use early screening?',
-        answer: 'Early insights help families seek support sooner.',
+        question: 'Does the app record all the time?',
+        answer: 'No. The app only accesses the camera and sensors when you explicitly start a "screening session." You will always see a recording indicator on the screen when the camera is active.',
     },
 ];
 
@@ -110,6 +70,7 @@ export default function FAQ() {
             <ScrollView 
                 showsVerticalScrollIndicator={false}
                 style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
             >
                 {/* FAQ Items */}
                 {faqData.map((item) => (
@@ -118,8 +79,6 @@ export default function FAQ() {
                         <Text style={styles.answer}>{item.answer}</Text>
                     </View>
                 ))}
-
-                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
@@ -170,6 +129,10 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
         paddingHorizontal: 20,
+    },
+
+    scrollContent: {
+        paddingBottom: 140,
     },
 
     faqItem: {
