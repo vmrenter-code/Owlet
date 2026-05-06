@@ -5,12 +5,17 @@
   "scripts": {
     "dev": "node --loader ts-node/esm server.ts",
     "server": "node --loader ts-node/esm server.ts",
+    "dev": "node --loader ts-node/esm server.ts",
+    "server": "node --loader ts-node/esm server.ts",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1032.0",
+    "@aws-sdk/client-sqs": "^3.1038.0",
+    "@aws-sdk/s3-request-presigner": "^3.1032.0",
     "@aws-sdk/client-s3": "^3.1032.0",
     "@aws-sdk/client-sqs": "^3.1038.0",
     "@aws-sdk/s3-request-presigner": "^3.1032.0",

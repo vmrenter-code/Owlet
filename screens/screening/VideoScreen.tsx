@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Modal, Dimensions, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
@@ -58,8 +59,13 @@ export default function VideoScreen() {
     const BASE_URL =
         process.env.EXPO_PUBLIC_API_BASE_URL ??
         (Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000');
+    const BASE_URL =
+        process.env.EXPO_PUBLIC_API_BASE_URL ??
+        (Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000');
     
     const totalVideos = 5;
+    const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
+    const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
     const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
     const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
     
@@ -73,6 +79,61 @@ export default function VideoScreen() {
     // added readiness tracking to ensure we don't try to start recording before camera is fully ready, which was causing crashes before
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [isRefReady, setIsRefReady] = useState(false);
+
+    useEffect(() => {
+        setCurrentVideoNumber(initialVideoNumber);
+    }, [initialVideoNumber]);
+
+    useEffect(() => {
+        if (screeningId) {
+            setActiveScreeningId(screeningId);
+        }
+    }, [screeningId]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const ensureScreeningId = async () => {
+            if (activeScreeningId) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/screening`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ startedAt: new Date().toISOString() }),
+                });
+
+                if (!response.ok) {
+                    console.log('Failed to create screening session:', response.status);
+                    if (isMounted) {
+                        setActiveScreeningId(createLocalScreeningId());
+                    }
+                    return;
+                }
+
+                const payload = await response.json();
+                const createdId = payload?.screening?.id ?? createLocalScreeningId();
+                if (isMounted) {
+                    setActiveScreeningId(createdId);
+                }
+            } catch (error) {
+                console.log('Error creating screening session in VideoScreen:', error);
+                if (isMounted) {
+                    setActiveScreeningId(createLocalScreeningId());
+                }
+            }
+        };
+
+        ensureScreeningId();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [activeScreeningId, BASE_URL]);
 
     useEffect(() => {
         setCurrentVideoNumber(initialVideoNumber);
