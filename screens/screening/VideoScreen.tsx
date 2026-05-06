@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, Pressable, Modal, Dimensions, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
@@ -59,13 +58,8 @@ export default function VideoScreen() {
     const BASE_URL =
         process.env.EXPO_PUBLIC_API_BASE_URL ??
         (Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000');
-    const BASE_URL =
-        process.env.EXPO_PUBLIC_API_BASE_URL ??
-        (Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000');
     
     const totalVideos = 5;
-    const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
-    const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
     const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
     const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
     
