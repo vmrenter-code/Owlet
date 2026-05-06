@@ -17,6 +17,7 @@ export default function BeginCard({ children }: Props) {
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [hasIncompleteScreening, setHasIncompleteScreening] = useState(false);
   const [incompleteVideoNumber, setIncompleteVideoNumber] = useState(1);
+  const [incompleteScreeningId, setIncompleteScreeningId] = useState<string | null>(null);
 
   // Check for incomplete screening on mount
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function BeginCard({ children }: Props) {
           if (progress.videoNumber && !progress.completed) {
             setHasIncompleteScreening(true);
             setIncompleteVideoNumber(progress.videoNumber);
+            setIncompleteScreeningId(progress.screeningId ?? null);
           }
         }
       } catch (e) {
@@ -49,7 +51,10 @@ export default function BeginCard({ children }: Props) {
 
   const handleResume = () => {
     setShowResumeModal(false);
-    navigation.navigate('VideoScreen', { videoNumber: incompleteVideoNumber });
+    navigation.navigate('VideoScreen', {
+      videoNumber: incompleteVideoNumber,
+      screeningId: incompleteScreeningId,
+    });
   };
 
   const handleStartNew = async () => {
