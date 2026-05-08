@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useEffect, useRef, useState } from 'react';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import userAuthServices from '../src/services/userAuthServices';
 import { useChildProfile } from '../context/ChildProfileContext';

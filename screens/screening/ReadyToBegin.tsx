@@ -1,19 +1,17 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useScreening } from '../../context/ScreeningContext';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 // This screen appears when face is detected in the circle
 // The Begin button is now active and ready to start the screening
 
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
-    const { screeningID } = useScreening();
+    const route = useRoute<any>();
+    const screeningId = route.params?.screeningId;
 
     const handleBegin = () => {
         // Start the screening process - navigate to first video
-        // The screeningID is passed via context, but also as route param for backup
-        console.log('Starting screening with ID:', screeningID);
-        navigation.navigate('VideoScreen', { videoNumber: 1, screeningId: screeningID });
+        navigation.navigate('VideoScreen', { videoNumber: 1, screeningId });
     };
 
     return (
