@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, Animated, Dimensions, Easing } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import userAuthServices from '../src/services/userAuthServices';
+import { useChildProfile } from '../context/ChildProfileContext';
  
 
 //avatar icon
@@ -18,12 +19,105 @@ const FoxAvatar = () => (
     </Svg>
 );
 
+/** Shape placeholders for child profile switcher avatars */
+const HeartAvatar = () => (
+    <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
+        <Circle cx={28} cy={28} r={26} fill="#FDE7EC" />
+        <Path
+            d="M28 40s-12-7.2-12-16a7.5 7.5 0 0 1 13.5-4.5L28 21l-1.5-1.5A7.5 7.5 0 0 1 40 24c0 8.8-12 16-12 16z"
+            fill="#E63956"
+        />
+    </Svg>
+);
+
+const StarAvatar = () => (
+    <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
+        <Circle cx={28} cy={28} r={26} fill="#FFF6D6" />
+        <Path
+            d="M28 14l3.95 8.45 9.05 1.05-6.7 6.4 1.8 9.1L28 34.7l-8.1 4.3 1.8-9.1-6.7-6.4 9.05-1.05L28 14z"
+            fill="#F5B400"
+        />
+    </Svg>
+);
+
+const DiamondAvatar = () => (
+    <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
+        <Circle cx={28} cy={28} r={26} fill="#E3F4FF" />
+        <Path d="M28 12l14 16-14 16-14-16z" fill="#3FB6F0" />
+    </Svg>
+);
+
+const CheckMarkIcon = () => (
+    <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
+        <Circle cx={9} cy={9} r={9} fill="#49A3BD" />
+        <Path d="M5 9l2.5 2.5L13 6" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const childProfiles = [
+    { id: 'babyy', name: 'Babyy', Avatar: HeartAvatar },
+    { id: 'baby2', name: 'Baby2', Avatar: StarAvatar },
+    { id: 'baby3', name: 'Baby3', Avatar: DiamondAvatar },
+] as const;
+
 export default function Account() {
     const navigation = useNavigation<any>();
     const [userName, setUserName] = useState('username');
     const [userEmail, setUserEmail] = useState('username@gmail.com');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [switchChildModalVisible, setSwitchChildModalVisible] = useState(false);
+    const [sheetMounted, setSheetMounted] = useState(false);
+    const { activeChildId, setActiveChildId } = useChildProfile();
+
+    const screenHeight = Dimensions.get('window').height;
+    const sheetTranslateY = useRef(new Animated.Value(screenHeight)).current;
+    const backdropOpacity = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        if (switchChildModalVisible) {
+            setSheetMounted(true);
+            Animated.parallel([
+                Animated.timing(sheetTranslateY, {
+                    toValue: 0,
+                    duration: 280,
+                    easing: Easing.out(Easing.cubic),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(backdropOpacity, {
+                    toValue: 1,
+                    duration: 220,
+                    easing: Easing.out(Easing.cubic),
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        }
+    }, [switchChildModalVisible, sheetTranslateY, backdropOpacity, screenHeight]);
+
+    const closeSwitchChildModal = () => {
+        Animated.parallel([
+            Animated.timing(sheetTranslateY, {
+                toValue: screenHeight,
+                duration: 240,
+                easing: Easing.in(Easing.cubic),
+                useNativeDriver: true,
+            }),
+            Animated.timing(backdropOpacity, {
+                toValue: 0,
+                duration: 200,
+                easing: Easing.in(Easing.cubic),
+                useNativeDriver: true,
+            }),
+        ]).start(() => {
+            setSwitchChildModalVisible(false);
+            setSheetMounted(false);
+        });
+    };
+
+    const selectChildAndClose = (id: string) => {
+        setActiveChildId(id);
+        closeSwitchChildModal();
+    };
 
     const handleDeleteAccount = () => {
         if (isDeleting) {
@@ -143,7 +237,9 @@ export default function Account() {
                     {/* Name */}
                     <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
                         <Text style={styles.itemLabel}>Name</Text>
-                        <Text style={styles.itemValue}>Babyy</Text>
+                        <Text style={styles.itemValue}>
+                            {childProfiles.find((c) => c.id === activeChildId)?.name ?? 'Babyy'}
+                        </Text>
                     </Pressable>
 
                     {/* Birth Date */}
@@ -159,7 +255,10 @@ export default function Account() {
                     </Pressable>
 
                     {/* Switch Child Profile */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, styles.lastItem, pressed && styles.accountItemPressed]}>
+                    <Pressable
+                        style={({ pressed }) => [styles.accountItem, styles.lastItem, pressed && styles.accountItemPressed]}
+                        onPress={() => setSwitchChildModalVisible(true)}
+                    >
                         <Text style={styles.itemLabel}>Switch Child Profile</Text>
                         <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
@@ -186,6 +285,53 @@ export default function Account() {
 
                 <View style={{ height: 40 }} />
             </ScrollView>
+
+            <Modal
+                visible={switchChildModalVisible || sheetMounted}
+                transparent
+                animationType="none"
+                onRequestClose={closeSwitchChildModal}
+            >
+                <View style={styles.modalRoot}>
+                    <Animated.View
+                        style={[StyleSheet.absoluteFillObject, styles.modalBackdrop, { opacity: backdropOpacity }]}
+                        pointerEvents="auto"
+                    >
+                        <Pressable
+                            style={StyleSheet.absoluteFillObject}
+                            onPress={closeSwitchChildModal}
+                            accessibilityRole="button"
+                            accessibilityLabel="Dismiss"
+                        />
+                    </Animated.View>
+                    <View style={styles.modalSheetWrap} pointerEvents="box-none">
+                        <Animated.View style={[styles.modalSheet, { transform: [{ translateY: sheetTranslateY }] }]}>
+                            <View style={styles.sheetHandle} />
+                            <View style={styles.profileRow}>
+                                {childProfiles.map((child) => {
+                                    const selected = activeChildId === child.id;
+                                    const Avatar = child.Avatar;
+                                    return (
+                                        <Pressable
+                                            key={child.id}
+                                            style={styles.profileCell}
+                                            onPress={() => selectChildAndClose(child.id)}
+                                        >
+                                            <View style={styles.profileCircle}>
+                                                <Avatar />
+                                            </View>
+                                            <Text style={styles.profileName}>{child.name}</Text>
+                                            <View style={styles.checkArea}>
+                                                {selected ? <CheckMarkIcon /> : null}
+                                            </View>
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
+                        </Animated.View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -297,5 +443,81 @@ const styles = StyleSheet.create({
     dangerText: {
         fontSize: 16,
         color: '#e74c3c',
+    },
+
+    modalRoot: {
+        flex: 1,
+    },
+
+    modalBackdrop: {
+        backgroundColor: 'rgba(0, 0, 0, 0.44)',
+    },
+
+    modalSheetWrap: {
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+
+    modalSheet: {
+        backgroundColor: '#ffffff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingTop: 10,
+        paddingHorizontal: 20,
+        paddingBottom: 36,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 16,
+    },
+
+    sheetHandle: {
+        width: 36,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#d9d9d9',
+        alignSelf: 'center',
+        marginBottom: 24,
+    },
+
+    profileRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        paddingHorizontal: 8,
+    },
+
+    profileCell: {
+        alignItems: 'center',
+        width: '30%',
+        maxWidth: 110,
+    },
+
+    profileCircle: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+        backgroundColor: '#fafafa',
+    },
+
+    profileName: {
+        marginTop: 10,
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#333',
+        textAlign: 'center',
+    },
+
+    checkArea: {
+        marginTop: 6,
+        height: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

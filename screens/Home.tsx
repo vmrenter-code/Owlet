@@ -11,10 +11,12 @@ import ProfileContainer from '../components/ProfileContainer';
 import BeginCard from '../components/BeginCard';
 import { auth } from '../src/config/firebase';
 import { Svg, Path, Circle } from 'react-native-svg';
+import { useChildProfile } from '../context/ChildProfileContext';
 
 export default function Home() {
   const navigation = useNavigation<any>();
   const [displayName, setDisplayName] = useState('User');
+  const { activeChild } = useChildProfile();
 
   useEffect(() => {
     const stopListening = onAuthStateChanged(auth, (user) => {
@@ -51,7 +53,7 @@ export default function Home() {
                     letterSpacing: -0.2
                   }}
                 >
-                  Hi, {displayName}!
+                  Hi, {displayName} and {activeChild.name}!
                 </Text>
 
               <Text

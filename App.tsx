@@ -35,6 +35,7 @@ import TroubleshootingScreen from './screens/screening/TroubleshootingScreen';
 import TroubleshootingSolution from './screens/screening/TroubleshootingSolution';
 import EKGPlacement from './screens/screening/EKGPlacement';
 import { ScreeningProvider } from './context/ScreeningContext';
+import { ChildProfileProvider } from './context/ChildProfileContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,8 +52,10 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
     <ScreeningProvider>
+    <ChildProfileProvider>
     <NavigationContainer>
       <Stack.Navigator
+        initialRouteName="Launch"
         screenOptions={{
           contentStyle: { paddingTop: 0, marginTop: 0, backgroundColor: '#fff' },
           headerBackground: () => <HomeBg />,
@@ -93,6 +96,7 @@ export default function App() {
         
       </Stack.Navigator>
     </NavigationContainer>
+    </ChildProfileProvider>
     </ScreeningProvider>
     </GestureHandlerRootView>
   );
