@@ -28,17 +28,55 @@ export default function VideoScreen() {
     const route = useRoute<any>();
     
     // Get screeningID from context (primary) or route params (fallback)
-    const { screeningID } = useScreening();
-    const videoNumber = route.params?.videoNumber || 1;
-    
+const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
+const heartRateLogRef = useRef<typeof heartRateLog>([]);
+const heartRateRef = useRef<number | null>(null); // add this
+useEffect(() => {
+    heartRateRef.current = heartRate;
+}, [heartRate]);
+    console.log('VideoScreen render - connected:', connected, 'heartRate:', heartRate);
     // Use context screeningID, or fall back to route params if available
     const currentScreeningID = screeningID || route.params?.screeningId;
-    
+    const videoNumber = route.params?.videoNumber || 1;
+
+    //HeartRate
+
+
     // Log screeningID for debugging
     useEffect(() => {
         console.log('VideoScreen - Current Screening ID:', currentScreeningID);
         console.log('VideoScreen - Video Number:', videoNumber);
     }, [currentScreeningID, videoNumber]);
+
+    useEffect(() => {
+    console.log('Video number changed to:', videoNumber, '- clearing?', videoNumber === 1);
+    if (videoNumber === 1) {
+        clearHeartRateLog();
+        setScreeningStartTime(Date.now());
+    }
+}, [videoNumber]);
+
+useEffect(() => {
+    console.log('heartRateLog updated, length:', heartRateLog.length);
+    heartRateLogRef.current = heartRateLog;
+}, [heartRateLog]);
+
+useEffect(() => {
+    console.log('Heart rate effect fired - connected:', connected);
+    if (!connected) return;
+
+    const interval = setInterval(() => {
+        const currentBpm = heartRateRef.current;
+        if (currentBpm) {
+            console.log('Adding data point:', currentBpm, 'BPM');
+            addHeartRateDataPoint(currentBpm);
+        }
+    }, 1000);
+
+    return () => clearInterval(interval);
+}, [connected]); // heartRate removed from dependency array
+
+
     
     // Cleanup: stop video when component unmounts
     useEffect(() => {
@@ -277,76 +315,89 @@ export default function VideoScreen() {
     }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted]);
     
     const handleNext = async () => {
-        // Stop the current video before navigating
-        if (videoRef.current) {
-            await videoRef.current.stopAsync();
+    // Stop the current video before navigating
+    if (videoRef.current) {
+        await videoRef.current.stopAsync();
+    }
+
+    if (videoNumber < totalVideos) {
+        navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
+    } else {
+        console.log('Video 5 completed, stopping recording...');
+        let recordingPath: string | null = null;
+        let uploadedObjectKey: string | null = null;
+
+        if (!isCurrentlyRecording()) {
+            console.log('Recording not active at finish. Attempting recovery start...');
+            const recovered = await startScreeningRecording();
+            if (recovered) {
+                await new Promise((resolve) => setTimeout(resolve, 1200));
+            }
         }
-        
-        if (videoNumber < totalVideos) {
-            // Go to next video - use replace to keep same screen instance for continuous recording
-            navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
-        } else {
-            // All videos complete - stop recording and save
-            console.log('Video 5 completed, stopping recording...');
-            let recordingPath: string | null = null;
-            let uploadedObjectKey: string | null = null;
 
-            if (!isCurrentlyRecording()) {
-                console.log('Recording not active at finish. Attempting recovery start...');
-                const recovered = await startScreeningRecording();
-                if (recovered) {
-                    await new Promise((resolve) => setTimeout(resolve, 1200));
-                }
-            }
+        try {
+            recordingPath = await Promise.race([
+                stopScreeningRecording(),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+            ]);
+        } catch (e) {
+            console.log('Error stopping recording, continuing to completion');
+        }
 
-            try {
-                // iOS can occasionally hang while stopping camera recording.
-                // Use a timeout fallback so the user is never stuck on this screen.
-                recordingPath = await Promise.race([
-                    stopScreeningRecording(),
-                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
-                ]);
-            } catch (e) {
-                console.log('Error stopping recording, continuing to completion');
-            }
+        console.log('Recording saved to:', recordingPath);
 
-            console.log('Recording saved to:', recordingPath);
+        // S3 Upload
+        if (recordingPath && activeScreeningId) {
+            const uploadResult = await uploadScreeningVideo({
+                baseUrl: BASE_URL,
+                screeningId: activeScreeningId,
+                videoNumber: totalVideos,
+                recordingUri: recordingPath,
+                contentType: 'video/mp4',
+            });
 
-            if (recordingPath && activeScreeningId) {
-                const uploadResult = await uploadScreeningVideo({
-                    baseUrl: BASE_URL,
-                    screeningId: activeScreeningId,
-                    videoNumber: totalVideos,
-                    recordingUri: recordingPath,
-                    contentType: 'video/mp4',
-                });
-
-                if (uploadResult.success) {
-                    uploadedObjectKey = uploadResult.objectKey ?? null;
-                    console.log('S3 upload complete. Processing will start automatically:', uploadResult.objectKey);
-                } else {
-                    console.log('S3 upload failed:', uploadResult.error);
-                }
+            if (uploadResult.success) {
+                uploadedObjectKey = uploadResult.objectKey ?? null;
+                console.log('S3 upload complete:', uploadResult.objectKey);
             } else {
-                console.log('Skipping upload. Missing recording or screeningId.');
+                console.log('S3 upload failed:', uploadResult.error);
             }
-            
-            try {
-                await AsyncStorage.setItem('screeningProgress', JSON.stringify({
-                    screeningId: activeScreeningId,
-                    videoNumber: totalVideos,
-                    completed: true,
-                    timestamp: Date.now(),
-                    recordingUri: recordingPath,
-                    s3ObjectKey: uploadedObjectKey,
-                }));
-            } catch (e) {
-                console.log('Error saving completion progress');
-            }
-            navigation.navigate('ScreeningComplete');
+        } else {
+            console.log('Skipping upload. Missing recording or screeningId.');
         }
-    };
+
+        // Save screening progress
+        try {
+            await AsyncStorage.setItem('screeningProgress', JSON.stringify({
+                screeningId: activeScreeningId,
+                videoNumber: totalVideos,
+                completed: true,
+                timestamp: Date.now(),
+                recordingUri: recordingPath,
+                s3ObjectKey: uploadedObjectKey,
+            }));
+        } catch (e) {
+            console.log('Error saving completion progress');
+        }
+
+        // Save heart rate log BEFORE disconnecting
+        try {
+            console.log('Saving heart rate log, length:', heartRateLogRef.current.length);
+            await AsyncStorage.setItem(
+                `heartRateLog_${currentScreeningID}`,
+                JSON.stringify(heartRateLogRef.current)
+            );
+        } catch (e) {
+            console.log('Error saving heart rate log');
+        }
+
+        disconnect(); // disconnect AFTER saving
+        navigation.navigate('ScreeningComplete');
+    }
+};
 //hidden camera. must have it to run without preview
+
+
     return (
         <View style={styles.container}>
             {cameraPermission?.granted && microphonePermission?.granted && (
@@ -419,6 +470,10 @@ export default function VideoScreen() {
                 </Pressable>
             </View>
 
+        
+
+            
+
             {/* Video Player */}
             <View style={styles.videoContainer}>
                 <Video
@@ -455,6 +510,14 @@ export default function VideoScreen() {
                     </Text>
                 </View>
             </View>
+
+            {/* Heart Rate Display */}
+    {connected && heartRate && (
+        <View style={styles.heartRateContainer}>
+            <Text style={styles.heartRateLabel}> Heart Rate</Text>
+            <Text style={styles.heartRateValue}>{heartRate} BPM</Text>
+        </View>
+    )}
 
             {/* Bottom button - only show when video finishes */}
             {!isPlaying && (
@@ -614,6 +677,21 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
 
+    skipButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+    },
+
+skipIcon: {
+    color: '#ffffff',
+    fontSize: 18,
+},
+
     videoContainer: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
@@ -679,12 +757,6 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
 
-    skipButton: {
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-    },
 
     skipButtonText: {
         color: '#ffffff',
@@ -809,4 +881,28 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#ffffff',
     },
+
+    heartRateContainer: {
+    position: 'absolute',
+    top: 110,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+    zIndex: 10,
+},
+
+heartRateLabel: {
+    color: '#ffffff',
+    fontSize: 12,
+    opacity: 0.8,
+},
+
+heartRateValue: {
+    color: '#ff6b6b',
+    fontSize: 22,
+    fontWeight: 'bold',
+},
 });

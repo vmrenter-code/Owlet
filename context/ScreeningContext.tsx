@@ -1,41 +1,92 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, ReactNode, useContext, useRef } from 'react';import { usePolarH9 } from '../src/services/polarH9Service';
+export interface HeartRateDataPoint {
+  time: number; // seconds elapsed since screening started
+  bpm: number;
+}
 
-type ScreeningContextType = {
-  screeningID: string | null;
-  setScreeningID: (id: string | null) => void;
+interface ScreeningContextType {
+  screeningId: string | null;
+  setScreeningId: (id: string) => void;
+  videoNumber: number;
+  setVideoNumber: (num: number) => void;
   startScreening: () => string;
-  endScreening: () => void;
-};
+  // H9 Heart Rate
+  heartRate: number | null;
+  connected: boolean;
+  scanning: boolean;
+  error: string | null;
+  connectToH9: () => Promise<void>;
+  disconnect: () => void;
+  // Heart Rate Log
+  heartRateLog: HeartRateDataPoint[];
+  addHeartRateDataPoint: (bpm: number) => void;
+  clearHeartRateLog: () => void;
+  screeningStartTime: number | null;
+  setScreeningStartTime: (time: number) => void;
+}
 
 const ScreeningContext = createContext<ScreeningContextType | undefined>(undefined);
 
-export function ScreeningProvider({ children }: { children: ReactNode }) {
-  const [screeningID, setScreeningID] = useState<string | null>(null);
+export const ScreeningProvider = ({ children }: { children: ReactNode }) => {
+  const [screeningId, setScreeningId] = useState<string | null>(null);
+  const [videoNumber, setVideoNumber] = useState(1);
+  const [heartRateLog, setHeartRateLog] = useState<HeartRateDataPoint[]>([]);
+  const [screeningStartTime, setScreeningStartTime_internal] = useState<number | null>(null);
+  const screeningStartTimeRef = useRef<number | null>(null);
+
+  const { heartRate, connected, scanning, error, connectToH9, disconnect } = usePolarH9();
 
   const startScreening = () => {
-    // Generate a unique screening ID (timestamp + random string)
-    const newID = `screening_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    setScreeningID(newID);
-    console.log('Screening started with ID:', newID);
-    return newID;
-  };
+  const newId = `screening_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  setScreeningId(newId);
+  return newId;
+};
 
-  const endScreening = () => {
-    console.log('Screening ended:', screeningID);
-    setScreeningID(null);
+  const addHeartRateDataPoint = (bpm: number) => {
+    const elapsed = screeningStartTimeRef.current
+        ? Math.floor((Date.now() - screeningStartTimeRef.current) / 1000)
+        : 0;
+    console.log('elapsed time:', elapsed, 'startTime:', screeningStartTimeRef.current);
+    setHeartRateLog(prev => [...prev, { time: elapsed, bpm }]);
+};
+
+const setScreeningStartTime = (time: number) => {
+    screeningStartTimeRef.current = time;
+    setScreeningStartTime_internal(time);
+};
+
+  const clearHeartRateLog = () => {
+    setHeartRateLog([]);
+    screeningStartTimeRef.current = null;
+    setScreeningStartTime_internal(null);
   };
 
   return (
-    <ScreeningContext.Provider value={{ screeningID, setScreeningID, startScreening, endScreening }}>
+    <ScreeningContext.Provider value={{
+      screeningId,
+      setScreeningId,
+      videoNumber,
+      setVideoNumber,
+      startScreening,
+      heartRate,
+      connected,
+      scanning,
+      error,
+      connectToH9,
+      disconnect,
+      heartRateLog,
+      addHeartRateDataPoint,
+      clearHeartRateLog,
+      screeningStartTime,
+      setScreeningStartTime,
+    }}>
       {children}
     </ScreeningContext.Provider>
   );
-}
+};
 
-export function useScreening() {
+export const useScreening = () => {
   const context = useContext(ScreeningContext);
-  if (context === undefined) {
-    throw new Error('useScreening must be used within a ScreeningProvider');
-  }
+  if (!context) throw new Error('useScreening must be used within ScreeningProvider');
   return context;
-}
+};

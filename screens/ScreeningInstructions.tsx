@@ -7,8 +7,9 @@ import InstructionSlides from './InstructionSlides';
 import InstructionItems from './InstructionItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
-import PageBg from '../components/PageBg';
-import ScreenBg from '../components/ScreenBg';
+//import PageBg from '../components/PageBg';
+//import ScreenBg from '../components/ScreenBg';
+import HomeBg from '../components/HomeBg';
 
 const createLocalScreeningId = () => `local_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
@@ -68,7 +69,7 @@ export default function ScreeningInstructions() {
 
 
       <View style={styles.formatBg}>
-              <ScreenBg />
+              <HomeBg />
       </View>
 
 

@@ -6,7 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import userAuthServices from '../src/services/userAuthServices';
 import { useChildProfile } from '../context/ChildProfileContext';
- 
+//import { useState } from 'react';
+
 
 //avatar icon
 const FoxAvatar = () => (
