@@ -1,27 +1,18 @@
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet, TextInputProps } from 'react-native';
 import { useState } from 'react';
+import React from 'react';
 
-type InputFieldsProps = {
-  placeholder?: string;
+type InputFieldsProps = TextInputProps & {
   icon?: React.ReactNode;
-  maxLength?: number;
-  multiline?: boolean;
   height?: number;
-  value?: string;
-  onChangeText?: (text: string) => void;
-  keyboardType?: 'default' | 'number-pad' | 'email-address' | 'phone-pad';
 };
 
-export default function InputFields({ 
-  placeholder, 
-  icon, 
-  maxLength, 
-  multiline, 
+const InputFields = React.forwardRef<TextInput, InputFieldsProps>(({
+  icon,
   height = 140,
-  value,
-  onChangeText,
-  keyboardType = 'default',
-}: InputFieldsProps) {
+  multiline,
+  ...rest
+}, ref) => {
   const [focused, setFocused] = useState(false);
 
   return (
@@ -30,25 +21,24 @@ export default function InputFields({
       multiline && { borderRadius: 20, height, alignItems: 'flex-start' }
     ]}>
       <TextInput
+        ref={ref}
         style={[
           styles.input,
           multiline && { textAlignVertical: 'top' }
         ]}
-        placeholder={placeholder}
         placeholderTextColor="#585858"
-        maxLength={maxLength}
         multiline={multiline}
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
         underlineColorAndroid="transparent"
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
+        {...rest}
       />
       {icon && <View style={styles.iconContainer}>{icon}</View>}
     </View>
   );
-}
+});
+
+export default InputFields;
 
 const styles = StyleSheet.create({
   container: {
@@ -61,7 +51,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 1,
   },
-
   input: {
     flex: 1,
     fontSize: 16,
@@ -70,7 +59,6 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
   },
-
   iconContainer: {
     marginLeft: 10,
   },

@@ -11,6 +11,8 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '../src/config/firebase';
 import { Svg, Path, Rect } from 'react-native-svg';
+import { TextInputProps } from 'react-native';
+
 
 const UserIcon = ({ width = 20, height = 20, color = '#585858' }) => (
   <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
@@ -26,6 +28,9 @@ const LockIcon = ({ width = 20, height = 20, color = '#585858' }) => (
     <Path d="M12 16a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill={color} />
   </Svg>
 );
+
+
+
 
 export default function Login() {
   const navigation = useNavigation<any>();
