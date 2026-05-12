@@ -6,6 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import userAuthServices from '../src/services/userAuthServices';
+
+import BackArrow from '../components/BackArrow';
  
 
 //avatar icon
@@ -95,12 +97,7 @@ export default function Account() {
             />
             {/* Header */}
             <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
+                <BackArrow/>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>

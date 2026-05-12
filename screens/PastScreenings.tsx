@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
 
+import BackArrow from '../components/BackArrow';
+
 const pastScreeningsData = [
     {
         id: 1,
@@ -70,12 +72,7 @@ export default function PastScreenings() {
             
             {/* Header */}
             <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
+                <BackArrow/>
             </View>
 
             {/* Title */}

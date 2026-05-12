@@ -3,6 +3,8 @@ import { useNavigation } from '@react-navigation/native';
 import { Svg, Path, Circle, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import BackArrow from '../components/BackArrow';
+
 // Icon components. 
 const PersonIcon = () => (
     <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
@@ -93,12 +95,7 @@ export default function Settings() {
             />
             {/* Header */}
             <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
+                <BackArrow/>
             </View>
 
             {/* Title */}

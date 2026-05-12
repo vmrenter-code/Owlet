@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
+import BackArrow from '../components/BackArrow';
 
 export default function Languages() {
     const navigation = useNavigation<any>();
@@ -20,12 +21,7 @@ export default function Languages() {
             
             {/* Header */}
             <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
+                <BackArrow/>
             </View>
 
             {/* Title */}

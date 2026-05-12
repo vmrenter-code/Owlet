@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import BackArrow from '../components/BackArrow';
+
 // Custom Toggle Switch component
 const CustomSwitch = ({ value, onValueChange }: { value: boolean; onValueChange: (val: boolean) => void }) => {
     const translateX = useSharedValue(value ? 20 : 0);
@@ -67,12 +69,7 @@ export default function PrivacyData() {
             
             {/* Header */}
             <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
+                <BackArrow/>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
