@@ -15,7 +15,7 @@
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.owlet",
+      "bundleIdentifier": "com.yourname.owlet",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Neuroscreen uses the camera so you can align your child for screening.",
@@ -33,7 +33,7 @@
     },
     "android": {
       "googleServicesFile": "./google-services.json",
-      "package": "com.anonymous.owlet",
+      "package": "com.yourname.owlet",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

@@ -35,32 +35,26 @@ export default function ScreeningInstructions() {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   const handleBeginScreening = async () => {
+    let screeningId = createLocalScreeningId(); // default fallback
+
     try {
       const response = await fetch(`${BASE_URL}/screening`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ startedAt: new Date().toISOString() }),
       });
 
       if (response.ok) {
         const payload = await response.json();
-        const resolvedScreeningId = payload?.screening?.id ?? createLocalScreeningId();
-        navigation.navigate('PositionChild', { screeningId: resolvedScreeningId });
-        return;
+        screeningId = payload?.screening?.id ?? screeningId;
+      } else {
+        console.log('Unable to create screening session, using local ID fallback');
       }
-
-      const localScreeningId = createLocalScreeningId();
-      console.log('Unable to create screening session, using local ID fallback');
-      navigation.navigate('PositionChild', { screeningId: localScreeningId });
-      return;
     } catch (error) {
       console.log('Error creating screening session:', error);
-      const localScreeningId = createLocalScreeningId();
-      navigation.navigate('PositionChild', { screeningId: localScreeningId });
-      return;
     }
+
+    navigation.navigate('EKGPlacement', { screeningId });
   };
 
   return (
