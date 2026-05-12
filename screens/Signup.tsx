@@ -73,7 +73,6 @@ export default function Signup() {
     setLoading(true);
     const result = await userAuthServices.register(username, email, password);
     if (result.success) {
-      navigation.navigate('Home');
     } else {
       Alert.alert('Error', result.error ?? 'Something went wrong.');
     }

@@ -43,13 +43,13 @@ export default function BeginCard({ children }: Props) {
     } else {
       // Start a new screening and generate screeningID
       const newScreeningID = startScreening();
-      navigation.replace('ScreeningInstructions', { screeningID: newScreeningID });
+    navigation.getParent()?.navigate('ScreeningInstructions', { screeningID: newScreeningID });
     }
   };
 
   const handleResume = () => {
     setShowResumeModal(false);
-    navigation.navigate('VideoScreen', { videoNumber: incompleteVideoNumber });
+    navigation.getParent()?.navigate('VideoScreen', { videoNumber: incompleteVideoNumber });
   };
 
   const handleStartNew = async () => {
@@ -63,7 +63,7 @@ export default function BeginCard({ children }: Props) {
     }
     // Start a new screening and generate screeningID
     const newScreeningID = startScreening();
-    navigation.replace('ScreeningInstructions', { screeningID: newScreeningID });
+    navigation.getParent()?.navigate('ScreeningInstructions', { screeningID: newScreeningID });
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
