@@ -1,65 +1,12 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, Animated, Dimensions, Easing } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useEffect, useRef, useState } from 'react';
-import { Svg, Path, Circle } from 'react-native-svg';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import userAuthServices from '../src/services/userAuthServices';
 import { useChildProfile } from '../context/ChildProfileContext';
- 
-
-//avatar icon
-const FoxAvatar = () => (
-    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
-        <Circle cx={12} cy={12} r={10} fill="#FFCDD2" />
-        <Path d="M8 14c0 0 1.5 2 4 2s4-2 4-2" stroke="#D32F2F" strokeWidth={1.5} strokeLinecap="round" />
-        <Circle cx={9} cy={10} r={1.5} fill="#333" />
-        <Circle cx={15} cy={10} r={1.5} fill="#333" />
-        <Path d="M6 6l2 3M18 6l-2 3" stroke="#D32F2F" strokeWidth={1.5} strokeLinecap="round" />
-    </Svg>
-);
-
-/** Shape placeholders for child profile switcher avatars */
-const HeartAvatar = () => (
-    <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
-        <Circle cx={28} cy={28} r={26} fill="#FDE7EC" />
-        <Path
-            d="M28 40s-12-7.2-12-16a7.5 7.5 0 0 1 13.5-4.5L28 21l-1.5-1.5A7.5 7.5 0 0 1 40 24c0 8.8-12 16-12 16z"
-            fill="#E63956"
-        />
-    </Svg>
-);
-
-const StarAvatar = () => (
-    <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
-        <Circle cx={28} cy={28} r={26} fill="#FFF6D6" />
-        <Path
-            d="M28 14l3.95 8.45 9.05 1.05-6.7 6.4 1.8 9.1L28 34.7l-8.1 4.3 1.8-9.1-6.7-6.4 9.05-1.05L28 14z"
-            fill="#F5B400"
-        />
-    </Svg>
-);
-
-const DiamondAvatar = () => (
-    <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
-        <Circle cx={28} cy={28} r={26} fill="#E3F4FF" />
-        <Path d="M28 12l14 16-14 16-14-16z" fill="#3FB6F0" />
-    </Svg>
-);
-
-const CheckMarkIcon = () => (
-    <Svg width={18} height={18} viewBox="0 0 18 18" fill="none">
-        <Circle cx={9} cy={9} r={9} fill="#49A3BD" />
-        <Path d="M5 9l2.5 2.5L13 6" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-
-const childProfiles = [
-    { id: 'babyy', name: 'Babyy', Avatar: HeartAvatar },
-    { id: 'baby2', name: 'Baby2', Avatar: StarAvatar },
-    { id: 'baby3', name: 'Baby3', Avatar: DiamondAvatar },
-] as const;
+import CalendarPicker from '../components/CalendarPicker';
 
 export default function Account() {
     const navigation = useNavigation<any>();
@@ -67,58 +14,79 @@ export default function Account() {
     const [userEmail, setUserEmail] = useState('username@gmail.com');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const [switchChildModalVisible, setSwitchChildModalVisible] = useState(false);
-    const [sheetMounted, setSheetMounted] = useState(false);
-    const { activeChildId, setActiveChildId } = useChildProfile();
+    const [raceEthnicitySummary, setRaceEthnicitySummary] = useState<string>('Not set');
+    const [editNameVisible, setEditNameVisible] = useState(false);
+    const [nameDraft, setNameDraft] = useState('');
+    const [birthDateModalVisible, setBirthDateModalVisible] = useState(false);
+    const {
+        activeChildId,
+        activeChild,
+        updateChildName,
+        birthDates,
+        updateChildBirthDate,
+        openSwitcher,
+    } = useChildProfile();
 
-    const screenHeight = Dimensions.get('window').height;
-    const sheetTranslateY = useRef(new Animated.Value(screenHeight)).current;
-    const backdropOpacity = useRef(new Animated.Value(0)).current;
+    const activeBirthDate = birthDates[activeChildId] ?? null;
 
-    useEffect(() => {
-        if (switchChildModalVisible) {
-            setSheetMounted(true);
-            Animated.parallel([
-                Animated.timing(sheetTranslateY, {
-                    toValue: 0,
-                    duration: 280,
-                    easing: Easing.out(Easing.cubic),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(backdropOpacity, {
-                    toValue: 1,
-                    duration: 220,
-                    easing: Easing.out(Easing.cubic),
-                    useNativeDriver: true,
-                }),
-            ]).start();
+    const formatBirthDate = (iso: string | null): string => {
+        if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return 'Not set';
+        const [y, m, d] = iso.split('-');
+        return `${m}/${d}/${y}`;
+    };
+
+    const openEditName = () => {
+        setNameDraft(activeChild.name);
+        setEditNameVisible(true);
+    };
+
+    const saveChildName = () => {
+        const trimmed = nameDraft.trim();
+        if (trimmed.length === 0) {
+            Alert.alert('Name required', 'Please enter a name.');
+            return;
         }
-    }, [switchChildModalVisible, sheetTranslateY, backdropOpacity, screenHeight]);
-
-    const closeSwitchChildModal = () => {
-        Animated.parallel([
-            Animated.timing(sheetTranslateY, {
-                toValue: screenHeight,
-                duration: 240,
-                easing: Easing.in(Easing.cubic),
-                useNativeDriver: true,
-            }),
-            Animated.timing(backdropOpacity, {
-                toValue: 0,
-                duration: 200,
-                easing: Easing.in(Easing.cubic),
-                useNativeDriver: true,
-            }),
-        ]).start(() => {
-            setSwitchChildModalVisible(false);
-            setSheetMounted(false);
-        });
+        updateChildName(activeChildId, trimmed);
+        setEditNameVisible(false);
     };
 
-    const selectChildAndClose = (id: string) => {
-        setActiveChildId(id);
-        closeSwitchChildModal();
-    };
+    useFocusEffect(
+        useCallback(() => {
+            let cancelled = false;
+            (async () => {
+                try {
+                    const raw = await AsyncStorage.getItem('raceEthnicity:' + activeChildId);
+                    if (cancelled) return;
+                    if (!raw) {
+                        setRaceEthnicitySummary('Not set');
+                        return;
+                    }
+                    const parsed = JSON.parse(raw) as {
+                        selections?: string[];
+                        races?: string[];
+                        ethnicity?: string | null;
+                    };
+                    let items: string[] = [];
+                    if (Array.isArray(parsed.selections)) {
+                        items = parsed.selections;
+                    } else {
+                        const merged = new Set<string>();
+                        if (Array.isArray(parsed.races)) parsed.races.forEach((r) => merged.add(r));
+                        if (parsed.ethnicity && parsed.ethnicity !== 'Not Hispanic or Latino') {
+                            merged.add(parsed.ethnicity);
+                        }
+                        items = Array.from(merged);
+                    }
+                    setRaceEthnicitySummary(items.length ? items.join(', ') : 'Not set');
+                } catch {
+                    setRaceEthnicitySummary('Not set');
+                }
+            })();
+            return () => {
+                cancelled = true;
+            };
+        }, [activeChildId]),
+    );
 
     const handleDeleteAccount = () => {
         if (isDeleting) {
@@ -202,14 +170,6 @@ export default function Account() {
                 <Text style={styles.sectionTitle}>Account</Text>
 
                 <View style={styles.section}>
-                    {/* Edit Profile with Avatar */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
-                        <Text style={styles.itemLabel}>Edit Profile</Text>
-                        <View style={styles.avatarContainer}>
-                            <FoxAvatar />
-                        </View>
-                    </Pressable>
-
                     {/* Username */}
                     <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
                         <Text style={styles.itemLabel}>Name</Text>
@@ -236,29 +196,45 @@ export default function Account() {
 
                 <View style={styles.section}>
                     {/* Name */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                    <Pressable
+                        style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}
+                        onPress={openEditName}
+                    >
                         <Text style={styles.itemLabel}>Name</Text>
-                        <Text style={styles.itemValue}>
-                            {childProfiles.find((c) => c.id === activeChildId)?.name ?? 'Babyy'}
-                        </Text>
+                        <Text style={styles.itemValue}>{activeChild.name}</Text>
+                        <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
 
                     {/* Birth Date */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                    <Pressable
+                        style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}
+                        onPress={() => setBirthDateModalVisible(true)}
+                    >
                         <Text style={styles.itemLabel}>Birth Date</Text>
-                        <Text style={styles.itemValue}>03/08/2020</Text>
+                        <Text style={styles.itemValue}>{formatBirthDate(activeBirthDate)}</Text>
+                        <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
 
                     {/* Race & Ethnicity */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                    <Pressable
+                        style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}
+                        onPress={() => navigation.navigate('RaceEthnicity')}
+                    >
                         <Text style={styles.itemLabel}>Race & Ethnicity</Text>
+                        <Text
+                            style={[styles.itemValue, styles.itemValueTrailing]}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
+                            {raceEthnicitySummary}
+                        </Text>
                         <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
 
                     {/* Switch Child Profile */}
                     <Pressable
                         style={({ pressed }) => [styles.accountItem, styles.lastItem, pressed && styles.accountItemPressed]}
-                        onPress={() => setSwitchChildModalVisible(true)}
+                        onPress={openSwitcher}
                     >
                         <Text style={styles.itemLabel}>Switch Child Profile</Text>
                         <Text style={styles.itemArrow}>›</Text>
@@ -288,48 +264,97 @@ export default function Account() {
             </ScrollView>
 
             <Modal
-                visible={switchChildModalVisible || sheetMounted}
+                visible={editNameVisible}
                 transparent
-                animationType="none"
-                onRequestClose={closeSwitchChildModal}
+                animationType="fade"
+                onRequestClose={() => setEditNameVisible(false)}
             >
-                <View style={styles.modalRoot}>
-                    <Animated.View
-                        style={[StyleSheet.absoluteFillObject, styles.modalBackdrop, { opacity: backdropOpacity }]}
-                        pointerEvents="auto"
-                    >
-                        <Pressable
-                            style={StyleSheet.absoluteFillObject}
-                            onPress={closeSwitchChildModal}
-                            accessibilityRole="button"
-                            accessibilityLabel="Dismiss"
+                <KeyboardAvoidingView
+                    style={styles.editNameRoot}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                >
+                    <Pressable
+                        style={[StyleSheet.absoluteFillObject, styles.editNameBackdrop]}
+                        onPress={() => setEditNameVisible(false)}
+                        accessibilityRole="button"
+                        accessibilityLabel="Dismiss"
+                    />
+                    <View style={styles.editNameCard}>
+                        <Text style={styles.editNameTitle}>Edit child's name</Text>
+                        <TextInput
+                            value={nameDraft}
+                            onChangeText={setNameDraft}
+                            placeholder="Name"
+                            placeholderTextColor="#999"
+                            style={styles.editNameInput}
+                            autoFocus
+                            maxLength={30}
+                            returnKeyType="done"
+                            onSubmitEditing={saveChildName}
                         />
-                    </Animated.View>
-                    <View style={styles.modalSheetWrap} pointerEvents="box-none">
-                        <Animated.View style={[styles.modalSheet, { transform: [{ translateY: sheetTranslateY }] }]}>
-                            <View style={styles.sheetHandle} />
-                            <View style={styles.profileRow}>
-                                {childProfiles.map((child) => {
-                                    const selected = activeChildId === child.id;
-                                    const Avatar = child.Avatar;
-                                    return (
-                                        <Pressable
-                                            key={child.id}
-                                            style={styles.profileCell}
-                                            onPress={() => selectChildAndClose(child.id)}
-                                        >
-                                            <View style={styles.profileCircle}>
-                                                <Avatar />
-                                            </View>
-                                            <Text style={styles.profileName}>{child.name}</Text>
-                                            <View style={styles.checkArea}>
-                                                {selected ? <CheckMarkIcon /> : null}
-                                            </View>
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
-                        </Animated.View>
+                        <View style={styles.editNameActions}>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.editNameButton,
+                                    styles.editNameCancel,
+                                    pressed && styles.editNameButtonPressed,
+                                ]}
+                                onPress={() => setEditNameVisible(false)}
+                            >
+                                <Text style={styles.editNameCancelText}>Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.editNameButton,
+                                    styles.editNameSave,
+                                    pressed && styles.editNameButtonPressed,
+                                ]}
+                                onPress={saveChildName}
+                            >
+                                <Text style={styles.editNameSaveText}>Save</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
+
+            <Modal
+                visible={birthDateModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setBirthDateModalVisible(false)}
+            >
+                <View style={styles.editNameRoot}>
+                    <Pressable
+                        style={[StyleSheet.absoluteFillObject, styles.editNameBackdrop]}
+                        onPress={() => setBirthDateModalVisible(false)}
+                        accessibilityRole="button"
+                        accessibilityLabel="Dismiss"
+                    />
+                    <View style={[styles.editNameCard, styles.calendarCard]}>
+                        <Text style={styles.editNameTitle}>
+                            Select {activeChild.name}'s birth date
+                        </Text>
+                        <CalendarPicker
+                            value={activeBirthDate}
+                            minDate={new Date(2000, 0, 1)}
+                            onChange={(iso) => {
+                                updateChildBirthDate(activeChildId, iso);
+                                setBirthDateModalVisible(false);
+                            }}
+                        />
+                        <View style={styles.editNameActions}>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.editNameButton,
+                                    styles.editNameCancel,
+                                    pressed && styles.editNameButtonPressed,
+                                ]}
+                                onPress={() => setBirthDateModalVisible(false)}
+                            >
+                                <Text style={styles.editNameCancelText}>Close</Text>
+                            </Pressable>
+                        </View>
                     </View>
                 </View>
             </Modal>
@@ -408,13 +433,11 @@ const styles = StyleSheet.create({
         color: '#999',
     },
 
-    avatarContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: '#FFF0F0',
-        justifyContent: 'center',
-        alignItems: 'center',
+    itemValueTrailing: {
+        flexShrink: 1,
+        textAlign: 'right',
+        marginRight: 8,
+        maxWidth: '60%',
     },
 
     itemArrow: {
@@ -446,79 +469,85 @@ const styles = StyleSheet.create({
         color: '#e74c3c',
     },
 
-    modalRoot: {
+    editNameRoot: {
         flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 28,
     },
 
-    modalBackdrop: {
+    editNameBackdrop: {
         backgroundColor: 'rgba(0, 0, 0, 0.44)',
     },
 
-    modalSheetWrap: {
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-
-    modalSheet: {
+    editNameCard: {
+        width: '100%',
         backgroundColor: '#ffffff',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        paddingTop: 10,
-        paddingHorizontal: 20,
-        paddingBottom: 36,
+        borderRadius: 16,
+        padding: 20,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.08,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.12,
         shadowRadius: 12,
-        elevation: 16,
+        elevation: 8,
     },
 
-    sheetHandle: {
-        width: 36,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: '#d9d9d9',
-        alignSelf: 'center',
-        marginBottom: 24,
+    editNameTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 14,
     },
 
-    profileRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        paddingHorizontal: 8,
-    },
-
-    profileCell: {
-        alignItems: 'center',
-        width: '30%',
-        maxWidth: 110,
-    },
-
-    profileCircle: {
-        width: 72,
-        height: 72,
-        borderRadius: 36,
+    editNameInput: {
         borderWidth: 1,
         borderColor: '#e0e0e0',
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
+        borderRadius: 10,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        fontSize: 16,
+        color: '#333',
         backgroundColor: '#fafafa',
     },
 
-    profileName: {
-        marginTop: 10,
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#333',
-        textAlign: 'center',
+    editNameActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        gap: 10,
+        marginTop: 16,
     },
 
-    checkArea: {
-        marginTop: 6,
-        height: 18,
-        justifyContent: 'center',
-        alignItems: 'center',
+    editNameButton: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 10,
+    },
+
+    editNameButtonPressed: {
+        opacity: 0.85,
+    },
+
+    editNameCancel: {
+        backgroundColor: '#f0f0f0',
+    },
+
+    editNameCancelText: {
+        fontSize: 15,
+        color: '#333',
+        fontWeight: '500',
+    },
+
+    editNameSave: {
+        backgroundColor: '#49A3BD',
+    },
+
+    editNameSaveText: {
+        fontSize: 15,
+        color: '#ffffff',
+        fontWeight: '600',
+    },
+
+    calendarCard: {
+        maxWidth: 360,
     },
 });

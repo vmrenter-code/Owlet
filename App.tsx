@@ -17,6 +17,7 @@ import PrivacyData from './screens/PrivacyData';
 import Accessibility from './screens/Accessibility';
 import Support from './screens/Support';
 import Languages from './screens/Languages';
+import RaceEthnicity from './screens/RaceEthnicity';
 import PastScreenings from './screens/PastScreenings';
 import NotificationCenter from './screens/NotificationCenter';
 import ViewResults from './screens/ViewResults';
@@ -36,6 +37,7 @@ import TroubleshootingSolution from './screens/screening/TroubleshootingSolution
 import EKGPlacement from './screens/screening/EKGPlacement';
 import { ScreeningProvider } from './context/ScreeningContext';
 import { ChildProfileProvider } from './context/ChildProfileContext';
+import ChildSwitcherSheet from './components/ChildSwitcherSheet';
 
 const Stack = createNativeStackNavigator();
 
@@ -79,6 +81,7 @@ export default function App() {
         <Stack.Screen name="Accessibility" component={Accessibility} options={{ headerShown: false }} />
         <Stack.Screen name="Support" component={Support} options={{ headerShown: false }} />
         <Stack.Screen name="Languages" component={Languages} options={{ headerShown: false }} />
+        <Stack.Screen name="RaceEthnicity" component={RaceEthnicity} options={{ headerShown: false }} />
         <Stack.Screen name="PastScreenings" component={PastScreenings} options={{ headerShown: false }} />
         <Stack.Screen name="NotificationCenter" component={NotificationCenter} options={{ headerShown: false }} />
         <Stack.Screen name="ViewResults" component={ViewResults} options={{ headerShown: false }} />
@@ -95,6 +98,7 @@ export default function App() {
         <Stack.Screen name="AboutUs" component={AboutUs} options={{ headerShown: false }} />
         
       </Stack.Navigator>
+      <ChildSwitcherSheet />
     </NavigationContainer>
     </ChildProfileProvider>
     </ScreeningProvider>

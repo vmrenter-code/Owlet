@@ -1,7 +1,5 @@
 import { View, StyleSheet, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
@@ -9,22 +7,15 @@ import Card from '../components/Card';
 import ToolButton from '../components/ToolButton';
 import ProfileContainer from '../components/ProfileContainer';
 import BeginCard from '../components/BeginCard';
-import { auth } from '../src/config/firebase';
+import ChildProfileAvatar from '../components/ChildProfileAvatar';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { useChildProfile } from '../context/ChildProfileContext';
+import { formatChildAge } from '../utils/formatChildAge';
 
 export default function Home() {
   const navigation = useNavigation<any>();
-  const [displayName, setDisplayName] = useState('User');
-  const { activeChild } = useChildProfile();
-
-  useEffect(() => {
-    const stopListening = onAuthStateChanged(auth, (user) => {
-      setDisplayName(user?.displayName?.trim() || 'User');
-    });
-
-    return stopListening;
-  }, []);
+  const { activeChildId, activeChild, birthDates, openSwitcher } = useChildProfile();
+  const activeAge = formatChildAge(birthDates[activeChildId]);
 
   return (
     <View style={styles.container}>
@@ -41,34 +32,29 @@ export default function Home() {
 
         <View style={styles.heroContainer}>
 
-          <View style={styles.profileContainer}>
-            <ProfileContainer />
-            <View style={{ flexDirection: 'column' }}>
-                <Text
-                  style={{
-                    fontSize: 22,
-                    color: '#151515',
-                    fontFamily: 'NotoSans-SemiBold',
-                    lineHeight: 26,
-                    letterSpacing: -0.2
-                  }}
-                >
-                  Hi, {displayName} and {activeChild.name}!
+          <Pressable
+            style={({ pressed }) => [styles.profileContainer, pressed && styles.profilePressed]}
+            onPress={openSwitcher}
+            accessibilityRole="button"
+            accessibilityLabel={`Switch child profile, currently ${activeChild.name}`}
+          >
+            <ProfileContainer>
+              <ChildProfileAvatar childId={activeChildId} size={34} />
+            </ProfileContainer>
+            <View style={styles.profileTextWrap}>
+              <View style={styles.profileTopRow}>
+                <Text style={styles.profileChildName} numberOfLines={1}>
+                  {activeChild.name}
                 </Text>
-
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: '#2E3332',
-                  fontFamily: 'NotoSans-Regular',
-                  lineHeight: 17,
-                  letterSpacing: -0.2
-                }}
-              >
-                Ready to begin?
-              </Text>
+                <Text style={styles.profileChevron}>▾</Text>
+              </View>
+              {activeAge ? (
+                <Text style={styles.profileChildMeta}>{activeAge}</Text>
+              ) : (
+                <Text style={styles.profileChildMetaMuted}>Add birth date</Text>
+              )}
             </View>
-          </View>
+          </Pressable>
 
           <View style={styles.iconContainer}>
             <Svg width={24} height={24} viewBox="0 0 27 27" fill="none">
@@ -114,7 +100,7 @@ export default function Home() {
         <View>
 
           <View style={{ marginBottom: 22 }}>
-            <BeginCard />
+            <BeginCard childName={activeChild.name} />
           </View>
 
           <Pressable style={styles.row} onPress={() => navigation.navigate('PastScreenings')}>
@@ -267,8 +253,55 @@ const styles = StyleSheet.create({
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     gap: 14,
+    flexShrink: 1,
+  },
+
+  profilePressed: {
+    opacity: 0.85,
+  },
+
+  profileTextWrap: {
+    flexDirection: 'column',
+    flexShrink: 1,
+  },
+
+  profileTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+  },
+
+  profileChildName: {
+    fontSize: 22,
+    color: '#151515',
+    fontFamily: 'NotoSans-SemiBold',
+    lineHeight: 26,
+    letterSpacing: -0.2,
+    flexShrink: 1,
+  },
+
+  profileChildMeta: {
+    fontSize: 14,
+    color: '#2E3332',
+    fontFamily: 'NotoSans-Regular',
+    marginTop: 2,
+  },
+
+  profileChildMetaMuted: {
+    fontSize: 14,
+    color: '#9aa3a3',
+    fontFamily: 'NotoSans-Regular',
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+
+  profileChevron: {
+    marginLeft: 8,
+    color: '#49A3BD',
+    fontSize: 14,
+    fontWeight: '700',
   },
 
   toolText: {

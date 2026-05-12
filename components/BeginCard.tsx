@@ -7,10 +7,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useScreening } from '../context/ScreeningContext';
 
 type Props = {
+  childName?: string;
   children?: ReactNode;
 };
 
-export default function BeginCard({ children }: Props) {
+export default function BeginCard({ childName }: Props) {
   const navigation = useNavigation<any>();
   const { startScreening } = useScreening();
   const scale = useSharedValue(1);
@@ -90,6 +91,9 @@ export default function BeginCard({ children }: Props) {
             <Text style={styles.description}>
                 Start early-sign check.
             </Text>
+            {childName ? (
+              <Text style={styles.childCaption}>For {childName}</Text>
+            ) : null}
           </View>
 
           <View style={styles.buttonWrapper}>
@@ -194,6 +198,13 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSans-Regular',
     color: '#ffffff',
     lineHeight: 20,
+  },
+
+  childCaption: {
+    marginTop: 6,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.85)',
+    fontFamily: 'NotoSans-Regular',
   },
 
   buttonWrapper: {
