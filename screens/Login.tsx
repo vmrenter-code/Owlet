@@ -43,7 +43,6 @@ export default function Login() {
     setLoading(true);
     try {
       await userAuthServices.login(email, password);
-      navigation.navigate('Home');
     } catch (error: any) {
       let message = 'Login failed';
       switch (error.code) {
