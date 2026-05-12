@@ -27,6 +27,8 @@ import ScreeningInstructions from './screens/ScreeningInstructions';
 import HomeBg from './components/HomeBg';
 import MainTabs from './navigation/MainTabs';
 import AboutUs from './screens/AboutUs';
+import AboutYourChild from './screens/AboutYourChild';
+import PickProfile from './screens/PickProfile';
 
 import PositionChild from './screens/screening/PositionChild';
 import ReadyToBegin from './screens/screening/ReadyToBegin';
@@ -35,6 +37,7 @@ import ScreeningComplete from './screens/screening/ScreeningComplete';
 import TroubleshootingScreen from './screens/screening/TroubleshootingScreen';
 import TroubleshootingSolution from './screens/screening/TroubleshootingSolution';
 import EKGPlacement from './screens/screening/EKGPlacement';
+import HeartRateGraph from './screens/HeartRateGraph';
 import { ScreeningProvider } from './context/ScreeningContext';
 import { ChildProfileProvider } from './context/ChildProfileContext';
 import ChildSwitcherSheet from './components/ChildSwitcherSheet';
@@ -89,6 +92,7 @@ export default function App() {
         <Stack.Screen name="FAQ" component={FAQ} options={{ headerShown: false }} />
         <Stack.Screen name="ScreeningInstructions" component={ScreeningInstructions} options={{ headerShown: false }} />
         <Stack.Screen name="EKGPlacement" component={EKGPlacement} options={{ headerShown: false }} />
+        <Stack.Screen name="HeartRateGraph" component={HeartRateGraph} options={{ headerShown: false }} />        
         <Stack.Screen name="PositionChild" component={PositionChild} options={{ headerShown: false }} />
         <Stack.Screen name="ReadyToBegin" component={ReadyToBegin} options={{ headerShown: false }} />
         <Stack.Screen name="VideoScreen" component={VideoScreen} options={{ headerShown: false }} />
@@ -96,6 +100,8 @@ export default function App() {
         <Stack.Screen name="TroubleshootingScreen" component={TroubleshootingScreen} options={{ headerShown: false }} />
         <Stack.Screen name="TroubleshootingSolution" component={TroubleshootingSolution} options={{ headerShown: false }} />
         <Stack.Screen name="AboutUs" component={AboutUs} options={{ headerShown: false }} />
+        <Stack.Screen name="AboutYourChild" component={AboutYourChild} options={{ headerShown: false }} />
+        <Stack.Screen name="PickProfile" component={PickProfile} options={{ headerShown: false }} />
         
       </Stack.Navigator>
       <ChildSwitcherSheet />

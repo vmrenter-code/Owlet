@@ -1,16 +1,16 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-
-// This screen appears when face is detected in the circle
-// The Begin button is now active and ready to start the screening
+import { useScreening } from '../../context/ScreeningContext';
 
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const screeningId = route.params?.screeningId;
+    const { screeningId: screeningIDFromContext } = useScreening();
+
+    // Fall back to route params if context doesn't have it
+    const screeningId = screeningIDFromContext ?? route.params?.screeningId;
 
     const handleBegin = () => {
-        // Start the screening process - navigate to first video
         navigation.navigate('VideoScreen', { videoNumber: 1, screeningId });
     };
 
@@ -35,13 +35,12 @@ export default function ReadyToBegin() {
                 </View>
             </View>
 
-            {/* Face positioning circle - face is now detected */}
+            {/* Face positioning circle */}
             <View style={styles.circleContainer}>
-                <View style={styles.faceCircle}>
-                </View>
+                <View style={styles.faceCircle} />
             </View>
 
-            {/* Begin button - active state */}
+            {/* Begin button */}
             <View style={styles.buttonContainer}>
                 <Pressable 
                     style={({ pressed }) => [
@@ -164,6 +163,67 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontSize: 18,
         fontWeight: '600',
+    },
+
+
+    h9Container: {
+        position: 'absolute',
+        bottom: 160,
+        left: 50,
+        right: 50,
+        alignItems: 'center',
+        zIndex: 10,
+    },
+
+    connectButton: {
+        backgroundColor: 'rgba(95, 212, 212, 0.9)',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+
+    connectButtonPressed: {
+        backgroundColor: 'rgba(95, 212, 212, 0.7)',
+    },
+
+    connectButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+
+    connectedBadge: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        alignItems: 'center',
+        gap: 4,
+    },
+
+    connectedText: {
+        color: '#5fd4d4',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+
+    heartRatePreview: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+
+    errorText: {
+        color: '#ff6b6b',
+        fontSize: 13,
+        marginTop: 6,
+        textAlign: 'center',
+    },
+
+    beginButtonDisabled: {
+        backgroundColor: '#888888',
+        opacity: 0.6,
     },
 });
 
