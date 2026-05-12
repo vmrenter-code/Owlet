@@ -1,4 +1,5 @@
-import React, { createContext, useState, ReactNode, useContext, useRef } from 'react';import { usePolarH9 } from '../src/services/polarH9Service';
+import React, { createContext, useState, ReactNode, useContext, useRef } from 'react';
+import { usePolarH9 } from '../src/services/polarH9Service';
 export interface HeartRateDataPoint {
   time: number; // seconds elapsed since screening started
   bpm: number;
