@@ -9,6 +9,7 @@ import InstructionItems from './InstructionItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import ScreenBg from '../components/ScreenBg';
+import BackArrow from '../components/BackArrow';
 
 const BUTTON_SIZE = 40;
 
@@ -57,18 +58,7 @@ export default function ScreeningInstructions() {
 
       <View style={styles.container}>
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.backButton,
-              pressed && styles.backButtonPressed,
-            ]}
-            onPress={handleBack}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <Ionicons name="arrow-back" size={20} color="#242424" />
-          </Pressable>
+          <BackArrow/>
         </View>
 
         <View style={{ flex: 3 }}>

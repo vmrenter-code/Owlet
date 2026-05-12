@@ -3,14 +3,14 @@ import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-const BUTTON_SIZE = 40;
-
-export default function HomeBg() {
+export default function BackArrow() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
 
+  if (!navigation.canGoBack()) return null;
+
   return (
-    <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+    <View style={[styles.header, { paddingTop: insets.top }]}>
       <Pressable
         style={({ pressed }) => [
           styles.backButton,
@@ -20,8 +20,9 @@ export default function HomeBg() {
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         accessibilityRole="button"
         accessibilityLabel="Go back"
+        accessibilityHint="Navigates to the previous screen"
       >
-        <Ionicons name="arrow-back" size={20} color="#242424" />
+        <Ionicons name="chevron-back" size={24} color="#0a0a0a" />
       </Pressable>
     </View>
   );
@@ -32,26 +33,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    paddingLeft: 16,
     zIndex: 100,
   },
 
   backButton: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
-    backgroundColor: '#ffffff',
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    marginLeft: 8,
   },
 
   backButtonPressed: {
-    opacity: 0.75,
-    transform: [{ scale: 0.95 }],
+    opacity: 0.5,
   },
 });
