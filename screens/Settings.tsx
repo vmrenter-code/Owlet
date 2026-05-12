@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Svg, Path, Circle, Rect } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 import BackArrow from '../components/BackArrow';
 
@@ -60,6 +62,8 @@ const settingsSection2 = [
 ];
 
 export default function Settings() {
+    const insets = useSafeAreaInsets();
+
     const navigation = useNavigation<any>();
 
     const handleItemPress = (item: { screen: string | null }) => {
@@ -93,13 +97,10 @@ export default function Settings() {
                 end={{ x: 0, y: 1 }}
                 style={styles.gradient}
             />
-            {/* Header */}
-            <View style={styles.header}>
-                <BackArrow/>
-            </View>
 
-            {/* Title */}
-            <Text style={styles.title}>Settings</Text>
+           <BackArrow />
+           
+            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Settings</Text>
 
             {/* Section 1 */}
             <View style={styles.section}>
@@ -123,10 +124,7 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
     },
 
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
+
 
     backButton: {
         width: 40,
@@ -152,7 +150,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#333',
         paddingHorizontal: 25,
-        paddingTop: 25,
         paddingBottom: 20,
     },
 
