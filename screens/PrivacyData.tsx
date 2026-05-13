@@ -4,6 +4,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import BackArrow from '../components/BackArrow';
 
 // Custom Toggle Switch component
 const CustomSwitch = ({ value, onValueChange }: { value: boolean; onValueChange: (val: boolean) => void }) => {
@@ -31,6 +34,7 @@ const CustomSwitch = ({ value, onValueChange }: { value: boolean; onValueChange:
 export default function PrivacyData() {
     const navigation = useNavigation<any>();
     const [acceptTerms, setAcceptTerms] = useState(true);
+    const insets = useSafeAreaInsets();
 
     // Load saved setting on mount
     useEffect(() => {
@@ -65,19 +69,12 @@ export default function PrivacyData() {
                 style={styles.gradient}
             />
             
-            {/* Header */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-            </View>
+                <BackArrow/>
+           
 
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Title */}
-                <Text style={styles.title}>Privacy & Data</Text>
+                <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Privacy & Data</Text>
 
                 {/* What We Collect Section */}
                 <Text style={styles.sectionTitle}>What Information We Collect</Text>
@@ -176,10 +173,6 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
     },
 
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
 
     backButton: {
         width: 40,
@@ -194,11 +187,10 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#333',
         paddingHorizontal: 25,
-        paddingTop: 20,
         paddingBottom: 12,
     },
 

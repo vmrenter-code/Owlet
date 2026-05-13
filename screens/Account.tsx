@@ -2,9 +2,13 @@ import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, TextInput,
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import userAuthServices from '../src/services/userAuthServices';
+
+import BackArrow from '../components/BackArrow';
 import { useChildProfile } from '../context/ChildProfileContext';
 import CalendarPicker from '../components/CalendarPicker';
 
@@ -14,6 +18,7 @@ export default function Account() {
     const [userEmail, setUserEmail] = useState('username@gmail.com');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const insets = useSafeAreaInsets();
     const [raceEthnicitySummary, setRaceEthnicitySummary] = useState<string>('Not set');
     const [editNameVisible, setEditNameVisible] = useState(false);
     const [nameDraft, setNameDraft] = useState('');
@@ -156,18 +161,11 @@ export default function Account() {
                 style={styles.gradient}
             />
             {/* Header */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-            </View>
+           <BackArrow />
+           <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Account</Text>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Account Section */}
-                <Text style={styles.sectionTitle}>Account</Text>
+               
 
                 <View style={styles.section}>
                     {/* Username */}
@@ -371,10 +369,7 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
     },
 
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
+
 
     backButton: {
         width: 40,
@@ -468,6 +463,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#e74c3c',
     },
+
+    title: {
+        fontSize: 24,
+        fontFamily: 'NotoSans-Bold',
+        color: '#1f2a2f',
+        paddingHorizontal: 24,
+        paddingBottom: 16,
+        letterSpacing: -0.5,
+    },
+
 
     editNameRoot: {
         flex: 1,

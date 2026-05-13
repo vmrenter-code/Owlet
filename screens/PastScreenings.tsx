@@ -4,6 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BackArrow from '../components/BackArrow';
 
 const pastScreeningsData = [
     {
@@ -31,19 +33,17 @@ const pastScreeningsData = [
 
 export default function PastScreenings() {
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
     const [hasIncompleteScreening, setHasIncompleteScreening] = useState(false);
     const [incompleteVideoNumber, setIncompleteVideoNumber] = useState(1);
     const [latestScreeningId, setLatestScreeningId] = useState<string | null>(null);
 
-    // Check for incomplete screening on mount
-    // Resume button only shows if user has NOT pressed "Finish and Submit"
     useEffect(() => {
         const checkIncompleteScreening = async () => {
             try {
                 const savedProgress = await AsyncStorage.getItem('screeningProgress');
                 if (savedProgress) {
                     const progress = JSON.parse(savedProgress);
-                    // Only show resume if screening was started but NOT completed (didn't press "Finish and Submit")
                     if (progress.videoNumber && !progress.completed) {
                         setHasIncompleteScreening(true);
                         setIncompleteVideoNumber(progress.videoNumber);
@@ -101,27 +101,17 @@ export default function PastScreenings() {
                 end={{ x: 0, y: 1 }}
                 style={styles.gradient}
             />
-            
-            {/* Header */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-            </View>
 
-            {/* Title */}
-            <Text style={styles.title}>Past Screenings</Text>
+            <BackArrow />
+
+            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Past Screenings</Text>
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
-                {/* Resume Screening Card - only shows when there's an incomplete screening */}
                 {hasIncompleteScreening && (
-                    <Pressable 
+                    <Pressable
                         style={styles.resumeCard}
                         onPress={handleResumeScreening}
                     >
@@ -135,29 +125,13 @@ export default function PastScreenings() {
                             </Svg>
                         </View>
                     </Pressable>
-
-                    
                 )}
-
-                {latestScreeningId && (
-    <Pressable
-        style={styles.recentHeartRateCard}
-        onPress={() => navigation.navigate('HeartRateGraph', {
-            screeningId: latestScreeningId,
-            date: 'Most Recent Screening'
-        })}
-    >
-        <Text style={styles.recentHeartRateTitle}>View Latest Heart Rate Graph</Text>
-    </Pressable>
-)}
-
-
 
                 {/* Screenings List */}
                 <View style={styles.section}>
                     {pastScreeningsData.map((screening, index) => (
-                        <View 
-                            key={screening.id} 
+                        <View
+                            key={screening.id}
                             style={[
                                 styles.screeningItem,
                                 index === pastScreeningsData.length - 1 && styles.lastItem
@@ -212,30 +186,13 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
     },
 
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
-
-    backButton: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-    },
-
-    backArrow: {
-        fontSize: 24,
-        color: '#333',
-    },
-
     title: {
-        fontSize: 22,
-        fontWeight: '700',
+        fontSize: 28,
+        fontFamily: 'NotoSans-Bold',
         color: '#1f2a2f',
-        paddingHorizontal: 25,
-        paddingTop: 24,
+        paddingHorizontal: 24,
         paddingBottom: 16,
+        letterSpacing: -0.5,
     },
 
     scrollContent: {
