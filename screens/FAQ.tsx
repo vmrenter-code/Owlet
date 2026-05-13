@@ -1,6 +1,8 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import BackArrow from '../components/BackArrow';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const faqData = [
     {
@@ -42,6 +44,7 @@ const faqData = [
 
 export default function FAQ() {
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
 
     return (
         <View style={styles.container}>
@@ -52,20 +55,10 @@ export default function FAQ() {
                 style={styles.gradient}
             />
             
-            {/* Header */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-            </View>
+            <BackArrow />
 
-            {/* FAQs Title Card */}
-            <View style={styles.titleCard}>
-                <Text style={styles.titleText}>FAQs</Text>
-            </View>
+            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>FAQs</Text>
+            
 
             <ScrollView 
                 showsVerticalScrollIndicator={false}
@@ -120,11 +113,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
     },
 
-    titleText: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#ffffff',
+   title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#333',
+        paddingHorizontal: 25,
+        paddingBottom: 20,
     },
+
 
     scrollView: {
         flex: 1,

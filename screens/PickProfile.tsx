@@ -9,7 +9,12 @@ import SelectedProfilePicture from '../components/SelectedProfilePic';
 import ProfilePicture from '../components/ProfilePicture';
 import HomeBg from '../components/HomeBg';
 
+import { auth } from '../src/config/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { useProfile } from '../context/ProfileContext';
+
 export default function PickProfile() {
+  const { setProfileComplete } = useProfile();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -29,6 +34,19 @@ export default function PickProfile() {
 
     
   };
+
+  const handleContinue = async () => {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+
+
+  setProfileComplete(true);
+
+  navigation.reset({
+    index: 0,
+    routes: [{ name: 'MainTabs' }],
+  });
+};
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -80,7 +98,7 @@ export default function PickProfile() {
             </View>
 
             <View style={styles.buttonContainer}>
-              <PrimaryBlueButton onPress={() => navigation.replace('MainTabs')}>
+              <PrimaryBlueButton onPress={handleContinue}>
                   Continue
               </PrimaryBlueButton>
             </View>

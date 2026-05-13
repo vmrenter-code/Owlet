@@ -111,7 +111,7 @@ export default function Signup() {
             if (!idToken) throw new Error('No ID token found');
             const googleCredential = GoogleAuthProvider.credential(idToken);
             await signInWithCredential(auth, googleCredential);
-            navigation.replace('AboutYourChild');
+            navigation.navigate('AboutYourChild');
         } catch (error) {
             console.error('Google Sign-In error:', error);
         }

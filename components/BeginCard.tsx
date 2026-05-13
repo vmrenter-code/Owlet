@@ -88,9 +88,7 @@ export default function BeginCard({ childName }: Props) {
             <Text style={styles.description}>
                 Start early-sign check.
             </Text>
-            {childName ? (
-              <Text style={styles.childCaption}>For {childName}</Text>
-            ) : null}
+            
           </View>
 
           <View style={styles.buttonWrapper}>
