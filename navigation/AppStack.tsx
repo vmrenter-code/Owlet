@@ -24,8 +24,7 @@ import ScreeningComplete from '../screens/screening/ScreeningComplete';
 import TroubleshootingScreen from '../screens/screening/TroubleshootingScreen';
 import TroubleshootingSolution from '../screens/screening/TroubleshootingSolution';
 import RaceEthnicity from '../screens/RaceEthnicity';
-import AboutYourChild from '../screens/AboutYourChild';
-import PickProfile from '../screens/PickProfile';
+
 
 export type AppStackParamList = {
   MainTabs: undefined;
@@ -51,8 +50,6 @@ export type AppStackParamList = {
   ScreeningComplete: undefined;
   TroubleshootingScreen: undefined;
   TroubleshootingSolution: undefined;
-  AboutYourChild: undefined;
-  PickProfile: undefined;
   RaceEthnicity: undefined;
 
 };
@@ -62,7 +59,7 @@ const Stack = createNativeStackNavigator<AppStackParamList>();
 export default function AppStack() {
   return (
     <Stack.Navigator
-      initialRouteName="AboutYourChild"
+      initialRouteName="MainTabs"
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
@@ -92,8 +89,6 @@ export default function AppStack() {
       <Stack.Screen name="TroubleshootingScreen" component={TroubleshootingScreen} />
       <Stack.Screen name="TroubleshootingSolution" component={TroubleshootingSolution} />
       <Stack.Screen name="RaceEthnicity" component={RaceEthnicity} />
-      <Stack.Screen name="AboutYourChild" component={AboutYourChild} />
-      <Stack.Screen name="PickProfile" component={PickProfile} />
     </Stack.Navigator>
   );
 }

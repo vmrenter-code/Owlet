@@ -6,10 +6,13 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './src/config/firebase';
 import { ScreeningProvider } from './context/ScreeningContext';
 import { ChildProfileProvider } from './context/ChildProfileContext';
+import { ProfileProvider } from './context/ProfileContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useProfile } from './context/ProfileContext';
 
 import AuthStack from './navigation/AuthStack';
 import AppStack from './navigation/AppStack';
+import OnboardingStack from './navigation/OnboardingStack';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -27,6 +30,7 @@ export default function App() {
       setUser(firebaseUser);
       setAuthReady(true);
     });
+
     return unsubscribe;
   }, []);
 
@@ -36,13 +40,29 @@ export default function App() {
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ScreeningProvider>
-          <ChildProfileProvider>
-            <NavigationContainer>
-              {user ? <AppStack /> : <AuthStack />}
-            </NavigationContainer>
-          </ChildProfileProvider>
+          <ProfileProvider>
+            <ChildProfileProvider>
+              <NavigationGate user={user} />
+            </ChildProfileProvider>
+          </ProfileProvider>
         </ScreeningProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
+  );
+}
+
+function NavigationGate({ user }: { user: User | null }) {
+  const { profileComplete, loading } = useProfile();
+
+  if (loading) return null;
+
+  return (
+    <NavigationContainer>
+      {user ? (
+        profileComplete ? <AppStack /> : <OnboardingStack />
+      ) : (
+        <AuthStack />
+      )}
+    </NavigationContainer>
   );
 }
