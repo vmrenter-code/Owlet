@@ -24,6 +24,7 @@ import ScreeningComplete from '../screens/screening/ScreeningComplete';
 import TroubleshootingScreen from '../screens/screening/TroubleshootingScreen';
 import TroubleshootingSolution from '../screens/screening/TroubleshootingSolution';
 
+
 export type AppStackParamList = {
   MainTabs: undefined;
   Home: undefined;
@@ -48,6 +49,8 @@ export type AppStackParamList = {
   ScreeningComplete: undefined;
   TroubleshootingScreen: undefined;
   TroubleshootingSolution: undefined;
+  AboutYourChild: undefined;
+  PickProfile: undefined;
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();

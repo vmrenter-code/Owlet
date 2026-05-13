@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './src/config/firebase';
 import { ScreeningProvider } from './context/ScreeningContext';
+import { ChildProfileProvider } from './context/ChildProfileContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AuthStack from './navigation/AuthStack';
@@ -35,9 +36,11 @@ export default function App() {
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ScreeningProvider>
-          <NavigationContainer>
-            {user ? <AppStack /> : <AuthStack />}
-          </NavigationContainer>
+          <ChildProfileProvider>
+            <NavigationContainer>
+              {user ? <AppStack /> : <AuthStack />}
+            </NavigationContainer>
+          </ChildProfileProvider>
         </ScreeningProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
