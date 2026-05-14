@@ -37,8 +37,8 @@ export default function HomeBg() {
 
           {/* Center-left: soft lavender halo */}
           <RadialGradient id="g4" cx="25%" cy="52%" r="58%">
-            <Stop offset="15%" stopColor="#7271d8" stopOpacity="0.14" />
-            <Stop offset="100%" stopColor="#D4C0F0" stopOpacity="0" />
+            <Stop offset="15%" stopColor="#7f52c7" stopOpacity="0.14" />
+            <Stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
           </RadialGradient>
 
           {/* Bottom-right: blue-purple blend */}
