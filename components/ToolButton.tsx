@@ -25,13 +25,15 @@ export default function ToolButton({ icon, children, onPress }: Props) {
     <Animated.View style={[styles.card, animatedStyle]}>
       <Pressable
         onPressIn={() => {
-          scale.value = withSpring(0.95);
+          scale.value = withSpring(0.97);
         }}
         onPressOut={() => {
           scale.value = withSpring(1);
         }}
         onPress={onPress}
-        style={{ flex: 1 }}
+        accessibilityRole="button"
+        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+        style={styles.pressable}
       >
         <View style={styles.content}>
           {children}
@@ -44,20 +46,23 @@ export default function ToolButton({ icon, children, onPress }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 24,
-    borderColor: '#F0F1F1',
-    borderWidth: 1,
-    padding: 22,
+    borderRadius: 20,
     flex: 1,
-    shadowColor: '#000000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 2, height: 4 },
-    shadowRadius: 5,
+    shadowColor: '#4e4e4e',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 6,
+  },
+
+  pressable: {
+    flex: 1,
+    padding: 20,
   },
 
   content: {
     flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
   }
 });

@@ -20,7 +20,6 @@ export default function BeginCard({ childName }: Props) {
   const [incompleteVideoNumber, setIncompleteVideoNumber] = useState(1);
   const [incompleteScreeningId, setIncompleteScreeningId] = useState<string | null>(null);
 
-  // Check for incomplete screening on mount
   useEffect(() => {
     const checkIncompleteScreening = async () => {
       try {
@@ -44,9 +43,8 @@ export default function BeginCard({ childName }: Props) {
     if (hasIncompleteScreening) {
       setShowResumeModal(true);
     } else {
-      // Start a new screening and generate screeningID
       const newScreeningID = startScreening();
-    navigation.getParent()?.navigate('ScreeningInstructions', { screeningID: newScreeningID });
+      navigation.getParent()?.navigate('ScreeningInstructions', { screeningID: newScreeningID });
     }
   };
 
@@ -57,14 +55,12 @@ export default function BeginCard({ childName }: Props) {
 
   const handleStartNew = async () => {
     setShowResumeModal(false);
-    // Clear old progress and start fresh
     try {
       await AsyncStorage.removeItem('screeningProgress');
       setHasIncompleteScreening(false);
     } catch (e) {
       console.log('Error clearing progress');
     }
-    // Start a new screening and generate screeningID
     const newScreeningID = startScreening();
     navigation.getParent()?.navigate('ScreeningInstructions', { screeningID: newScreeningID });
   };
@@ -77,8 +73,11 @@ export default function BeginCard({ childName }: Props) {
     <>
     <Pressable
       onPress={handlePress}
-      onPressIn={() => { scale.value = withSpring(0.95); }}
+      onPressIn={() => { scale.value = withSpring(0.97); }}
       onPressOut={() => { scale.value = withSpring(1); }}
+      accessibilityRole="button"
+      accessibilityLabel="Begin screening, takes about 10 minutes"
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       <Animated.View style={[styles.container, animatedStyle]}>
         <View style={styles.content}>
@@ -103,7 +102,6 @@ export default function BeginCard({ childName }: Props) {
       </Animated.View>
     </Pressable>
 
-    {/* Resume or Start New Modal */}
     <Modal
       visible={showResumeModal}
       transparent={true}
@@ -124,12 +122,16 @@ export default function BeginCard({ childName }: Props) {
             <Pressable 
               style={styles.resumeButton}
               onPress={handleResume}
+              accessibilityRole="button"
+              accessibilityLabel="Resume screening"
             >
               <Text style={styles.resumeButtonText}>Resume</Text>
             </Pressable>
             <Pressable 
               style={styles.startNewButton}
               onPress={handleStartNew}
+              accessibilityRole="button"
+              accessibilityLabel="Start a new screening"
             >
               <Text style={styles.startNewButtonText}>Start New</Text>
             </Pressable>
@@ -138,6 +140,8 @@ export default function BeginCard({ childName }: Props) {
           <Pressable 
             style={styles.cancelButton}
             onPress={() => setShowResumeModal(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </Pressable>
@@ -151,15 +155,16 @@ export default function BeginCard({ childName }: Props) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: '#90d3d3',
-    borderRadius: 25,
+    backgroundColor: '#4a8f8f',
+    borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 2, height: 4 },
-    shadowRadius: 5,
+    shadowColor: '#2a5f5f',
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 6,
   },
 
   content: {
@@ -175,25 +180,26 @@ const styles = StyleSheet.create({
   },
 
   subHeader: {
-    fontSize: 15,
-    fontFamily: 'NotoSans-Regular',
-    color: '#ffffff',
-    marginBottom: 2,
-  },
+  fontSize: 13,
+  fontFamily: 'NotoSans-Regular',
+  color: 'rgba(255,255,255,0.7)',
+  letterSpacing: 0.6,
+},
 
-  header: {
-    fontSize: 18,
-    fontFamily: 'NotoSans-Bold',
-    color: '#ffffff',
-    marginBottom: 4,
-  },
+header: {
+  fontSize: 18,
+  fontFamily: 'NotoSans-Bold',
+  color: '#ffffff',
+  letterSpacing: -0.3,
+},
 
-  description: {
-    fontSize: 16,
-    fontFamily: 'NotoSans-Regular',
-    color: '#ffffff',
-    lineHeight: 20,
-  },
+description: {
+  fontSize: 15,
+  fontFamily: 'NotoSans-Regular',
+  color: 'rgba(255,255,255,0.75)',
+  lineHeight: 21,
+  letterSpacing: 0.1,
+},
 
   childCaption: {
     marginTop: 6,
@@ -203,15 +209,18 @@ const styles = StyleSheet.create({
   },
 
   buttonWrapper: {
-    borderRadius: 14,
-    backgroundColor: '#ffffff00',
+    width: 44,
+    height: 44,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: 12,
   },
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -219,49 +228,55 @@ const styles = StyleSheet.create({
 
   modalContainer: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 28,
     width: '100%',
     maxWidth: 340,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 24,
+    elevation: 10,
   },
 
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#333',
-    marginBottom: 12,
+    color: '#1a1a1a',
+    marginBottom: 10,
     textAlign: 'center',
+    letterSpacing: -0.2,
   },
 
   modalMessage: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#555',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
     lineHeight: 22,
   },
 
   modalNote: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#e67e22',
     textAlign: 'center',
     marginBottom: 24,
-    lineHeight: 20,
+    lineHeight: 19,
     fontStyle: 'italic',
   },
 
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     width: '100%',
   },
 
   resumeButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#7FB8C4',
+    paddingVertical: 15,
+    borderRadius: 14,
+    backgroundColor: '#4a8f8f',
     alignItems: 'center',
   },
 
@@ -273,26 +288,27 @@ const styles = StyleSheet.create({
 
   startNewButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#f0f0f0',
+    paddingVertical: 15,
+    borderRadius: 14,
+    backgroundColor: '#f2f2f7',
     alignItems: 'center',
   },
 
   startNewButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#444',
   },
 
   cancelButton: {
-    marginTop: 12,
+    marginTop: 14,
     paddingVertical: 10,
+    paddingHorizontal: 20,
   },
 
   cancelButtonText: {
     fontSize: 14,
-    color: '#999',
+    color: '#aaa',
     textDecorationLine: 'underline',
   },
 });
