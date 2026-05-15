@@ -9,26 +9,28 @@ type Slide = {
 };
 
 export default function LaunchItems({ item }: { item: Slide }) {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
   return (
     <View style={[styles.container, { width }]}>
 
-      {/* IMAGE (top half) */}
-      <View style={[styles.imageWrapper, { height: height * 0.5 }]}>
+      <View style={styles.imageWrapper}>
         <ImageCard style={styles.imageCard} />
       </View>
 
-      {/* TEXT (scrollable bottom) */}
       <ScrollView
         style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.textWrapper}>
-          <Text style={styles.title}>{item.title}</Text>
+          <Text
+            style={styles.title}
+            accessibilityRole="header"
+          >
+            {item.title}
+          </Text>
           <Text style={styles.description}>{item.description}</Text>
-
         </View>
       </ScrollView>
 
@@ -42,6 +44,7 @@ const styles = StyleSheet.create({
   },
 
   imageWrapper: {
+    flex: 4,
     width: '100%',
   },
 
@@ -52,32 +55,36 @@ const styles = StyleSheet.create({
   },
 
   scrollArea: {
-    flex: 1,
+    flex: 4,
   },
 
- scrollContent: {
-  flexGrow: 1,
-  paddingBottom: 40,
-  justifyContent: 'flex-start',
-},
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 16,
+    justifyContent: 'center',
+  },
 
   textWrapper: {
-    paddingHorizontal: 28,
-    paddingTop: 28,
+    paddingHorizontal: 20,
+    paddingTop: 16,
   },
 
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: 'NotoSans-SemiBold',
     color: '#161B1A',
-    marginBottom: 16,
-    textAlign: 'center'
+    marginBottom: 8,
+    letterSpacing: -0.2,
+    textAlign: 'center',
   },
 
   description: {
-    fontSize: 16,
-    color: '#2E3332',
-    marginBottom: 20,
-    textAlign: 'center'
+    fontSize: 15,
+    fontFamily: 'NotoSans-Regular',
+    color: '#060707',
+    lineHeight: 21,
+    letterSpacing: 0.1,
+    marginBottom: 0,
+    textAlign: 'center',
   },
 });
