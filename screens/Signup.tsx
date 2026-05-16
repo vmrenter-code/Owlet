@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, Alert, Pressable, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import userAuthServices from '../src/services/userAuthServices';
 import { useRef, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
@@ -11,15 +12,17 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '../src/config/firebase';
 import { Svg, Path, Rect, Circle } from 'react-native-svg';
+import { useEffect } from 'react';
+import WelcomeBackArrow from '../components/WelcomeBackArrow';
 
-const UserIcon = ({ width = 20, height = 20, color = '#585858' }) => (
+const UserIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
     <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
         <Path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
         <Path d="M5 22c0-4 14-4 14 0" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
 );
 
-const LockIcon = ({ width = 20, height = 20, color = '#585858' }) => (
+const LockIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
     <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
         <Rect x={6} y={11} width={12} height={9} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
         <Path d="M9 11V7a3 3 0 0 1 6 0v4" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -27,14 +30,14 @@ const LockIcon = ({ width = 20, height = 20, color = '#585858' }) => (
     </Svg>
 );
 
-const MailIcon = ({ width = 20, height = 20, color = '#585858' }) => (
+const MailIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
     <Svg width={width} height={height} viewBox="0 0 25 25" fill="none">
         <Rect x={4} y={6} width={16} height={12} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
         <Path d="M4 6l8 6 8-6" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
 );
 
-const CheckCircleIcon = ({ width = 20, height = 20, color = '#585858' }) => (
+const CheckCircleIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
     <Svg width={width} height={height} viewBox="0 0 26 26" fill="none">
         <Path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
         <Path d="M8 12l3 3 5-5" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -68,7 +71,7 @@ export default function Signup() {
     const emailRef = useRef<any>(null);
     const passwordRef = useRef<any>(null);
     const confirmPasswordRef = useRef<any>(null);
-
+    const insets = useSafeAreaInsets();
     const passwordLengthStatus = password.length >= 6 ? 'met' : 'unmet';
     const passwordMatchStatus = confirmPassword.length === 0 ? 'pending' : password === confirmPassword ? 'met' : 'unmet';
     const showPasswordRequirements = isPasswordFocused && password.length > 0;
@@ -124,8 +127,8 @@ export default function Signup() {
                     <HomeBg />
                 </View>
 
-                <View style={styles.container}>
-                    <BackArrow />
+                <View style={[styles.container, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 }]}>
+                    <WelcomeBackArrow />
                     <View style={styles.centerSection}>
                         <View style={styles.titleContainer}>
                             <Text style={styles.titleStyle}>Create Your Account</Text>
@@ -191,7 +194,7 @@ export default function Signup() {
 
                             <InputFields
                                 placeholder="Confirm your password"
-                                icon={<CheckCircleIcon width={20} height={20} color={passwordMatchStatus === 'met' ? '#2E9F5E' : passwordMatchStatus === 'unmet' ? '#D06868' : '#585858'} />}
+                                icon={<CheckCircleIcon width={20} height={20} color={passwordMatchStatus === 'met' ? '#2E9F5E' : passwordMatchStatus === 'unmet' ? '#D06868' : '#aaa'} />}
                                 ref={confirmPasswordRef}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
@@ -200,12 +203,6 @@ export default function Signup() {
                                 returnKeyType="done"
                                 onSubmitEditing={handleSignUp}
                             />
-                        </View>
-
-                        <View style={styles.linkContainer}>
-                            <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-                                <Text style={styles.linkStyle}>Forgot Password?</Text>
-                            </TouchableOpacity>
                         </View>
 
                         <View style={styles.orContainer}>
@@ -226,11 +223,16 @@ export default function Signup() {
                             </PrimaryBlueButton>
                         </View>
 
-                        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                        <Pressable
+                            onPress={() => navigation.navigate('Login')}
+                            accessibilityRole="link"
+                            accessibilityLabel="Already have an account, sign in"
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
                             <Text style={styles.createText}>
-                                Have an account? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Sign in</Text>
+                                Have an account? <Text style={styles.createTextLink}>Sign in</Text>
                             </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 </View>
             </View>
@@ -241,30 +243,33 @@ export default function Signup() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 30,
+        paddingHorizontal: 20,
     },
     centerSection: {
         flex: 1,
         justifyContent: 'center',
     },
     titleStyle: {
-        fontSize: 28,
+        fontSize: 22,
         color: '#151515',
         textAlign: 'center',
         fontFamily: 'NotoSans-SemiBold',
+        letterSpacing: -0.2,
     },
     subtitleStyle: {
-        fontSize: 17,
+        fontSize: 15,
         color: '#2E3332',
         textAlign: 'center',
         fontFamily: 'NotoSans-Regular',
+        marginTop: 6,
+        lineHeight: 21,
     },
     titleContainer: {
         gap: 3,
     },
     divider: {
-        gap: 10,
-        marginTop: '9%',
+        gap: 12,
+        marginTop: 28,
         position: 'relative',
         zIndex: 1,
     },
@@ -281,21 +286,21 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         zIndex: 25,
         backgroundColor: '#F7FBFA',
-        borderColor: '#DDE7E6',
+        borderColor: 'rgba(0,0,0,0.1)',
         borderWidth: 1,
-        borderRadius: 100,
+        borderRadius: 16,
         paddingHorizontal: 16,
-        paddingVertical: 10,
+        paddingVertical: 12,
         gap: 6,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowColor: '#1a1a1a',
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
         shadowOffset: { width: 0, height: 4 },
         elevation: 6,
     },
     passwordHelpTitle: {
         fontSize: 13,
-        color: '#1F2423',
+        color: '#151515',
         fontFamily: 'NotoSans-SemiBold',
     },
     passwordHelpList: {
@@ -309,7 +314,7 @@ const styles = StyleSheet.create({
     passwordHelpText: {
         flex: 1,
         fontSize: 13,
-        color: '#5F6665',
+        color: '#888',
         fontFamily: 'NotoSans-Regular',
     },
     passwordHelpTextMet: {
@@ -319,17 +324,17 @@ const styles = StyleSheet.create({
         color: '#D06868',
     },
     linkContainer: {
-        marginTop: '4%',
-        marginBottom: '3%',
+        marginTop: 16,
+        marginBottom: 12,
         alignItems: 'flex-end',
     },
     linkStyle: {
-        color: '#303030',
-        fontSize: 15,
+        color: '#4a8f8f',
+        fontSize: 13,
         fontFamily: 'NotoSans-Regular',
     },
     orContainer: {
-        marginTop: '5%',
+        marginTop: 20,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
@@ -338,11 +343,11 @@ const styles = StyleSheet.create({
     orLine: {
         flex: 1,
         height: 1,
-        backgroundColor: '#303030',
+        backgroundColor: '#2E3332',
     },
     orText: {
-        fontSize: 15,
-        color: '#303030',
+        fontSize: 13,
+        color: '#2E3332',
         fontFamily: 'NotoSans-Regular',
     },
     googleContainer: {
@@ -350,13 +355,17 @@ const styles = StyleSheet.create({
     },
     bottomSection: {
         alignItems: 'center',
-        gap: 20,
+        gap: 12,
         paddingBottom: 16,
     },
     createText: {
         fontSize: 15,
-        color: '#0B0B0B',
+        color: '#2E3332',
         fontFamily: 'NotoSans-Regular',
+    },
+    createTextLink: {
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#5058b4',
     },
     formatBg: {
         position: 'absolute',

@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 15,
     fontFamily: 'NotoSans-Regular',
-    color: '#060707',
+    color: '#2E3332',
     lineHeight: 21,
     letterSpacing: 0.1,
     marginBottom: 0,
