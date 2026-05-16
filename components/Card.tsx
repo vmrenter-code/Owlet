@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
 
   subHeader: {
     fontSize: 13,
-    color: '#363636',
+    color: '#bbb',
     fontFamily: 'NotoSans-Regular',
     letterSpacing: 0.6,
   },
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
 
   cardText: {
     fontSize: 15,
-    color: '#363636',
+    color: '#2E3332',
     fontFamily: 'NotoSans-Regular',
     lineHeight: 21,
     letterSpacing: 0.1,

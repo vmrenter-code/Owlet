@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
 
   toolSubText: {
-    color: '#888',
+    color: '#2E3332',
     fontSize: 13,
     fontFamily: 'NotoSans-Regular',
     lineHeight: 18,
