@@ -155,12 +155,12 @@ export default function BeginCard({ childName }: Props) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: '#4a8f8f',
+    backgroundColor: '#5058b4',
     borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#2a5f5f',
+    shadowColor: '#2d3058',
     shadowOpacity: 0.18,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,

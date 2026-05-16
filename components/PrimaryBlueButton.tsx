@@ -11,6 +11,8 @@ type Props = {
   onPress?: () => void;
   accessibilityLabel?: string;
   fullWidth?: boolean;
+  disabled?: boolean;
+
 };
 
 export default function PrimaryBlueButton({ children, onPress, accessibilityLabel, fullWidth }: Props) {
@@ -52,8 +54,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 100,
-    backgroundColor: '#4a8f8f',
-    shadowColor: '#2a5f5f',
+    backgroundColor: '#5058b4',
+    shadowColor: '#2d3058',
     shadowOpacity: 0.18,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,

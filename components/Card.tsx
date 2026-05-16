@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     height: 160,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    backgroundColor: '#d7c3e4'
+    backgroundColor: '#c7caf1'
   },
 
   bottomSection: {

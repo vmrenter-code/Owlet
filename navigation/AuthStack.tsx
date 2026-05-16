@@ -5,12 +5,14 @@ import Launch from '../screens/Launch';
 import Login from '../screens/Login';
 import Signup from '../screens/Signup';
 import ForgotPassword from '../screens/ForgotPassword';
+import Welcome from '../screens/Welcome';
 
 export type AuthStackParamList = {
   Launch: undefined;
   Login: undefined;
   Signup: undefined;
   ForgotPassword: undefined;
+  Welcome: undefined;
 
 
 };
@@ -31,6 +33,7 @@ export default function AuthStack() {
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Signup" component={Signup} />
       <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+      <Stack.Screen name="Welcome" component={Welcome} />
     </Stack.Navigator>
   );
 }

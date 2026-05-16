@@ -4,7 +4,7 @@ type Props = {
   onPress?: () => void;
 };
 
-export default function SkipButton({ onPress }: Props) {
+export default function NextButton({ onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     fontFamily: 'NotoSans-SemiBold',
-    color: '#4a8f8f',
+    color: '#5058b4',
     letterSpacing: 0,
   },
 });

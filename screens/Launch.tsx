@@ -35,7 +35,7 @@ export default function Launch() {
 
   const handleNext = () => {
     if (isLast) {
-      navigation.navigate('Signup');
+      navigation.navigate('Welcome');
     } else {
       slidesRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     }
@@ -46,7 +46,7 @@ export default function Launch() {
   };
 
   const handleSkip = () => {
-    navigation.navigate('Login');
+    navigation.navigate('Welcome');
   };
 
   return (
@@ -87,7 +87,7 @@ export default function Launch() {
         <View style={[styles.bottomRow, { paddingBottom: insets.bottom + 16 }]}>
           {isLast ? (
             <View style={styles.lastRow}>
-              <PrimaryBlueButton onPress={handleNext} fullWidth>Start</PrimaryBlueButton>
+              <PrimaryBlueButton onPress={handleNext} fullWidth>Let's begin</PrimaryBlueButton>
             </View>
           ) : (
             <View style={styles.navRow}>

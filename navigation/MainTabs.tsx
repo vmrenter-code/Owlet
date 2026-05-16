@@ -64,7 +64,7 @@ export default function MainTabs() {
           borderTopWidth: 0,
           elevation: 0,
         },
-        tabBarActiveTintColor: '#3d7474',
+        tabBarActiveTintColor: '#5058b4',
         tabBarInactiveTintColor: '#aaa',
         tabBarLabelStyle: {
           fontFamily: 'NotoSans-SemiBold',
