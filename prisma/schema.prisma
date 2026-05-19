@@ -39,12 +39,15 @@ model Screening {
   id           String        @id @default(uuid())
   userId       String?
   user         User?          @relation(fields: [userId], references: [id])
+  
   childId      String?
   child        Child?         @relation(fields: [childId], references: [id])
+  
   status       String        @default("pending")
   riskScore    Float?
   createdAt    DateTime      @default(now())
   completedAt  DateTime?
+  reviewedAt   DateTime?
 
   videoSessions VideoSession[]
 }

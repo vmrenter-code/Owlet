@@ -279,36 +279,38 @@ app.post('/screening/:id/complete', async (req, res) => {
     const { completedAt } = req.body;
     const updated = await prisma.screening.update({
         where: { id },
-        data: { completedAt: completedAt ? new Date(completedAt) : new Date() },
+        data: { 
+          completedAt: completedAt ? new Date(completedAt) : new Date(),
+          status: 'completed'
+        },
     });
+    console.log(`Screening ${id} marked as complete at ${updated.completedAt}`);
 
+    // Simulate review after 5 seconds
+    setTimeout(async () => {
+      try {
+        const reviewedScreening = await prisma.screening.update({
+          where: { id },
+          data: { 
+            status: 'reviewed',
+            reviewedAt: new Date()
+          },
+          include: { user: true }
+        });
+        console.log(`Screening ${id} marked as reviewed`);
+
+        // Send notification
+
+      } catch (err) {
+        console.error('Error during simulated review:', err);
+      }
+    }, 5000);
+    
     res.json({ success: true, screening: updated });
   } catch (err) {
     console.error('Error updating screening:', err);
     res.status(500).json({ success: false, error: 'Failed to mark screening complete' });
   }
-});
-
-app.put('/settings', async (req, res) => {
-  const { notifications, language, accessibility } = req.body;
-
-  const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ error: "Missing token" });
-      }
-      const token = authHeader.split("Bearer ")[1];
-      const decodedToken = await admin.auth().verifyIdToken(token);
-
-  const user = await prisma.user.update({
-    where: { firebaseUid: decodedToken.uid },
-    data: {
-      notifications,
-      language,
-      accessibility,
-    },
-  });
-
-  res.json({ success: true, user });
 });
 
 app.put('/settings/language', async (req, res) => {

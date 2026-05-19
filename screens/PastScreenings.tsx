@@ -120,7 +120,7 @@ export default function PastScreenings() {
                                 Status: {screening.completedAt ? 'Complete' : 'In Review'}
                             </Text>
 
-                            {screening.completedAt && (
+                            {screening.status === "reviewed" && (
                                 <View style={styles.linksContainer}>
                                     <Pressable onPress={() => navigation.navigate('ViewResults', { screeningId: screening.id })}>
                                         <Text style={styles.linkText}>View results</Text>
