@@ -17,7 +17,7 @@ export default function ReadyToBegin() {
     const handleBegin = async () => {
         // Start the screening process - navigate to first video
         // The screeningID is passed via context, but also as route param for backup
-        console.log('Starting screening with ID:', screeningID);
+        console.log('Starting screening with ID:', screeningId);
         try {
             const user = getAuth().currentUser;
             if (!user) {
@@ -60,7 +60,7 @@ export default function ReadyToBegin() {
             if (data.success && data) {
                 console.log('Screening started successfully:', data.screening);
                 // Start the screening process - navigate to first video
-                navigation.navigate('VideoScreen', { videoNumber: 1, screeningID: screeningID });
+                navigation.navigate('VideoScreen', { videoNumber: 1, screeningID: screeningId });
             } else {
                 console.log('Server did not confirm screening start');
             }

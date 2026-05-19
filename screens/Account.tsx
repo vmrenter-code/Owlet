@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Modal, KeyboardAvoidingView, Platform, TextInput, Alert } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { use, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import { get } from 'node:http';

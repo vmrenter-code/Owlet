@@ -2,7 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import React, { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, getAuth } from 'firebase/auth';
 import { auth } from './src/config/firebase';
 import { ScreeningProvider } from './context/ScreeningContext';
 import { ChildProvider } from './context/ChildContext';
@@ -15,7 +15,6 @@ import AuthStack from './navigation/AuthStack';
 import AppStack from './navigation/AppStack';
 import OnboardingStack from './navigation/OnboardingStack';
 
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 const BASE_URL = 'http://localhost:4000';
 
 
@@ -64,13 +63,14 @@ export default function App() {
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ChildProvider>
-    <ScreeningProvider>
+        <ScreeningProvider>
           <ProfileProvider>
             <ChildProfileProvider>
               <NavigationGate user={user} />
             </ChildProfileProvider>
           </ProfileProvider>
         </ScreeningProvider>
+        </ChildProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
@@ -89,8 +89,5 @@ function NavigationGate({ user }: { user: User | null }) {
         <AuthStack />
       )}
     </NavigationContainer>
-    </ScreeningProvider>
-    </ChildProvider>
-    </GestureHandlerRootView>
   );
 }

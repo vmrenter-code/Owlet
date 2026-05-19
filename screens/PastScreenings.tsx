@@ -140,7 +140,7 @@ export default function PastScreenings() {
                 )}
 
                 <View style={styles.section}>
-                    {pastScreeningsData.map((screening, index) => (
+                    {pastScreenings.map((screening, index) => (
                         <View
                             key={screening.id}
                             style={[
