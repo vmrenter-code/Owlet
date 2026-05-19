@@ -9,8 +9,6 @@ import InstructionSlides from './InstructionSlides';
 import InstructionItems from './InstructionItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
-//import PageBg from '../components/PageBg';
-//import ScreenBg from '../components/ScreenBg';
 import BackArrow from '../components/BackArrow';
 
 const BUTTON_SIZE = 40;
@@ -42,14 +40,6 @@ export default function ScreeningInstructions() {
 
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
-  const handleBack = () => {
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      navigation.navigate('MainTabs');
-    }
-  };
-
   const handleNext = () => {
     if (isLastSlide) {
       navigation.navigate('EKGPlacement');
@@ -59,7 +49,7 @@ export default function ScreeningInstructions() {
   };
 
   const handleBeginScreening = async () => {
-    let screeningId = createLocalScreeningId(); // default fallback
+    let screeningId = createLocalScreeningId();
 
     try {
       const response = await fetch(`${BASE_URL}/screening`, {
@@ -83,13 +73,13 @@ export default function ScreeningInstructions() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.formatBg}>
-              <HomeBg />
+      <View style={styles.formatBg} pointerEvents="none">
+        <HomeBg />
       </View>
 
       <View style={styles.container}>
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <BackArrow/>
+          <BackArrow />
         </View>
 
         <View style={{ flex: 3 }}>
@@ -106,7 +96,7 @@ export default function ScreeningInstructions() {
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { useNativeDriver: false }
             )}
-            scrollEventThrottle={32}
+            scrollEventThrottle={16}
             onViewableItemsChanged={viewableItemsChanged}
             viewabilityConfig={viewConfig}
             ref={slidesRef}
@@ -115,8 +105,8 @@ export default function ScreeningInstructions() {
 
         <Paginator data={InstructionSlides} scrollX={scrollX} />
 
-        <View style={styles.buttonWrapper}>
-          <PrimaryBlueButton onPress={handleNext}>
+        <View style={[styles.buttonWrapper, { paddingBottom: insets.bottom + 16 }]}>
+          <PrimaryBlueButton onPress={handleNext} fullWidth>
             {isLastSlide ? 'Begin Screening' : 'Next'}
           </PrimaryBlueButton>
         </View>
@@ -143,14 +133,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    paddingLeft: 16,
+    paddingLeft: 8,
     zIndex: 100,
   },
 
   buttonWrapper: {
     width: '100%',
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    marginTop: 12,
   },
 
   backButton: {
