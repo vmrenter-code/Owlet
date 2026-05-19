@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
-
 // Firebase configuration using environment variables
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -13,7 +12,5 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-
-// Initialize services
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

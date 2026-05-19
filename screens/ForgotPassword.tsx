@@ -1,13 +1,15 @@
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { userAuthServices } from '../src/services/userAuthServices';
 import InputFields from '../components/InputFields';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import HomeBg from '../components/HomeBg';
+import BackArrow from '../components/BackArrow';
 import { Svg, Path, Rect } from 'react-native-svg';
 
-const MailIcon = ({ width = 20, height = 20, color = '#585858' }) => (
+const MailIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
     <Svg width={width} height={height} viewBox="0 0 25 25" fill="none">
         <Rect x={4} y={6} width={16} height={12} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
         <Path d="M4 6l8 6 8-6" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -16,6 +18,7 @@ const MailIcon = ({ width = 20, height = 20, color = '#585858' }) => (
 
 export default function ForgotPassword() {
         const navigation = useNavigation<any>();
+        const insets = useSafeAreaInsets();
         const [email, setEmail] = useState('');
         const [loading, setLoading] = useState(false);
 
@@ -39,11 +42,13 @@ export default function ForgotPassword() {
 
     return (
         <View style={{ flex: 1 }}>
-            <View style={styles.formatBg}>
+            <View style={styles.formatBg} pointerEvents="none">
                 <HomeBg />
             </View>
 
-            <View style={styles.container}>
+            <View style={[styles.container, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 }]}>
+                <BackArrow />
+
                 <View style={styles.centerSection}>
                     <View style={styles.titleContainer}>
                         <Text style={styles.titleStyle}>Reset Password</Text>
@@ -71,11 +76,16 @@ export default function ForgotPassword() {
                         </PrimaryBlueButton>
                     </View>
 
-                    <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                    <Pressable
+                        onPress={() => navigation.navigate('Login')}
+                        accessibilityRole="link"
+                        accessibilityLabel="Remembered your password, sign in"
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
                         <Text style={styles.createText}>
-                            Remembered your password? <Text style={{ fontFamily: 'NotoSans-SemiBold' }}>Sign in</Text>
+                            Remembered your password? <Text style={styles.createTextLink}>Sign in</Text>
                         </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             </View>
         </View>
@@ -85,7 +95,7 @@ export default function ForgotPassword() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 30,
+        paddingHorizontal: 20,
     },
 
     centerSection: {
@@ -94,17 +104,20 @@ const styles = StyleSheet.create({
     },
 
     titleStyle: {
-        fontSize: 28,
+        fontSize: 22,
         color: '#151515',
         textAlign: 'center',
         fontFamily: 'NotoSans-SemiBold',
+        letterSpacing: -0.2,
     },
 
     subtitleStyle: {
-        fontSize: 17,
+        fontSize: 15,
         color: '#2E3332',
         textAlign: 'center',
         fontFamily: 'NotoSans-Regular',
+        marginTop: 6,
+        lineHeight: 21,
     },
 
     titleContainer: {
@@ -112,20 +125,25 @@ const styles = StyleSheet.create({
     },
 
     divider: {
-        gap: 10,
-        marginTop: '9%',
+        gap: 12,
+        marginTop: 28,
     },
 
     bottomSection: {
         alignItems: 'center',
-        gap: 20,
+        gap: 12,
         paddingBottom: 16,
     },
 
     createText: {
         fontSize: 15,
-        color: '#0B0B0B',
+        color: '#2E3332',
         fontFamily: 'NotoSans-Regular',
+    },
+
+    createTextLink: {
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#5058b4',
     },
 
     formatBg: {

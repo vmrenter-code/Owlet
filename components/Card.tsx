@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, Pressable } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -21,9 +21,13 @@ export default function Card({ children, onPress }: Props) {
 
   return (
     <Animated.View style={[styles.card, animatedStyle]}>
-      <View
-        onTouchStart={() => { scale.value = withSpring(0.95); }}
-        onTouchEnd={() => { scale.value = withSpring(1); }}
+      <Pressable
+        onPress={onPress}
+        onPressIn={() => { scale.value = withSpring(0.97); }}
+        onPressOut={() => { scale.value = withSpring(1); }}
+        accessibilityRole="button"
+        accessibilityLabel="Past screenings, no results yet"
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <View style={styles.topSection} />
 
@@ -41,12 +45,12 @@ export default function Card({ children, onPress }: Props) {
                     r="10"
                     fill="none"
                     stroke="#161B1A"
-                    strokeWidth={2.7}
+                    strokeWidth={3}
                   />
                   <Path
                     d="M12 7v5.5l3.5 3.5"
                     stroke="#161B1A"
-                    strokeWidth={2.7}
+                    strokeWidth={3}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     fill="none"
@@ -58,13 +62,13 @@ export default function Card({ children, onPress }: Props) {
               </Text>
             </View>
 
-            <Svg height="30px" width="30px" viewBox="0 -960 960 960" fill="#0d0e0d">
+            <Svg height="30px" width="30px" viewBox="0 -960 960 960" fill="#161B1A">
               <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z"/>
             </Svg>
 
           </View>
         </View>
-      </View>
+      </Pressable>
     </Animated.View>
   );
 }
@@ -72,46 +76,48 @@ export default function Card({ children, onPress }: Props) {
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    borderRadius: 25,
-    shadowColor: '#000000',
+    borderRadius: 20,
+    shadowColor: '#81738b',
     shadowOpacity: 0.1,
-    shadowOffset: { width: 2, height: 4 },
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 6,
     backgroundColor: '#fff'
   },
 
   topSection: {
-    height: 200,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    backgroundColor: '#f3edf7'
+    height: 160,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    backgroundColor: '#c7caf1'
   },
 
   bottomSection: {
     backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 25
+    padding: 18,
+    borderRadius: 20
   },
 
   subHeader: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#2E3332',
     fontFamily: 'NotoSans-Regular',
-    marginBottom: 4
+    letterSpacing: 0.6,
   },
 
   cardHeader: {
     fontSize: 18,
-    color: '#161B1A',
+    color: '#1a1a1a',
     fontFamily: 'NotoSans-SemiBold',
-    marginBottom: 4
+    letterSpacing: -0.2,
   },
 
   cardText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#2E3332',
     fontFamily: 'NotoSans-Regular',
-    lineHeight: 22,
+    lineHeight: 21,
+    letterSpacing: 0.1,
     maxWidth: '90%'
   },
 

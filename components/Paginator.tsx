@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   dot: {
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#93d6d6',
+    backgroundColor: '#5058b4',
     marginHorizontal: 4
   }
 });

@@ -15,8 +15,12 @@ export default function GoogleButton({ onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      onPressIn={() => { scale.value = withSpring(0.7); }}
+      onPressIn={() => { scale.value = withSpring(0.97); }}
       onPressOut={() => { scale.value = withSpring(1); }}
+      accessibilityRole="button"
+      accessibilityLabel="Sign in with Google"
+      accessibilityHint="Opens Google sign in"
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       <Animated.View style={[styles.googleButton, animatedStyle]} collapsable={false}>
         <Image
@@ -38,11 +42,13 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     alignSelf: 'center',
-    shadowColor: '#00000025',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#1a1a1a',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
-    borderColor: '#F0F1F1',
-    borderWidth: 2,
+    elevation: 2,
+    borderColor: 'rgba(0,0,0,0.1)',
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

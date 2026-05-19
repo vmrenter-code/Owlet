@@ -15,11 +15,13 @@
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.owlet",
+      "bundleIdentifier": "com.victorrenteria.owlet",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Neuroscreen uses the camera so you can align your child for screening.",
         "NSMicrophoneUsageDescription": "Neuroscreen uses the microphone to record audio during screening videos.",
+        "NSBluetoothAlwaysUsageDescription": "App needs Bluetooth to connect to Polar H9 heart rate sensor.",
+        "NSBluetoothPeripheralUsageDescription": "App needs Bluetooth to connect to Polar H9 heart rate sensor.",
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
@@ -31,7 +33,7 @@
     },
     "android": {
       "googleServicesFile": "./google-services.json",
-      "package": "com.anonymous.owlet",
+      "package": "com.victorrenteria.owlet",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -53,7 +55,6 @@
     "plugins": [
       "expo-font",
       "@react-native-google-signin/google-signin",
-      
       [
         "expo-build-properties",
         {
@@ -61,7 +62,8 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      "react-native-ble-plx"
     ],
     "extra": {
       "eas": {

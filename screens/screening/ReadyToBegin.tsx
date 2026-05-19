@@ -1,16 +1,17 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useScreening } from '../../context/ScreeningContext';
 import { useChild } from '../../context/ChildContext';
 import { getAuth } from 'firebase/auth'; 
 
-// This screen appears when face is detected in the circle
-// The Begin button is now active and ready to start the screening
-
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
+    const route = useRoute<any>();
     const BASE_URL = 'http://localhost:4000';
-    const { screeningID } = useScreening();
+    const { screeningId: screeningIDFromContext } = useScreening();
+
+    // Fall back to route params if context doesn't have it
+    const screeningId = screeningIDFromContext ?? route.params?.screeningId;
     const { selectedChild } = useChild();
 
     const handleBegin = async () => {
@@ -37,7 +38,7 @@ export default function ReadyToBegin() {
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-                screeningID: screeningID,
+                screeningID: screeningId,
                 startedAt: new Date().toISOString(),
                 childId: selectedChild.id,
             }),
@@ -48,7 +49,7 @@ export default function ReadyToBegin() {
             }
             const data = await response.json();*/
             const text = await response.text();
-            console.log("🔥 RAW RESPONSE:", text);
+            console.log("RAW RESPONSE:", text);
 
             if (!response.ok) {
             throw new Error(`Failed: ${text}`);
@@ -90,13 +91,12 @@ export default function ReadyToBegin() {
                 </View>
             </View>
 
-            {/* Face positioning circle - face is now detected */}
+            {/* Face positioning circle */}
             <View style={styles.circleContainer}>
-                <View style={styles.faceCircle}>
-                </View>
+                <View style={styles.faceCircle} />
             </View>
 
-            {/* Begin button - active state */}
+            {/* Begin button */}
             <View style={styles.buttonContainer}>
                 <Pressable 
                     style={({ pressed }) => [
@@ -219,6 +219,67 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontSize: 18,
         fontWeight: '600',
+    },
+
+
+    h9Container: {
+        position: 'absolute',
+        bottom: 160,
+        left: 50,
+        right: 50,
+        alignItems: 'center',
+        zIndex: 10,
+    },
+
+    connectButton: {
+        backgroundColor: 'rgba(95, 212, 212, 0.9)',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+
+    connectButtonPressed: {
+        backgroundColor: 'rgba(95, 212, 212, 0.7)',
+    },
+
+    connectButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+
+    connectedBadge: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        alignItems: 'center',
+        gap: 4,
+    },
+
+    connectedText: {
+        color: '#5fd4d4',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+
+    heartRatePreview: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+
+    errorText: {
+        color: '#ff6b6b',
+        fontSize: 13,
+        marginTop: 6,
+        textAlign: 'center',
+    },
+
+    beginButtonDisabled: {
+        backgroundColor: '#888888',
+        opacity: 0.6,
     },
 });
 

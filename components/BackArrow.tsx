@@ -1,47 +1,50 @@
-import { Text, View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function HomeBg() {
+export default function BackArrow() {
+  const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
-const navigation = useNavigation<any>();
-    
+  if (!navigation.canGoBack()) return null;
+
   return (
-                <View style={styles.header}>
-                    <Pressable 
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}
-                    >
-                        <Text style={styles.backArrow}>←</Text>
-                    </Pressable>
-                </View>
-    
+    <View style={[styles.header, { paddingTop: insets.top }]}>
+      <Pressable
+        style={({ pressed }) => [
+          styles.backButton,
+          pressed && styles.backButtonPressed,
+        ]}
+        onPress={() => navigation.goBack()}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+        accessibilityHint="Navigates to the previous screen"
+      >
+        <Ionicons name="chevron-back" size={24} color="#0a0a0a" />
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-     header: {
-        paddingTop: 50,
-        zIndex: 100
-    },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 100,
+  },
 
-    backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#ffffff',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-    },
+  backButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
 
-    backArrow: {
-        fontSize: 20,
-        color: '#242424',
-    },
-
-
+  backButtonPressed: {
+    opacity: 0.5,
+  },
 });

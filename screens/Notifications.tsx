@@ -4,7 +4,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+
+import BackArrow from '../components/BackArrow';
 // Custom Toggle Switch component
 const CustomSwitch = ({ value, onValueChange }: { value: boolean; onValueChange: (val: boolean) => void }) => {
     const translateX = useSharedValue(value ? 20 : 0);
@@ -30,7 +33,7 @@ const CustomSwitch = ({ value, onValueChange }: { value: boolean; onValueChange:
 
 export default function Notifications() {
     const navigation = useNavigation<any>();
-    
+    const insets = useSafeAreaInsets();
     const [screeningResult, setScreeningResult] = useState(true);
     const [updates, setUpdates] = useState(true);
     const [troubleshoot, setTroubleshoot] = useState(true);
@@ -97,17 +100,9 @@ export default function Notifications() {
             />
             
             {/* Header */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-            </View>
-
-            {/* Title */}
-            <Text style={styles.title}>Notifications</Text>
+            <BackArrow/>
+            
+            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Notifications</Text>
 
             {/* Notification Settings */}
             <View style={styles.section}>
@@ -148,10 +143,6 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
     },
 
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
 
     backButton: {
         width: 40,
@@ -166,11 +157,10 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#333',
         paddingHorizontal: 25,
-        paddingTop: 20,
         paddingBottom: 12,
     },
 

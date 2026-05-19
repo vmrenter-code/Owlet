@@ -2,10 +2,13 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BackArrow from '../components/BackArrow';
 import { getAuth } from 'firebase/auth';
 
 export default function Languages() {
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
     const [selectedLanguage, setSelectedLanguage] = useState('English');
 
     const languages = ['English', 'Spanish', 'Chinese', 'Vietnamese', 'Korean', 'Japanese'];
@@ -71,14 +74,10 @@ export default function Languages() {
             />
 
             {/* Header */}
-            <View style={styles.header}>
-                <Pressable onPress={() => navigation.goBack()}>
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-            </View>
+                <BackArrow/>
 
             {/* Title */}
-            <Text style={styles.title}>Languages</Text>
+            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Languages</Text>
 
             <View style={styles.section}>
                 <View style={styles.selectedItem}>
@@ -121,10 +120,6 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
     },
 
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
 
     backButton: {
         width: 40,
@@ -139,11 +134,10 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#333',
         paddingHorizontal: 25,
-        paddingTop: 20,
         paddingBottom: 12,
     },
 
