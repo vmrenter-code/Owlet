@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
 
   profileChildName: {
-    fontSize: 22,
+    fontSize: 20,
     color: '#151515',
     fontFamily: 'NotoSans-SemiBold',
     lineHeight: 28,

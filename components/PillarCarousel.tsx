@@ -1,5 +1,6 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useState } from 'react';
+import { Svg, Path } from 'react-native-svg';
 
 const PILLARS = [
     { name: 'Impact', description: 'Research that contributes to real-world well-being.' },
@@ -20,15 +21,27 @@ export default function PillarCarousel() {
     return (
         <View style={styles.card}>
 
-            {/* Text Content */}
             <Text style={styles.pillarName}>{current.name}</Text>
             <Text style={styles.pillarDesc}>{current.description}</Text>
 
-            {/* Controls inside card */}
             <View style={styles.controls}>
-                <TouchableOpacity onPress={goPrev} style={styles.arrowButton}>
-                    <Text style={styles.arrow}>‹</Text>
-                </TouchableOpacity>
+                <Pressable
+                    onPress={goPrev}
+                    style={styles.arrowButton}
+                    accessibilityRole="button"
+                    accessibilityLabel="Previous pillar"
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+                        <Path
+                            d="M15 18l-6-6 6-6"
+                            stroke="#161B1A"
+                            strokeWidth={2}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </Svg>
+                </Pressable>
 
                 <View style={styles.dots}>
                     {PILLARS.map((_, i) => (
@@ -36,9 +49,23 @@ export default function PillarCarousel() {
                     ))}
                 </View>
 
-                <TouchableOpacity onPress={goNext} style={styles.arrowButton}>
-                    <Text style={styles.arrow}>›</Text>
-                </TouchableOpacity>
+                <Pressable
+                    onPress={goNext}
+                    style={styles.arrowButton}
+                    accessibilityRole="button"
+                    accessibilityLabel="Next pillar"
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+                        <Path
+                            d="M9 18l6-6-6-6"
+                            stroke="#161B1A"
+                            strokeWidth={2}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </Svg>
+                </Pressable>
             </View>
 
         </View>
@@ -48,56 +75,60 @@ export default function PillarCarousel() {
 const styles = StyleSheet.create({
     card: {
         backgroundColor: '#F5F9F8',
-        borderRadius: 16,
-        padding: 24,
-        marginVertical: 20,
-        minHeight: 160,
-        shadowColor: '#000',
-        shadowOpacity: 0.07,
-        shadowOffset: { width: 0, height: 3 },
-        shadowRadius: 6,
-        elevation: 2,
+        borderRadius: 20,
+        padding: 20,
+        marginTop: 12,
+        marginBottom: 20,
+        shadowColor: '#1a1a1a',
+        shadowOpacity: 0.08,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
+        elevation: 4,
     },
+
     pillarName: {
         fontSize: 18,
         fontFamily: 'NotoSans-SemiBold',
-        fontWeight: 'bold',
-        color: '#161B1A',
+        color: '#151515',
         marginBottom: 8,
+        letterSpacing: -0.2,
     },
+
     pillarDesc: {
         fontSize: 15,
-        lineHeight: 22,
+        lineHeight: 21,
         color: '#2E3332',
         fontFamily: 'NotoSans-Regular',
-        flex: 1,
+        letterSpacing: 0.1,
     },
+
     controls: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginTop: 16,
-       
     },
+
     arrowButton: {
-        padding: 4,
+        width: 44,
+        height: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    arrow: {
-        fontSize: 28,
-        color: '#161B1A',
-        lineHeight: 30,
-    },
+
     dots: {
         flexDirection: 'row',
         gap: 6,
     },
+
     dot: {
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#CCC',
+        backgroundColor: 'rgba(0,0,0,0.15)',
     },
+
     dotActive: {
-        backgroundColor: '#161B1A',
+        backgroundColor: '#5058b4',
     },
 });

@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
 
   subHeader: {
     fontSize: 13,
-    color: '#bbb',
+    color: '#2E3332',
     fontFamily: 'NotoSans-Regular',
     letterSpacing: 0.6,
   },
