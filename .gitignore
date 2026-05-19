@@ -2,6 +2,7 @@
 
 # firebase config
 .env
+firebase-service-account.json
 # dependencies
 node_modules/
 
@@ -43,3 +44,8 @@ yarn-error.*
 /android
 
 /src/generated/prisma
+
+# Expo
+.expo
+dist/
+web-build/

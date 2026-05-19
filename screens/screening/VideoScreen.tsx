@@ -209,6 +209,28 @@ export default function VideoScreen() {
     const handleNext = async () => {
         if (videoRef.current) await videoRef.current.stopAsync();
 
+        //const { screeningID } = useScreening(); // get the current screening ID
+
+        if (!screeningID) {
+            console.error('No active screening ID.');
+            return;
+        }
+
+        try {
+            await fetch(`${BASE_URL}/screening/video`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                screeningID,
+                videoNumber,
+                completedAt: new Date().toISOString(),
+            }),
+            });
+            console.log(`Video ${videoNumber} logged successfully for screening ${screeningID}`);
+        } catch (err) {
+            console.error('Error logging video session:', err);
+        }
+
         if (videoNumber < totalVideos) {
             navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
         } else {
@@ -278,6 +300,21 @@ export default function VideoScreen() {
             }
 
             disconnect();
+
+            //Update screening with completedAt in backend
+            try {
+                await fetch(`${BASE_URL}/screening/${screeningID}/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        completedAt: new Date().toISOString(),
+                    }),
+                });
+                console.log(`Screening ${screeningID} marked as complete`);
+            } catch (e) {
+                console.log('Error updating screening completion', e);
+            }
+
             navigation.navigate('ScreeningComplete');
         }
     };
