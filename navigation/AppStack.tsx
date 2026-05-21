@@ -62,7 +62,7 @@ export default function AppStack() {
       initialRouteName="MainTabs"
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        animation: 'fade_from_bottom',
         contentStyle: { backgroundColor: '#fff' },
       }}
     >

@@ -25,7 +25,7 @@ export default function AuthStack() {
       initialRouteName="Launch"
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        animation: 'fade_from_bottom',
         contentStyle: { backgroundColor: '#fff' },
       }}
     >
