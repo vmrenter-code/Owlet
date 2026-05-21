@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: 'NotoSans-SemiBold',
     color: '#5058b4',
     letterSpacing: 0,
