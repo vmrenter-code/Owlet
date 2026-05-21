@@ -57,26 +57,24 @@ export default function Launch() {
       </View>
 
       <View style={styles.container}>
-        <View style={{ flex: 3 }}>
-          <FlatList
-            data={LaunchSlides}
-            renderItem={({ item }) => <LaunchItems item={item} />}
-            keyExtractor={(item) => item.id}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            style={{ width }}
-            bounces={false}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
-            )}
-            scrollEventThrottle={16}
-            onViewableItemsChanged={viewableItemsChanged}
-            viewabilityConfig={viewConfig}
-            ref={slidesRef}
-          />
-        </View>
+        <FlatList
+          data={LaunchSlides}
+          renderItem={({ item }) => <LaunchItems item={item} />}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          style={{ flex: 1, width }}
+          bounces={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+          onViewableItemsChanged={viewableItemsChanged}
+          viewabilityConfig={viewConfig}
+          ref={slidesRef}
+        />
 
         {isLast && (
           <View style={[styles.backArrowWrapper, { top: insets.top }]}>
@@ -119,6 +117,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     marginTop: 12,
+    flexShrink: 0,
   },
 
   navRow: {
