@@ -131,30 +131,18 @@ export default function Home() {
             <BeginCard childName={activeChild.name} />
           </View>
 
-          <Pressable
-            style={styles.row}
-            onPress={() => navigation.navigate('PastScreenings')}
-            accessibilityRole="button"
-            accessibilityLabel="View recent history"
-            hitSlop={{ top: 8, bottom: 8 }}
-          >
-            <Text style={styles.headerStyle}>Recent History</Text>
-            <View style={styles.chevronWrapper}>
-              <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
-                <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#161B1A" />
-              </Svg>
-            </View>
-          </Pressable>
+         <View style={styles.row}>
+  <Text style={styles.headerStyle}>Recent History</Text>
+  <View style={styles.chevronWrapper}>
+    <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
+      <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#161B1A" />
+    </Svg>
+  </View>
+</View>
 
-          <Pressable
-            onPress={() => navigation.navigate('PastScreenings')}
-            accessibilityRole="button"
-            accessibilityLabel="Past screenings card"
-          >
-            <View style={styles.cardContainer}>
-              <Card />
-            </View>
-          </Pressable>
+  <View style={styles.cardContainer}>
+    <Card />
+  </View>
 
           <View style={styles.row}>
             <Text style={styles.headerStyle}>Learn More</Text>

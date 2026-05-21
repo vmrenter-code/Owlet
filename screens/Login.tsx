@@ -13,12 +13,14 @@ import { auth } from '../src/config/firebase';
 import { Svg, Path, Rect } from 'react-native-svg';
 import { TextInputProps } from 'react-native';
 import WelcomeBackArrow from '../components/WelcomeBackArrow';
+import { useAppState} from '../context/AppStateContext';
 
-const UserIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
-  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
-    <Path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    <Path d="M5 22c0-4 14-4 14 0" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
+
+const MailIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
+    <Svg width={width} height={height} viewBox="0 0 25 25" fill="none">
+        <Rect x={4} y={6} width={16} height={12} rx={2} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        <Path d="M4 6l8 6 8-6" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
 );
 
 const LockIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
@@ -33,6 +35,7 @@ const LockIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
 
 
 export default function Login() {
+  const { loginUser } = useAppState();
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,6 +52,7 @@ export default function Login() {
     setLoading(true);
     try {
       await userAuthServices.login(email, password);
+      loginUser(true);
     } catch (error: any) {
       let message = 'Login failed';
       switch (error.code) {
@@ -99,7 +103,7 @@ export default function Login() {
     const googleCredential = GoogleAuthProvider.credential(idToken);
     await signInWithCredential(auth, googleCredential);
 
-    navigation.replace('MainTabs');
+    loginUser(true);
   } catch (error) {
     console.error('Google Sign-In error:', error);
   }
@@ -124,8 +128,8 @@ export default function Login() {
 
             <View style={styles.divider}>
               <InputFields
-                placeholder="Username"
-                icon={<UserIcon width={20} height={20} />}
+                placeholder="Enter your email"
+                icon={<MailIcon width={20} height={20} />}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -136,7 +140,7 @@ export default function Login() {
               />
 
               <InputFields
-                placeholder="Password"
+                placeholder="Enter your password"
                 icon={<LockIcon width={20} height={20} />}
                 ref={passwordRef}
                 value={password}

@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
 import { View, StyleSheet, Text, Pressable } from "react-native";
+import { useNavigation } from '@react-navigation/native';
+
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -14,6 +16,7 @@ type Props = {
 
 export default function Card({ children, onPress }: Props) {
   const scale = useSharedValue(1);
+  const navigation = useNavigation<any>();
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -22,7 +25,8 @@ export default function Card({ children, onPress }: Props) {
   return (
     <Animated.View style={[styles.card, animatedStyle]}>
       <Pressable
-        onPress={onPress}
+          onPress={() => navigation.navigate('PastScreenings')}
+
         onPressIn={() => { scale.value = withSpring(0.97); }}
         onPressOut={() => { scale.value = withSpring(1); }}
         accessibilityRole="button"

@@ -14,6 +14,8 @@ import { auth } from '../src/config/firebase';
 import { Svg, Path, Rect, Circle } from 'react-native-svg';
 import { useEffect } from 'react';
 import WelcomeBackArrow from '../components/WelcomeBackArrow';
+import { useAppState} from '../context/AppStateContext';
+
 
 const UserIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
     <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
@@ -61,6 +63,8 @@ const PasswordStatusIcon = ({ status }: { status: 'met' | 'pending' | 'unmet' })
 };
 
 export default function Signup() {
+    const { loginUser } = useAppState();
+
     const navigation = useNavigation<any>();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -98,6 +102,7 @@ export default function Signup() {
         setLoading(true);
         const result = await userAuthServices.register(username, email, password);
         if (result.success) {
+            loginUser(false);
         } else {
             Alert.alert('Error', result.error ?? 'Something went wrong.');
         }
@@ -113,7 +118,7 @@ export default function Signup() {
             if (!idToken) throw new Error('No ID token found');
             const googleCredential = GoogleAuthProvider.credential(idToken);
             await signInWithCredential(auth, googleCredential);
-            navigation.navigate('AboutYourChild');
+            loginUser(false);
         } catch (error) {
             console.error('Google Sign-In error:', error);
         }

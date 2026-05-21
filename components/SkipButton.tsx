@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'NotoSans-SemiBold',
     color: '#888',
     letterSpacing: 0,
