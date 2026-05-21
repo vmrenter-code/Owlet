@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 // Success screen shown after all videos are uploaded
@@ -8,6 +8,12 @@ export default function ScreeningComplete() {
 
     const handleOk = () => {
         navigation.navigate('MainTabs');
+        setTimeout(() => {
+            Alert.alert(
+            "Screening Reviewed",
+            "Your results are ready to view in Past Screenings."
+          );
+        }, 5000);
     };
 
     return (

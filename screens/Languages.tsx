@@ -1,9 +1,10 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackArrow from '../components/BackArrow';
+import { getAuth } from 'firebase/auth';
 
 export default function Languages() {
     const navigation = useNavigation<any>();
@@ -11,6 +12,57 @@ export default function Languages() {
     const [selectedLanguage, setSelectedLanguage] = useState('English');
 
     const languages = ['English', 'Spanish', 'Chinese', 'Vietnamese', 'Korean', 'Japanese'];
+    const BASE_URL = 'http://localhost:4000';
+
+    // Load user's selected language from backend
+    useEffect(() => {
+        const loadLanguage = async () => {
+            try {
+                const user = getAuth().currentUser;
+                if (!user) return;
+                const token = await user.getIdToken();
+
+                const res = await fetch(`${BASE_URL}/settings/language`, {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const data = await res.json();
+                console.log("Loaded language:", data.language);
+                if (data.language) {
+                    setSelectedLanguage(data.language);
+                }
+
+            } catch (err) {
+                console.error('Failed to load language:', err);
+            }
+        };
+
+        loadLanguage();
+    }, []);
+
+    // Update language selection in backend when user changes it
+    const updateLanguage = async (language: string) => {
+        try {
+            setSelectedLanguage(language);
+            const user = getAuth().currentUser;
+            if (!user) return;
+            const token = await user.getIdToken();
+
+            await fetch(`${BASE_URL}/settings/language`, {
+                method: 'PUT',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ language }),
+            });
+
+        } catch (err) {
+            console.error('Failed to update language:', err);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -20,14 +72,13 @@ export default function Languages() {
                 end={{ x: 0, y: 1 }}
                 style={styles.gradient}
             />
-            
+
             {/* Header */}
                 <BackArrow/>
 
             {/* Title */}
             <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Languages</Text>
 
-            {/* Selected Language Display */}
             <View style={styles.section}>
                 <View style={styles.selectedItem}>
                     <Text style={styles.itemLabel}>Selected Language</Text>
@@ -37,17 +88,19 @@ export default function Languages() {
 
             {/* Language Options */}
             <View style={styles.section}>
-                {languages.map((language, index) => (
-                    <Pressable 
+                {languages.map((language) => (
+                    <Pressable
                         key={language}
+                        onPress={() => updateLanguage(language)}
                         style={({ pressed }) => [
-                            styles.languageItem, 
-                            index === languages.length - 1 && styles.lastItem,
+                            styles.languageItem,
                             pressed && styles.languageItemPressed
                         ]}
-                        onPress={() => setSelectedLanguage(language)}
                     >
-                        <Text style={styles.languageLabel}>{language}</Text>
+                        <Text style={styles.languageLabel}>
+                            {language}
+                        </Text>
+
                         {selectedLanguage === language && (
                             <Text style={styles.checkmark}>✓</Text>
                         )}

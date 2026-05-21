@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, ScrollView, Pressable } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
