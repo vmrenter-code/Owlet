@@ -1,5 +1,4 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-
 import BackArrow from '../components/BackArrow';
 import ImageCard from '../components/ImageCard';
 import PillarCarousel from '../components/PillarCarousel';
@@ -15,15 +14,20 @@ export default function AboutUs() {
                 <HomeBg />
             </View>
 
-            <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-                <BackArrow />
-            </View>
-
             <ScrollView
                 style={styles.container}
-                contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 24 }]}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingTop: insets.top + 80, paddingBottom: insets.bottom + 24 }
+                ]}
                 showsVerticalScrollIndicator={false}
             >
+
+                {/* ✅ REAL STICKY HEADER (NO absolute, NO stickyHeaderIndices) */}
+                <View style={[styles.header, { paddingTop: insets.top }]}>
+                    <BackArrow />
+                </View>
+
                 <View style={styles.imageShadow}>
                     <ImageCard style={styles.imageCard} />
                 </View>
@@ -34,40 +38,29 @@ export default function AboutUs() {
                     <Text style={styles.textStyle}>Owlet Team</Text>
                 </View>
 
-                <Text style={styles.title}>
-                    About Us
-                </Text>
+                <Text style={styles.title}>About Us</Text>
 
-                <Text style={styles.headerStyle} accessibilityRole="header">
-                    Our Mission
-                </Text>
+                <Text style={styles.headerStyle}>Our Mission</Text>
                 <Text style={styles.content}>
                     The WILD Lab (Werchan Infant Learning and Development Lab) at UCI believes that
-                    understanding how children grow helps us build a better world for them. We conduct thoughtful,
-                    mechanism-focused research that deepens our understanding of neurodevelopment and benefits
-                    the communities we serve.
+                    understanding how children grow helps us build a better world for them.
                 </Text>
 
-                <Text style={styles.headerStyle} accessibilityRole="header">
-                    NeuroScreen
-                </Text>
+                <Text style={styles.headerStyle}>NeuroScreen</Text>
                 <Text style={styles.content}>
-                    NeuroScreen is our latest initiative, which aims to use advanced eye-tracking and physiological
-                    data to spot the earliest signs of ADHD. Our goal is to provide families with easy, safe, and
-                    accessible tools that work in the comfort of home, lessening challenges by acting early.
+                    NeuroScreen is our latest initiative, which uses eye-tracking and physiological data
+                    to identify early developmental patterns.
                 </Text>
 
-                <Text style={styles.headerStyle} accessibilityRole="header">
-                    Discovery as a Partnership
-                </Text>
+                <Text style={styles.headerStyle}>Discovery as a Partnership</Text>
                 <Text style={styles.content}>
-                    We believe discovery is a collaboration. Families are essential contributors to the knowledge we
-                    build together. Everything we do is guided by our Five Pillars:
+                    Families are essential contributors to the knowledge we build together.
                 </Text>
 
                 <View style={styles.pillarWrapper}>
                     <PillarCarousel />
                 </View>
+
             </ScrollView>
         </View>
     );
