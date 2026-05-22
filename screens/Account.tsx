@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppState } from '../context/AppStateContext';
 
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+import { getAuth, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import userAuthServices from '../src/services/userAuthServices';
 
@@ -24,6 +24,11 @@ export default function Account() {
     const [raceEthnicitySummary, setRaceEthnicitySummary] = useState<string>('Not set');
     const [editNameVisible, setEditNameVisible] = useState(false);
     const [nameDraft, setNameDraft] = useState('');
+    const [changePasswordVisible, setChangePasswordVisible] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [birthDateModalVisible, setBirthDateModalVisible] = useState(false);
     const {
         activeChildId,
@@ -35,6 +40,74 @@ export default function Account() {
     } = useChildProfile();
 
     const activeBirthDate = birthDates[activeChildId] ?? null;
+
+    // Change password handler (reauthenticate then update)
+    const handleChangePassword = async () => {
+        if (isChangingPassword) return;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            Alert.alert('Missing fields', 'Please fill out all password fields.');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            Alert.alert('Password mismatch', 'New passwords do not match.');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            Alert.alert('Weak password', 'Passwords must be at least 6 characters long.');
+            return;
+        }
+
+        setIsChangingPassword(true);
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            if (!user || !user.email) throw new Error('Not signed in');
+
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, newPassword);
+
+            Alert.alert('Success', 'Your password has been changed.');
+            setChangePasswordVisible(false);
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (err: any) {
+            console.error('Change password error:', err);
+            const code = err?.code ?? '';
+            let msg = 'Unable to change password. Please try again.';
+
+            switch (code) {
+                case 'auth/wrong-password':
+                    msg = 'Current password is incorrect.';
+                    break;
+                case 'auth/invalid-credential':
+                    msg = 'Original password is wrong.';
+                    break;
+                case 'auth/weak-password':
+                    msg = 'New password is too weak. Use at least 6 characters.';
+                    break;
+                case 'auth/too-many-requests':
+                    msg = 'Too many attempts. Please try again later.';
+                    break;
+                case 'auth/requires-recent-login':
+                    msg = 'Please reauthenticate and try again.';
+                    break;
+                case 'auth/user-mismatch':
+                    msg = 'The provided credential does not match the signed-in user.';
+                    break;
+                default:
+                    if (err?.message) msg = err.message;
+            }
+
+            Alert.alert('Error', msg);
+        } finally {
+            setIsChangingPassword(false);
+        }
+    };
 
     const formatBirthDate = (iso: string | null): string => {
         if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return 'Not set';
@@ -198,7 +271,10 @@ navigation.getParent()?.dispatch(
                     </Pressable>
 
                     {/* Change Password */}
-                    <Pressable style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}>
+                    <Pressable
+                        style={({ pressed }) => [styles.accountItem, pressed && styles.accountItemPressed]}
+                        onPress={() => setChangePasswordVisible(true)}
+                    >
                         <Text style={styles.itemLabel}>Change Password</Text>
                         <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
@@ -327,6 +403,83 @@ navigation.getParent()?.dispatch(
                                 onPress={saveChildName}
                             >
                                 <Text style={styles.editNameSaveText}>Save</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
+
+            <Modal
+                visible={changePasswordVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setChangePasswordVisible(false)}
+            >
+                <KeyboardAvoidingView
+                    style={styles.editNameRoot}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                >
+                    <Pressable
+                        style={[StyleSheet.absoluteFillObject, styles.editNameBackdrop]}
+                        onPress={() => setChangePasswordVisible(false)}
+                        accessibilityRole="button"
+                        accessibilityLabel="Dismiss"
+                    />
+                    <View style={styles.editNameCard}>
+                        <Text style={styles.editNameTitle}>Change password</Text>
+                        <TextInput
+                            value={currentPassword}
+                            onChangeText={setCurrentPassword}
+                            placeholder="Current password"
+                            placeholderTextColor="#999"
+                            style={styles.editNameInput}
+                            secureTextEntry
+                            autoCapitalize="none"
+                            textContentType="password"
+                        />
+                        <View style={{ height: 12 }} />
+                        <TextInput
+                            value={newPassword}
+                            onChangeText={setNewPassword}
+                            placeholder="New password"
+                            placeholderTextColor="#999"
+                            style={styles.editNameInput}
+                            secureTextEntry
+                            autoCapitalize="none"
+                            textContentType="newPassword"
+                        />
+                        <View style={{ height: 12 }} />
+                        <TextInput
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                            placeholder="Confirm new password"
+                            placeholderTextColor="#999"
+                            style={styles.editNameInput}
+                            secureTextEntry
+                            autoCapitalize="none"
+                            textContentType="password"
+                        />
+                        <View style={styles.editNameActions}>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.editNameButton,
+                                    styles.editNameCancel,
+                                    pressed && styles.editNameButtonPressed,
+                                ]}
+                                onPress={() => setChangePasswordVisible(false)}
+                            >
+                                <Text style={styles.editNameCancelText}>Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.editNameButton,
+                                    styles.editNameSave,
+                                    pressed && styles.editNameButtonPressed,
+                                ]}
+                                onPress={handleChangePassword}
+                                disabled={isChangingPassword}
+                            >
+                                <Text style={styles.editNameSaveText}>{isChangingPassword ? 'Saving...' : 'Save'}</Text>
                             </Pressable>
                         </View>
                     </View>
