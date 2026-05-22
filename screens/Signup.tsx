@@ -14,8 +14,7 @@ import { auth } from '../src/config/firebase';
 import { Svg, Path, Rect, Circle } from 'react-native-svg';
 import { useEffect } from 'react';
 import WelcomeBackArrow from '../components/WelcomeBackArrow';
-import { useAppState} from '../context/AppStateContext';
-
+import { useAppState } from '../context/AppStateContext';
 
 const UserIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
     <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
@@ -47,16 +46,43 @@ const CheckCircleIcon = ({ width = 20, height = 20, color = '#aaa' }) => (
 );
 
 const PasswordStatusIcon = ({ status }: { status: 'met' | 'pending' | 'unmet' }) => {
-    const strokeColor = status === 'met' ? '#2E9F5E' : status === 'unmet' ? '#D06868' : '#B9BDBD';
-    const fillColor = status === 'met' ? '#2E9F5E' : 'none';
+    const isMet = status === 'met';
+    const isUnmet = status === 'unmet';
+
+    const strokeColor =
+        isMet ? '#2E9F5E' : isUnmet ? '#D06868' : '#B9BDBD';
+
+    const fillColor = isMet ? '#2E9F5E' : 'none';
 
     return (
         <Svg width={20} height={20} viewBox="0 0 26 26" fill="none">
-            <Circle cx={13} cy={13} r={10} fill={fillColor} stroke={strokeColor} strokeWidth={2} />
-            {status === 'met' ? (
-                <Path d="M8.5 13.2l3.1 3.1 6-6.4" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
-            ) : (
-                <Path d="M13 8.5v5.2" stroke={strokeColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            <Circle
+                cx={13}
+                cy={13}
+                r={10}
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={2}
+            />
+
+            {isMet && (
+                <Path
+                    d="M8.5 13.2l3.1 3.1 6-6.4"
+                    stroke="#fff"
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+            )}
+
+            {isUnmet && (
+                <Path
+                    d="M9 13h8"
+                    stroke={strokeColor}
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
             )}
         </Svg>
     );
@@ -76,12 +102,82 @@ export default function Signup() {
     const passwordRef = useRef<any>(null);
     const confirmPasswordRef = useRef<any>(null);
     const insets = useSafeAreaInsets();
-    const passwordLengthStatus = password.length >= 6 ? 'met' : 'unmet';
-    const passwordMatchStatus = confirmPassword.length === 0 ? 'pending' : password === confirmPassword ? 'met' : 'unmet';
-    const showPasswordRequirements = isPasswordFocused && password.length > 0;
+
+    const passwordMatchStatus =
+        confirmPassword.length === 0
+            ? 'pending'
+            : password === confirmPassword
+            ? 'met'
+            : 'unmet';
+
+    const showPasswordRequirements =
+        isPasswordFocused && password.length > 0;
+
+    const hasMinLength = password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
     const passwordRequirements = [
-        { label: 'At least 6 characters', status: passwordLengthStatus },
+        {
+            label: 'At least 8 characters',
+            status: hasMinLength ? 'met' : 'unmet',
+        },
+        {
+            label: 'One uppercase letter',
+            status: hasUppercase ? 'met' : 'unmet',
+        },
+        {
+            label: 'One lowercase letter',
+            status: hasLowercase ? 'met' : 'unmet',
+        },
+        {
+            label: 'One number',
+            status: hasNumber ? 'met' : 'unmet',
+        },
+        {
+            label: 'One special character',
+            status: hasSpecialChar ? 'met' : 'unmet',
+        },
     ] as const;
+
+    const metRequirementsCount = [
+        hasMinLength,
+        hasUppercase,
+        hasLowercase,
+        hasNumber,
+        hasSpecialChar,
+    ].filter(Boolean).length;
+
+    const passwordStrength =
+        metRequirementsCount <= 2
+            ? 'Weak'
+            : metRequirementsCount <= 4
+            ? 'Medium'
+            : 'Strong';
+
+    const passwordStrengthColor =
+        passwordStrength === 'Weak'
+            ? '#D06868'
+            : passwordStrength === 'Medium'
+            ? '#D9A441'
+            : '#2E9F5E';
+
+    const isPasswordValid =
+    hasMinLength &&
+    hasUppercase &&
+    hasLowercase &&
+    hasNumber &&
+    hasSpecialChar;
+
+    const isFormValid =
+        username.length > 0 &&
+        email.length > 0 &&
+        password.length > 0 &&
+        confirmPassword.length > 0 &&
+        isPasswordValid &&
+        password === confirmPassword;
 
     const handleSignUp = async () => {
         if (!username || !email || !password || !confirmPassword) {
@@ -89,8 +185,17 @@ export default function Signup() {
             return;
         }
 
-        if (password.length < 6) {
-            Alert.alert('Error', 'Password must be at least 6 characters.');
+        if (
+            !hasMinLength ||
+            !hasUppercase ||
+            !hasLowercase ||
+            !hasNumber ||
+            !hasSpecialChar
+        ) {
+            Alert.alert(
+                'Weak Password',
+                'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
+            );
             return;
         }
 
@@ -106,6 +211,7 @@ export default function Signup() {
         } else {
             Alert.alert('Error', result.error ?? 'Something went wrong.');
         }
+
         setLoading(false);
     };
 
@@ -116,7 +222,10 @@ export default function Signup() {
             const signInResult = await GoogleSignin.signIn();
             const idToken = signInResult.data?.idToken ?? (signInResult as any).idToken;
             if (!idToken) throw new Error('No ID token found');
-            const googleCredential = GoogleAuthProvider.credential(idToken);
+
+            const googleCredential =
+                GoogleAuthProvider.credential(idToken);
+
             await signInWithCredential(auth, googleCredential);
             loginUser(false);
         } catch (error) {
@@ -133,10 +242,15 @@ export default function Signup() {
 
                 <View style={[styles.container, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 }]}>
                     <WelcomeBackArrow />
+
                     <View style={styles.centerSection}>
                         <View style={styles.titleContainer}>
-                            <Text style={styles.titleStyle}>Create Your Account</Text>
-                            <Text style={styles.subtitleStyle}>Set up your account to begin.</Text>
+                            <Text style={styles.titleStyle}>
+                                Create Your Account
+                            </Text>
+                            <Text style={styles.subtitleStyle}>
+                                Set up your account to begin.
+                            </Text>
                         </View>
 
                         <View style={styles.divider}>
@@ -166,17 +280,76 @@ export default function Signup() {
 
                             <View style={styles.passwordFieldWrapper}>
                                 {showPasswordRequirements && (
-                                    <View style={styles.passwordHelpCardOverlay}>
-                                        <Text style={styles.passwordHelpTitle}>Password requirements</Text>
-                                        <View style={styles.passwordHelpList}>
-                                            {passwordRequirements.map((item) => (
-                                                <View key={item.label} style={styles.passwordHelpRow}>
-                                                    <PasswordStatusIcon status={item.status} />
-                                                    <Text style={[styles.passwordHelpText, item.status === 'met' && styles.passwordHelpTextMet, item.status === 'unmet' && styles.passwordHelpTextUnmet]}>
-                                                        {item.label}
-                                                    </Text>
-                                                </View>
-                                            ))}
+                                    <View
+                                        style={styles.passwordHelpCardOverlay}
+                                    >
+                                        <Text
+                                            style={
+                                                styles.passwordHelpTitle
+                                            }
+                                        >
+                                            Password requirements
+                                        </Text>
+
+                                        <View
+                                            style={
+                                                styles.passwordStrengthRow
+                                            }
+                                        >
+                                            <Text
+                                                style={
+                                                    styles.passwordStrengthLabel
+                                                }
+                                            >
+                                                Strength
+                                            </Text>
+
+                                            <Text
+                                                style={[
+                                                    styles.passwordStrengthValue,
+                                                    {
+                                                        color: passwordStrengthColor,
+                                                    },
+                                                ]}
+                                            >
+                                                {passwordStrength}
+                                            </Text>
+                                        </View>
+
+                                        <View
+                                            style={
+                                                styles.passwordHelpList
+                                            }
+                                        >
+                                            {passwordRequirements.map(
+                                                (item) => (
+                                                    <View
+                                                        key={item.label}
+                                                        style={
+                                                            styles.passwordHelpRow
+                                                        }
+                                                    >
+                                                        <PasswordStatusIcon
+                                                            status={
+                                                                item.status
+                                                            }
+                                                        />
+                                                        <Text
+                                                            style={[
+                                                                styles.passwordHelpText,
+                                                                item.status ===
+                                                                    'met' &&
+                                                                    styles.passwordHelpTextMet,
+                                                                item.status ===
+                                                                    'unmet' &&
+                                                                    styles.passwordHelpTextUnmet,
+                                                            ]}
+                                                        >
+                                                            {item.label}
+                                                        </Text>
+                                                    </View>
+                                                )
+                                            )}
                                         </View>
                                     </View>
                                 )}
@@ -187,22 +360,43 @@ export default function Signup() {
                                     ref={passwordRef}
                                     value={password}
                                     onChangeText={setPassword}
-                                    onFocus={() => setIsPasswordFocused(true)}
-                                    onBlur={() => setIsPasswordFocused(false)}
+                                    onFocus={() =>
+                                        setIsPasswordFocused(true)
+                                    }
+                                    onBlur={() =>
+                                        setIsPasswordFocused(false)
+                                    }
                                     secureTextEntry
                                     returnKeyType="next"
                                     blurOnSubmit={false}
-                                    onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                                    onSubmitEditing={() =>
+                                        confirmPasswordRef.current?.focus()
+                                    }
                                 />
                             </View>
 
                             <InputFields
                                 placeholder="Confirm your password"
-                                icon={<CheckCircleIcon width={20} height={20} color={passwordMatchStatus === 'met' ? '#2E9F5E' : passwordMatchStatus === 'unmet' ? '#D06868' : '#aaa'} />}
+                                icon={
+                                    <CheckCircleIcon
+                                        width={20}
+                                        height={20}
+                                        color={
+                                            passwordMatchStatus === 'met'
+                                                ? '#2E9F5E'
+                                                : passwordMatchStatus ===
+                                                  'unmet'
+                                                ? '#aaa'
+                                                : '#aaa'
+                                        }
+                                    />
+                                }
                                 ref={confirmPasswordRef}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
-                                onBlur={() => setIsPasswordFocused(false)}
+                                onBlur={() =>
+                                    setIsPasswordFocused(false)
+                                }
                                 secureTextEntry
                                 returnKeyType="done"
                                 onSubmitEditing={handleSignUp}
@@ -211,30 +405,46 @@ export default function Signup() {
 
                         <View style={styles.orContainer}>
                             <View style={styles.orLine} />
-                            <Text style={styles.orText}>or continue with</Text>
+                            <Text style={styles.orText}>
+                                or continue with
+                            </Text>
                             <View style={styles.orLine} />
                         </View>
 
                         <View style={styles.googleContainer}>
-                            <GoogleButton onPress={handleGoogleSignIn} />
+                            <GoogleButton
+                                onPress={handleGoogleSignIn}
+                            />
                         </View>
                     </View>
 
                     <View style={styles.bottomSection}>
                         <View style={{ width: '100%' }}>
-                            <PrimaryBlueButton onPress={handleSignUp} disabled={loading}>
-                                {loading ? 'Creating Account...' : 'Create Account'}
+                            <PrimaryBlueButton onPress={handleSignUp} disabled={loading || !isFormValid}>
+                                {loading
+                                    ? 'Creating Account...'
+                                    : 'Create Account'}
                             </PrimaryBlueButton>
                         </View>
 
                         <Pressable
-                            onPress={() => navigation.navigate('Login')}
+                            onPress={() =>
+                                navigation.navigate('Login')
+                            }
                             accessibilityRole="link"
                             accessibilityLabel="Already have an account, sign in"
-                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            hitSlop={{
+                                top: 8,
+                                bottom: 8,
+                                left: 8,
+                                right: 8,
+                            }}
                         >
                             <Text style={styles.createText}>
-                                Have an account? <Text style={styles.createTextLink}>Sign in</Text>
+                                Have an account?{' '}
+                                <Text style={styles.createTextLink}>
+                                    Sign in
+                                </Text>
                             </Text>
                         </Pressable>
                     </View>
@@ -378,5 +588,21 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
         zIndex: 0,
+    },
+    passwordStrengthRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 2,
+        marginBottom: 8,
+    },
+    passwordStrengthLabel: {
+        fontSize: 13,
+        color: '#666',
+        fontFamily: 'NotoSans-Regular',
+    },
+    passwordStrengthValue: {
+        fontSize: 13,
+        fontFamily: 'NotoSans-SemiBold',
     },
 });

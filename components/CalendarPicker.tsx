@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useMemo, useState, useEffect, useRef } from 'react';
+import { useWindowDimensions } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
 
 type Props = {
@@ -9,7 +10,7 @@ type Props = {
   minDate?: Date;
 };
 
-const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
@@ -35,41 +36,45 @@ function startOfDay(d: Date): Date {
 
 const ChevronLeft = ({ size = 18 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M15 18l-6-6 6-6" stroke="#4a8f8f" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M15 18l-6-6 6-6" stroke="#5058b4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
 const ChevronRight = ({ size = 18 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M9 18l6-6-6-6" stroke="#4a8f8f" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M9 18l6-6-6-6" stroke="#5058b4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
 const ChevronsLeft = () => (
   <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-    <Path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" stroke="#4a8f8f" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" stroke="#5058b4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
 const ChevronsRight = () => (
   <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-    <Path d="M13 17l5-5-5-5M6 17l5-5-5-5" stroke="#4a8f8f" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M13 17l5-5-5-5M6 17l5-5-5-5" stroke="#5058b4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
 const CaretDown = () => (
   <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-    <Path d="M6 9l6 6 6-6" stroke="#4a8f8f" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M6 9l6 6 6-6" stroke="#5058b4" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
 const CaretUp = () => (
   <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-    <Path d="M18 15l-6-6-6 6" stroke="#4a8f8f" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M18 15l-6-6-6 6" stroke="#5058b4" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
 export default function CalendarPicker({ value, onChange, maxDate, minDate }: Props) {
+  const { width: screenWidth } = useWindowDimensions();
+  const calendarPadding = 40 + 8;
+  const cellSize = Math.floor((screenWidth - calendarPadding) / 7);
+
   const today = useMemo(() => startOfDay(new Date()), []);
   const effectiveMax = useMemo(() => startOfDay(maxDate ?? today), [maxDate, today]);
   const effectiveMin = useMemo(() => {
@@ -135,6 +140,8 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
     if (!a || !b) return false;
     return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   };
+
+  const pillSize = Math.min(cellSize - 4, 36);
 
   return (
     <View style={styles.container}>
@@ -204,14 +211,16 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
         <>
           <View style={styles.weekRow}>
             {WEEKDAYS.map((d, i) => (
-              <Text key={`${d}-${i}`} style={styles.weekday}>{d}</Text>
+              <View key={`${d}-${i}`} style={[styles.weekdayCell, { width: cellSize }]}>
+                <Text style={styles.weekday}>{d}</Text>
+              </View>
             ))}
           </View>
 
           <View style={styles.grid}>
             {cells.map((day, idx) => {
               if (day === null) {
-                return <View key={`empty-${idx}`} style={styles.cell} />;
+                return <View key={`empty-${idx}`} style={{ width: cellSize, height: cellSize }} />;
               }
               const cellDate = new Date(viewYear, viewMonth, day);
               const disabled = isOutOfRange(cellDate);
@@ -223,13 +232,26 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
                   key={`d-${day}`}
                   disabled={disabled}
                   onPress={() => onChange(toIso(viewYear, viewMonth, day))}
-                  style={({ pressed }) => [styles.cell, pressed && !disabled && styles.cellPressed]}
+                  style={({ pressed }) => [
+                    { width: cellSize, height: cellSize, alignItems: 'center', justifyContent: 'center' },
+                    pressed && !disabled && styles.cellPressed,
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel={`${MONTH_NAMES[viewMonth]} ${day} ${viewYear}`}
                   accessibilityState={{ selected: isSelected, disabled }}
                 >
-                  <View style={[styles.dayPill, isToday && styles.dayPillToday, isSelected && styles.dayPillSelected]}>
-                    <Text style={[styles.dayText, disabled && styles.dayTextDisabled, isToday && !isSelected && styles.dayTextToday, isSelected && styles.dayTextSelected]}>
+                  <View style={[
+                    styles.dayPill,
+                    { width: pillSize, height: pillSize, borderRadius: pillSize / 2 },
+                    isToday && styles.dayPillToday,
+                    isSelected && styles.dayPillSelected,
+                  ]}>
+                    <Text style={[
+                      styles.dayText,
+                      disabled && styles.dayTextDisabled,
+                      isToday && !isSelected && styles.dayTextToday,
+                      isSelected && styles.dayTextSelected,
+                    ]}>
                       {day}
                     </Text>
                   </View>
@@ -257,8 +279,16 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
                 accessibilityLabel={`Select year ${year}`}
                 accessibilityState={{ selected: isCurrent }}
               >
-                <View style={[styles.yearPill, isThisYear && !isCurrent && styles.yearPillToday, isCurrent && styles.yearPillSelected]}>
-                  <Text style={[styles.yearText, isThisYear && !isCurrent && styles.yearTextToday, isCurrent && styles.yearTextSelected]}>
+                <View style={[
+                  styles.yearPill,
+                  isThisYear && !isCurrent && styles.yearPillToday,
+                  isCurrent && styles.yearPillSelected,
+                ]}>
+                  <Text style={[
+                    styles.yearText,
+                    isThisYear && !isCurrent && styles.yearTextToday,
+                    isCurrent && styles.yearTextSelected,
+                  ]}>
                     {year}
                   </Text>
                 </View>
@@ -274,7 +304,6 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    paddingHorizontal: 4,
   },
 
   header: {
@@ -333,13 +362,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
+  weekdayCell: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 32,
+  },
+
   weekday: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 13,
+    fontSize: 12,
     color: '#888',
     fontFamily: 'NotoSans-SemiBold',
     letterSpacing: 0.1,
+    textAlign: 'center',
   },
 
   grid: {
@@ -347,21 +381,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
 
-  cell: {
-    width: `${100 / 7}%`,
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   cellPressed: {
     opacity: 0.7,
   },
 
   dayPill: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },

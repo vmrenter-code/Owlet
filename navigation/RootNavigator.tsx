@@ -7,11 +7,15 @@ import { useAppState } from '../context/AppStateContext';
 export default function RootNavigator() {
   const { user } = useAppState();
 
-  if (!user) return <AuthStack />;
-
-  if (!user.hasCompletedOnboarding) {
-    return <OnboardingStack />;
-  }
-
-  return <AppStack />;
+  return (
+    <>
+      {!user ? (
+        <AuthStack />
+      ) : !user.hasCompletedOnboarding ? (
+        <OnboardingStack />
+      ) : (
+        <AppStack />
+      )}
+    </>
+  );
 }
