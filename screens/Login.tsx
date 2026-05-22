@@ -109,6 +109,8 @@ export default function Login() {
   }
 };
 
+const canSubmit = email.length > 0 && password.length > 0;
+
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -174,11 +176,13 @@ export default function Login() {
           </View>
 
           <View style={styles.bottomSection}>
-            <View style={{ width: '100%' }}>
-              <PrimaryBlueButton onPress={handleLogin} disabled={loading}>
-                {loading ? 'Logging in...' : 'Login'}
-              </PrimaryBlueButton>
-            </View>
+                                  <View style={{ width: '100%' }}>
+                                      <PrimaryBlueButton onPress={handleLogin} disabled={loading || !canSubmit}>
+                                          {loading
+                                              ? 'Logging in...'
+                                              : 'Login'}
+                                      </PrimaryBlueButton>
+                                  </View>
 
             <Pressable
               onPress={handleCreateAccount}
@@ -295,4 +299,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 0,
   },
+  
 });

@@ -7,6 +7,8 @@ type LargeInputProps = {
   maxLength?: number;
   multiline?: boolean;
   height?: number;
+  value?: string;
+  onChangeText?: (text: string) => void;
 };
 
 export default function LargeInput({ placeholder, icon, maxLength, multiline, height = 140 }: LargeInputProps) {
@@ -53,7 +55,8 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSans-Regular',
     color: '#2E3332',
     padding: 0,   
-    margin: 0,   
+    margin: 0,
+    fontStyle: 'italic'   
   },
 
   iconContainer: {

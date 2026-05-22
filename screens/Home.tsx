@@ -141,7 +141,8 @@ export default function Home() {
 </View>
 
   <View style={styles.cardContainer}>
-    <Card />
+    <Card  onPress={() => navigation.navigate('History')}
+/>
   </View>
 
           <View style={styles.row}>

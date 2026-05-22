@@ -7,9 +7,9 @@ import { Svg, Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackArrow from '../components/BackArrow';
 import { getAuth } from 'firebase/auth';
-import { useChild } from '../context/ChildContext';
 
 const BASE_URL = 'http://localhost:4000'; // Update to your backend URL
+import {useChildProfile} from '../context/ChildProfileContext';
 
 export default function PastScreenings() {
     const navigation = useNavigation<any>();
@@ -18,7 +18,7 @@ export default function PastScreenings() {
     const [incompleteVideoNumber, setIncompleteVideoNumber] = useState(1);
     const [latestScreeningId, setLatestScreeningId] = useState<string | null>(null);
     const [pastScreenings, setPastScreenings] = useState<any[]>([]);
-    const { selectedChild } = useChild();
+    const { activeChild } = useChildProfile();
 
     // Check for incomplete screening on mount
     useEffect(() => {
@@ -77,11 +77,11 @@ export default function PastScreenings() {
         const fetchPastScreenings = async () => {
             try {
                 const user = getAuth().currentUser;
-                if (!user || !selectedChild) return;
+                if (!user || !activeChild) return;
                 const token = await user.getIdToken();
 
                 const response = await fetch(
-                    `${BASE_URL}/screenings?childId=${selectedChild.id}`,
+                    `${BASE_URL}/screenings?childId=${activeChild.id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

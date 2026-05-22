@@ -1,9 +1,10 @@
-import { Pressable, Text, StyleSheet } from 'react-native';
+import { Pressable, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
 import React from 'react';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 type Props = {
@@ -12,34 +13,65 @@ type Props = {
   accessibilityLabel?: string;
   fullWidth?: boolean;
   disabled?: boolean;
-
+  loading?: boolean;
 };
 
-export default function PrimaryBlueButton({ children, onPress, accessibilityLabel, fullWidth }: Props) {
+export default function PrimaryBlueButton({
+  children,
+  onPress,
+  accessibilityLabel,
+  fullWidth,
+  disabled,
+  loading,
+}: Props) {
   const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const textOpacity = useSharedValue(1);
+
+  React.useEffect(() => {
+    textOpacity.value = withTiming(loading ? 0 : 1, { duration: 150 });
+  }, [loading]);
+
+  const textStyle = useAnimatedStyle(() => ({
+    opacity: textOpacity.value,
+  }));
+
+  const isDisabled = disabled || loading;
 
   return (
     <Pressable
       onPressIn={() => {
-        scale.value = withSpring(0.97);
+        if (!isDisabled) scale.value = withSpring(0.97);
       }}
       onPressOut={() => {
-        scale.value = withSpring(1);
+        if (!isDisabled) scale.value = withSpring(1);
       }}
-      onPress={onPress}
+      onPress={isDisabled ? undefined : onPress}
+      disabled={isDisabled}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? (typeof children === 'string' ? children : undefined)}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      accessibilityLabel={
+        accessibilityLabel ?? (typeof children === 'string' ? children : undefined)
+      }
       style={fullWidth && styles.fullWidth}
     >
-      <Animated.View style={[styles.container, animatedStyle]}>
-        <Text style={styles.text}>{children}</Text>
+      <Animated.View style={[styles.container, animatedStyle, isDisabled && styles.disabled]}>
+        
+        {/* Spinner sits absolutely centered so layout never shifts */}
+        {loading && (
+          <View style={styles.spinner}>
+            <ActivityIndicator color="#fff" />
+          </View>
+        )}
+
+        {/* Text fades out instead of disappearing instantly */}
+        <Animated.Text style={[styles.text, textStyle]}>
+          {children}
+        </Animated.Text>
+
       </Animated.View>
     </Pressable>
   );
@@ -55,6 +87,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 100,
     backgroundColor: '#5058b4',
+
+    alignItems: 'center',
+    justifyContent: 'center',
+
     shadowColor: '#2d3058',
     shadowOpacity: 0.18,
     shadowOffset: { width: 0, height: 4 },
@@ -65,8 +101,15 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 15,
     fontFamily: 'NotoSans-SemiBold',
-    color: '#ffffff',
-    textAlign: 'center',
+    color: '#fff',
     letterSpacing: 0.1,
+  },
+
+  disabled: {
+    opacity: 0.6,
+  },
+
+  spinner: {
+    position: 'absolute',
   },
 });
