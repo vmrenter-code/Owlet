@@ -119,7 +119,7 @@ def process_video(local_path: str, screening_id: str, video_number: int) -> dict
 def upload_csv_to_s3(csv_path: str, screening_id: str, video_number: int) -> dict:
     """Upload results CSV to S3."""
     try:
-        s3_key = f"results/{screening_id}/video_{video_number}_results.csv"
+        s3_key = f"results/{screening_id}/video_{video_number}/model_results.csv"
         logger.info('Uploading CSV to s3://%s/%s', AWS_S3_BUCKET_NAME, s3_key)
         
         s3_client.upload_file(

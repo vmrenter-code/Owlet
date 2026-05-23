@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
-import { useScreening } from '../../context/ScreeningContext';
+import { useScreening, calculateRMSSD } from '../../context/ScreeningContext';
 import { uploadScreeningVideo } from '../../src/services/uploadService';
 
 const videoSources: { [key: number]: any } = {
@@ -297,6 +297,33 @@ export default function VideoScreen() {
                 );
             } catch (e) {
                 console.log('Error saving RR log');
+            }
+
+            // Upload heart rate and RR logs to S3 via backend (include RMSSD)
+            if (currentScreeningID) {
+                const rmssd = calculateRMSSD(rrLogRef.current ?? []);
+                try {
+                    const heartRateResponse = await fetch(`${BASE_URL}/screening/${currentScreeningID}/heart-rate-csv`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            videoNumber: totalVideos,
+                            heartRateLog: heartRateLogRef.current,
+                            rrLog: rrLogRef.current,
+                            rmssd,
+                            completedAt: new Date().toISOString(),
+                        }),
+                    });
+
+                    if (!heartRateResponse.ok) {
+                        console.log('Heart rate CSV upload failed:', heartRateResponse.status);
+                    } else {
+                        const payload = await heartRateResponse.json();
+                        console.log('Heart rate CSV uploaded successfully:', payload);
+                    }
+                } catch (e) {
+                    console.log('Error uploading heart rate CSVs', e);
+                }
             }
 
             disconnect();

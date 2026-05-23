@@ -8,7 +8,26 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 
 import admin from 'firebase-admin';
-import serviceAccount from './src/config/firebase-service-account.json' with {type: 'json'};
+import fs from 'fs';
+import path from 'path';
+
+let serviceAccount: unknown = null;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (err) {
+    console.error('Invalid FIREBASE_SERVICE_ACCOUNT JSON:', err);
+  }
+} else {
+  const serviceAccountPath = path.resolve(__dirname, 'src', 'config', 'firebase-service-account.json');
+  if (fs.existsSync(serviceAccountPath)) {
+    try {
+      serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    } catch (err) {
+      console.error('Failed to read Firebase service account file:', err);
+    }
+  }
+}
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -21,15 +40,73 @@ app.use(cors());
 //uses env info for the region
 const s3 = new S3Client({ region: process.env.AWS_REGION });
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-});
-console.log('Firebase admin initialized with service account:', serviceAccount.project_id);
+if (serviceAccount) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+  });
+  const serviceAccountProjectId = (serviceAccount as { project_id?: string }).project_id ?? 'unknown';
+  console.log('Firebase admin initialized with service account:', serviceAccountProjectId);
+} else {
+  try {
+    admin.initializeApp();
+    console.log('Firebase admin initialized with default application credentials');
+  } catch (err) {
+    console.error('Failed to initialize Firebase admin:', err);
+  }
+}
 
 // Helper to ensure param is a string
 function getParam(req: express.Request, key: string): string {
   const value = req.params[key];
   return Array.isArray(value) ? value[0] : value;
+}
+
+function buildHeartRateCsv(heartRateLog: Array<{ time: number; bpm: number }>): string {
+  const rows = ['time_seconds,bpm'];
+  for (const point of heartRateLog) {
+    rows.push(`${point.time},${point.bpm}`);
+  }
+  return rows.join('\n');
+}
+
+function buildRrCsv(rrLog: number[]): string {
+  const rows = ['sample_index,rr_ms'];
+  rrLog.forEach((rr, index) => {
+    rows.push(`${index + 1},${rr}`);
+  });
+  return rows.join('\n');
+}
+
+async function uploadTextCsvToS3(objectKey: string, csvText: string): Promise<void> {
+  const bucketName = process.env.AWS_S3_BUCKET_NAME;
+  if (!bucketName) {
+    throw new Error('AWS_S3_BUCKET_NAME is not configured');
+  }
+
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: bucketName,
+      Key: objectKey,
+      Body: csvText,
+      ContentType: 'text/csv',
+    })
+  );
+}
+
+async function uploadTextJsonToS3(objectKey: string, jsonText: string): Promise<void> {
+  const bucketName = process.env.AWS_S3_BUCKET_NAME;
+  if (!bucketName) {
+    throw new Error('AWS_S3_BUCKET_NAME is not configured');
+  }
+
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: bucketName,
+      Key: objectKey,
+      Body: jsonText,
+      ContentType: 'application/json',
+    })
+  );
 }
 
 app.post('/profile', async (req, res) => {
@@ -333,6 +410,59 @@ app.post('/screening/:id/complete', async (req, res) => {
   } catch (err) {
     console.error('Error updating screening:', err);
     res.status(500).json({ success: false, error: 'Failed to mark screening complete' });
+  }
+});
+
+// Upload heart-rate CSV results for a completed screening
+app.post('/screening/:id/heart-rate-csv', async (req, res) => {
+  try {
+    const screeningId = getParam(req, 'id');
+    const { videoNumber, heartRateLog, rrLog, rmssd, completedAt } = req.body;
+
+    if (videoNumber === undefined || !Array.isArray(heartRateLog)) {
+      return res.status(400).json({
+        success: false,
+        error: 'videoNumber and heartRateLog are required',
+      });
+    }
+
+    const safeScreeningId = String(screeningId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeVideoNumber = String(videoNumber).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const timestamp = completedAt ? new Date(completedAt).getTime() : Date.now();
+
+    const heartRateCsv = buildHeartRateCsv(heartRateLog);
+    const rrCsv = buildRrCsv(Array.isArray(rrLog) ? rrLog : []);
+    const rmssdValue = typeof rmssd === 'number' ? rmssd : null;
+
+    const videoPrefix = `results/${safeScreeningId}/video_${safeVideoNumber}`;
+    const heartRateKey = `${videoPrefix}/heart_rate_${timestamp}.csv`;
+    const rrKey = `${videoPrefix}/rr_intervals_${timestamp}.csv`;
+    const hrvKey = `${videoPrefix}/hrv_${timestamp}.json`;
+
+    await uploadTextCsvToS3(heartRateKey, heartRateCsv);
+    await uploadTextCsvToS3(rrKey, rrCsv);
+    await uploadTextJsonToS3(
+      hrvKey,
+      JSON.stringify({
+        screeningId: safeScreeningId,
+        videoNumber: Number(videoNumber),
+        rmssd: rmssdValue,
+        completedAt: completedAt ?? null,
+        timestamp,
+      }, null, 2)
+    );
+
+    console.log(`Heart rate CSVs uploaded for screening=${screeningId}, video=${videoNumber}`);
+    return res.json({
+      success: true,
+      heartRateKey,
+      rrKey,
+      hrvKey,
+      rmssd: rmssdValue,
+    });
+  } catch (err) {
+    console.error('Error uploading heart-rate CSVs:', err);
+    return res.status(500).json({ success: false, error: 'Failed to upload heart-rate CSVs' });
   }
 });
 
