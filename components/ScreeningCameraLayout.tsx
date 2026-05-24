@@ -27,6 +27,7 @@ export default function ScreeningCameraLayout({
   useScreeningLandscape();
   const { width, height } = useWindowDimensions();
   const isWide = width >= height;
+  const layoutWide = isWide;
   const showRotateHint = !isWide;
 
   return (
@@ -45,19 +46,25 @@ export default function ScreeningCameraLayout({
           </View>
         </View>
 
-        {isWide && instruction ? (
+        {layoutWide && instruction ? (
           <View style={styles.instructionWrap}>
             <Text style={styles.instructionText}>{instruction}</Text>
           </View>
         ) : null}
 
-        {isWide && showFaceGuide ? (
+        {layoutWide && showFaceGuide ? (
           <View style={styles.guideWrap} pointerEvents="none">
             <View style={styles.faceGuide} />
           </View>
         ) : null}
 
-        {isWide ? <View style={styles.footerOverlay}>{footer}</View> : null}
+        {!layoutWide && instruction ? (
+          <View style={styles.portraitInstruction}>
+            <Text style={styles.instructionText}>{instruction}</Text>
+          </View>
+        ) : null}
+
+        <View style={styles.footerOverlay}>{footer}</View>
       </View>
     </View>
   );
@@ -120,15 +127,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
+  portraitInstruction: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    zIndex: 15,
+  },
   instructionText: {
     color: '#ffffff',
     fontSize: 20,
     fontWeight: '600',
     textAlign: 'center',
     lineHeight: 28,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    textShadow: '0px 1px 3px rgba(0,0,0,0.5)',
   },
   guideWrap: {
     ...StyleSheet.absoluteFillObject,
@@ -149,6 +162,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    zIndex: 10,
+    zIndex: 25,
   },
 });

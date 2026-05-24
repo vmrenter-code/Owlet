@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import InputFields from '../components/InputFields';
@@ -13,7 +13,6 @@ export default function ChildName() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1 }}>
         <OnboardingLayout
           step={1}
@@ -22,7 +21,6 @@ export default function ChildName() {
           onNext={handleNext}
           canProceed={childName.trim().length > 0}
         >
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <View style={styles.stepContent}>
               <View style={styles.titleContainer}>
                 <Text style={styles.titleStyle}>What's your child's name?</Text>
@@ -40,10 +38,8 @@ export default function ChildName() {
               />
               <Text style={styles.charCount}>{childName.length}/15</Text>
             </View>
-          </ScrollView>
         </OnboardingLayout>
       </View>
-    </TouchableWithoutFeedback>
   );
 }
 

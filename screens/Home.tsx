@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
 
-      <View style={styles.formatBg} pointerEvents="none">
+      <View style={styles.formatBg}>
         <HomeBg />
       </View>
 
@@ -208,6 +208,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 0,
+    pointerEvents: 'none',
   },
 
   bgContainer: {

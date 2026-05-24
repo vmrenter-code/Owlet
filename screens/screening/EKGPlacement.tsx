@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Svg, Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,17 +26,6 @@ export default function EKGPlacement() {
     };
 
     const handleBeginScreening = () => {
-        if (!connected) {
-            Alert.alert(
-                'H9 Not Connected',
-                'No Polar H9 detected. You can connect it or continue without heart rate monitoring.',
-                [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Continue Without H9', onPress: goToPositionChild },
-                ]
-            );
-            return;
-        }
         goToPositionChild();
     };
 

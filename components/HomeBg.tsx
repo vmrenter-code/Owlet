@@ -6,7 +6,7 @@ export default function HomeBg() {
   const { width, height } = useWindowDimensions();
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}>
       <Svg width={width} height={height}>
         <Defs>
           {/* Upper-right: saturated sky blue */}

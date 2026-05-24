@@ -29,15 +29,12 @@ export default function ImageCard({ children, style, imageSource }: Props) {
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    height: 400, // adjust as needed or pass via style prop
-    overflow: 'hidden', // THIS clips children like HTML
+    height: '100%',
+    overflow: 'hidden',
     backgroundColor: '#ffffff',
     borderColor: '#F0F1F1',
     borderWidth: 1,
-    shadowColor: '#0000000e',
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    shadowOpacity: 1,
+    boxShadow: '0px 4px 8px rgba(0,0,0,0.055)',
   },
 
   background: {

@@ -8,8 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackArrow from '../components/BackArrow';
 import { getAuth } from 'firebase/auth';
 
-const BASE_URL = 'http://localhost:4000'; // Update to your backend URL
-import {useChildProfile} from '../context/ChildProfileContext';
+import { API_BASE_URL } from '../src/config/apiBaseUrl';
+import { useChildProfile } from '../context/ChildProfileContext';
 
 export default function PastScreenings() {
     const navigation = useNavigation<any>();
@@ -81,7 +81,7 @@ export default function PastScreenings() {
                 const token = await user.getIdToken();
 
                 const response = await fetch(
-                    `${BASE_URL}/screenings?childId=${activeChild.id}`,
+                    `${API_BASE_URL}/screenings?childId=${activeChild.id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -94,8 +94,8 @@ export default function PastScreenings() {
                 if (data.success && data.screenings) {
                     setPastScreenings(data.screenings);
                 }
-            } catch (err) {
-                console.error('Error fetching past screenings:', err);
+            } catch {
+                // Backend optional in local dev — empty list is fine
             }
         };
         fetchPastScreenings();

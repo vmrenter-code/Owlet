@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable, Modal, Platform, useWindowDimensions } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,8 +29,10 @@ const createLocalScreeningId = () => `local_${Date.now()}_${Math.random().toStri
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
+    const isFocused = useIsFocused();
     const { width, height } = useWindowDimensions();
     const isWide = width >= height;
+    const layoutWide = isWide;
     useScreeningLandscape();
     
     // Get screeningID from context (primary) or route params (fallback)
@@ -92,6 +94,17 @@ useEffect(() => {
             }
         };
     }, []);
+
+    // Pause/stop video when navigating away (e.g. going back to home)
+    useFocusEffect(
+        useCallback(() => {
+            return () => {
+                if (videoRef.current) {
+                    videoRef.current.stopAsync().catch(() => {});
+                }
+            };
+        }, [])
+    );
     
     const { screeningId, videoNumber: initialVideoNumber = 1 } = route.params ?? {};
     const cameraRef = useRef<CameraView>(null);
@@ -442,13 +455,13 @@ useEffect(() => {
             )}
 
             <View style={styles.videoContainer}>
-                {isWide ? (
+                {layoutWide ? (
                     <Video
                         ref={videoRef}
                         source={videoSources[videoNumber]}
                         style={styles.video}
                         resizeMode={ResizeMode.COVER}
-                        shouldPlay={!videoFinished}
+                        shouldPlay={isFocused && !videoFinished}
                         isLooping={false}
                         onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
                             if (status.isLoaded && status.didJustFinish) {
@@ -459,9 +472,9 @@ useEffect(() => {
                 ) : null}
             </View>
 
-            {!isWide ? <RotateDeviceOverlay /> : null}
+            {!layoutWide ? <RotateDeviceOverlay /> : null}
 
-            {isWide ? (
+            {layoutWide ? (
             <View style={styles.headerContainer}>
                 {/* Exit button on the far left */}
                 <Pressable 
@@ -521,7 +534,7 @@ useEffect(() => {
             </View>
             ) : null}
 
-            {isWide && !videoFinished ? (
+            {layoutWide && !videoFinished ? (
             <View style={styles.skipButtonContainer}>
                 <Pressable 
                     style={({ pressed }) => [
@@ -537,7 +550,7 @@ useEffect(() => {
             </View>
             ) : null}
 
-            {isWide && videoFinished ? (
+            {layoutWide && videoFinished ? (
                 <View style={styles.buttonContainer}>
                     <Pressable 
                         style={({ pressed }) => [
@@ -553,7 +566,7 @@ useEffect(() => {
                 </View>
             ) : null}
 
-            {isWide && connected && heartRate ? (
+            {layoutWide && connected && heartRate ? (
         <View style={styles.heartRateContainer}>
             <Text style={styles.heartRateLabel}> Heart Rate</Text>
             <Text style={styles.heartRateValue}>{heartRate} BPM</Text>

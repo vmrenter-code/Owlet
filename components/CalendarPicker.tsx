@@ -8,6 +8,8 @@ type Props = {
   onChange: (isoDate: string) => void;
   maxDate?: Date;
   minDate?: Date;
+  /** Month shown when no date is selected yet */
+  defaultViewDate?: Date;
 };
 
 const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -70,7 +72,7 @@ const CaretUp = () => (
   </Svg>
 );
 
-export default function CalendarPicker({ value, onChange, maxDate, minDate }: Props) {
+export default function CalendarPicker({ value, onChange, maxDate, minDate, defaultViewDate }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const calendarPadding = 40 + 8;
   const cellSize = Math.floor((screenWidth - calendarPadding) / 7);
@@ -84,7 +86,7 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
     return d;
   }, [minDate, today]);
 
-  const initial = parseIso(value) ?? today;
+  const initial = parseIso(value) ?? startOfDay(defaultViewDate ?? today);
   const [viewYear, setViewYear] = useState<number>(initial.getFullYear());
   const [viewMonth, setViewMonth] = useState<number>(initial.getMonth());
   const [mode, setMode] = useState<'days' | 'years'>('days');

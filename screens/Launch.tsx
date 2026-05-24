@@ -12,11 +12,15 @@ import HomeBg from '../components/HomeBg';
 import OnboardingBack from '../components/OnboardingBack';
 import NextButton from '../components/NextButton';
 
+const BOTTOM_BAR_HEIGHT = 64;
+
 export default function Launch() {
   const navigation = useNavigation<any>();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const insets = useSafeAreaInsets();
+  const slideHeight =
+    height - insets.top - insets.bottom - BOTTOM_BAR_HEIGHT - 12;
 
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef<FlatList>(null);
@@ -52,19 +56,26 @@ export default function Launch() {
   return (
     <View style={styles.container}>
 
-      <View style={styles.formatBg} pointerEvents="none">
+      <View style={styles.formatBg}>
         <HomeBg />
       </View>
 
-      <View style={styles.container}>
+      <View style={[styles.shell, { paddingTop: insets.top }]}>
         <FlatList
           data={LaunchSlides}
-          renderItem={({ item }) => <LaunchItems item={item} />}
+          renderItem={({ item }) => (
+            <LaunchItems item={item} width={width} slideHeight={slideHeight} />
+          )}
           keyExtractor={(item) => item.id}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          style={{ flex: 1, width }}
+          style={{ height: slideHeight, width }}
+          getItemLayout={(_, index) => ({
+            length: width,
+            offset: width * index,
+            index,
+          })}
           bounces={false}
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -82,7 +93,7 @@ export default function Launch() {
           </View>
         )}
 
-        <View style={[styles.bottomRow, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={[styles.bottomRow, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           {isLast ? (
             <View style={styles.lastRow}>
               <PrimaryBlueButton onPress={handleNext} fullWidth>Let's begin</PrimaryBlueButton>
@@ -103,6 +114,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  shell: {
+    flex: 1,
+  },
 
   formatBg: {
     position: 'absolute',
@@ -111,6 +125,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 0,
+    pointerEvents: 'none',
   },
 
   bottomRow: {
@@ -118,6 +133,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 12,
     flexShrink: 0,
+    zIndex: 10,
+    position: 'relative',
   },
 
   navRow: {

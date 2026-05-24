@@ -1,10 +1,10 @@
 import { ReactNode, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, Platform } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useScreening } from '../context/ScreeningContext';
+import { useAppStackNavigation } from '../hooks/useAppStackNavigation';
 
 type Props = {
   childName?: string;
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function BeginCard({ childName }: Props) {
-  const navigation = useNavigation<any>();
+  const appNav = useAppStackNavigation();
   const { startScreening } = useScreening();
   const scale = useSharedValue(1);
   const [showResumeModal, setShowResumeModal] = useState(false);
@@ -21,20 +21,24 @@ export default function BeginCard({ childName }: Props) {
   const [incompleteScreeningId, setIncompleteScreeningId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Only show resume modal if progress was saved in the last 24 hours
     const checkIncompleteScreening = async () => {
       try {
         const savedProgress = await AsyncStorage.getItem('screeningProgress');
         if (savedProgress) {
           const progress = JSON.parse(savedProgress);
-          if (progress.videoNumber && !progress.completed) {
+          const age = Date.now() - (progress.timestamp ?? 0);
+          const oneDayMs = 24 * 60 * 60 * 1000;
+          if (progress.videoNumber && !progress.completed && age < oneDayMs) {
             setHasIncompleteScreening(true);
             setIncompleteVideoNumber(progress.videoNumber);
             setIncompleteScreeningId(progress.screeningId ?? null);
+          } else {
+            // Stale or completed — clear it
+            await AsyncStorage.removeItem('screeningProgress');
           }
         }
-      } catch (e) {
-        console.log('Error checking screening progress');
-      }
+      } catch (e) {}
     };
     checkIncompleteScreening();
   }, []);
@@ -42,15 +46,19 @@ export default function BeginCard({ childName }: Props) {
   const handlePress = () => {
     if (hasIncompleteScreening) {
       setShowResumeModal(true);
-    } else {
-      const newScreeningID = startScreening();
-      navigation.getParent()?.navigate('ScreeningInstructions', { screeningID: newScreeningID });
+      return;
     }
+    appNav.navigate('ScreeningInstructions' as never, { screeningID: startScreening() } as never);
   };
 
   const handleResume = () => {
     setShowResumeModal(false);
-    navigation.getParent()?.navigate('VideoScreen', { videoNumber: incompleteVideoNumber });
+    setTimeout(() => {
+      appNav.navigate('VideoScreen' as never, {
+        videoNumber: incompleteVideoNumber,
+        screeningId: incompleteScreeningId,
+      } as never);
+    }, 300);
   };
 
   const handleStartNew = async () => {
@@ -58,48 +66,52 @@ export default function BeginCard({ childName }: Props) {
     try {
       await AsyncStorage.removeItem('screeningProgress');
       setHasIncompleteScreening(false);
-    } catch (e) {
-      console.log('Error clearing progress');
-    }
-    const newScreeningID = startScreening();
-    navigation.getParent()?.navigate('ScreeningInstructions', { screeningID: newScreeningID });
+    } catch (e) {}
+    const screeningID = startScreening();
+    setTimeout(() => {
+      appNav.navigate('ScreeningInstructions' as never, { screeningID } as never);
+    }, 300);
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
+  const cardContent = (
+    <View style={styles.content}>
+      <View style={styles.textContainer}>
+        <Text style={styles.subHeader}>10 minutes</Text>
+        <Text style={styles.header}>Begin Screening</Text>
+        <Text style={styles.description}>Start early-sign check.</Text>
+      </View>
+
+      <View style={styles.buttonWrapper}>
+        <Svg width={30} height={30} viewBox="0 0 24 24">
+          <Path
+            fill="#FFFFFF"
+            d="M6 4.75C6 3.7 7.187 3.1 8.04 3.697l11.05 7.25a1.75 1.75 0 0 1 0 2.906l-11.05 7.25C7.187 21.9 6 21.3 6 20.25V4.75Z"
+          />
+        </Svg>
+      </View>
+    </View>
+  );
+
   return (
     <>
     <Pressable
       onPress={handlePress}
-      onPressIn={() => { scale.value = withSpring(0.97); }}
-      onPressOut={() => { scale.value = withSpring(1); }}
+      onPressIn={Platform.OS === 'web' ? undefined : () => { scale.value = withSpring(0.97); }}
+      onPressOut={Platform.OS === 'web' ? undefined : () => { scale.value = withSpring(1); }}
       accessibilityRole="button"
       accessibilityLabel="Begin screening, takes about 10 minutes"
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      style={({ pressed }) => [Platform.OS === 'web' && pressed && { opacity: 0.92 }]}
     >
-      <Animated.View style={[styles.container, animatedStyle]}>
-        <View style={styles.content}>
-          <View style={styles.textContainer}>
-            <Text style={styles.subHeader}>10 minutes</Text>
-            <Text style={styles.header}>Begin Screening</Text>
-            <Text style={styles.description}>
-                Start early-sign check.
-            </Text>
-            
-          </View>
-
-          <View style={styles.buttonWrapper}>
-            <Svg width={30} height={30} viewBox="0 0 24 24">
-              <Path
-                fill="#FFFFFF"
-                d="M6 4.75C6 3.7 7.187 3.1 8.04 3.697l11.05 7.25a1.75 1.75 0 0 1 0 2.906l-11.05 7.25C7.187 21.9 6 21.3 6 20.25V4.75Z"
-              />
-            </Svg>
-          </View>
-        </View>
-      </Animated.View>
+      {Platform.OS === 'web' ? (
+        <View style={styles.container}>{cardContent}</View>
+      ) : (
+        <Animated.View style={[styles.container, animatedStyle]}>{cardContent}</Animated.View>
+      )}
     </Pressable>
 
     <Modal

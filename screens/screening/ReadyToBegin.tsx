@@ -15,30 +15,11 @@ export default function ReadyToBegin() {
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
 
     useEffect(() => {
-        if (!permission || permission.status === 'undetermined') {
-            requestPermission();
-        }
-        if (!microphonePermission || microphonePermission.status === 'undetermined') {
-            requestMicrophonePermission();
-        }
+        if (!permission || permission.status === 'undetermined') requestPermission();
+        if (!microphonePermission || microphonePermission.status === 'undetermined') requestMicrophonePermission();
     }, [microphonePermission, requestMicrophonePermission, permission, requestPermission]);
 
     const cameraReady = permission?.granted && microphonePermission?.granted;
-
-    const handleBegin = () => {
-        navigation.navigate('VideoScreen', { videoNumber: 1, screeningId });
-    };
-
-    const renderCamera = () => {
-        if (!cameraReady) {
-            return (
-                <View style={styles.cameraFallback}>
-                    <Text style={styles.cameraFallbackText}>Starting camera...</Text>
-                </View>
-            );
-        }
-        return <CameraView style={StyleSheet.absoluteFillObject} facing="front" />;
-    };
 
     return (
         <ScreeningCameraLayout
@@ -47,19 +28,17 @@ export default function ReadyToBegin() {
             showFaceGuide={cameraReady}
             footer={
                 <Pressable
-                    style={({ pressed }) => [
-                        styles.beginButton,
-                        pressed && styles.beginButtonPressed,
-                        !cameraReady && styles.beginButtonDisabled,
-                    ]}
-                    onPress={handleBegin}
-                    disabled={!cameraReady}
+                    style={({ pressed }) => [styles.beginButton, pressed && styles.beginButtonPressed]}
+                    onPress={() => navigation.navigate('VideoScreen', { videoNumber: 1, screeningId })}
                 >
                     <Text style={styles.beginButtonText}>Begin</Text>
                 </Pressable>
             }
         >
-            {renderCamera()}
+            {cameraReady
+                ? <CameraView style={StyleSheet.absoluteFillObject} facing="front" />
+                : <View style={styles.cameraFallback}><Text style={styles.cameraFallbackText}>Starting camera...</Text></View>
+            }
         </ScreeningCameraLayout>
     );
 }
@@ -71,10 +50,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    cameraFallbackText: {
-        color: '#888',
-        fontSize: 16,
-    },
+    cameraFallbackText: { color: '#888', fontSize: 16 },
     beginButton: {
         backgroundColor: '#f0a090',
         paddingVertical: 10,
@@ -82,22 +58,7 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         alignItems: 'center',
         minWidth: 140,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
     },
-    beginButtonPressed: {
-        backgroundColor: '#e8958a',
-        transform: [{ scale: 0.98 }],
-    },
-    beginButtonDisabled: {
-        opacity: 0.55,
-    },
-    beginButtonText: {
-        color: '#ffffff',
-        fontSize: 15,
-        fontWeight: '600',
-    },
+    beginButtonPressed: { backgroundColor: '#e8958a', transform: [{ scale: 0.98 }] },
+    beginButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '600' },
 });

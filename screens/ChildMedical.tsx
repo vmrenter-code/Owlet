@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { auth } from '../src/config/firebase';
@@ -46,7 +46,6 @@ export default function ChildMedical() {
 };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1 }}>
         <OnboardingLayout
           step={4}
@@ -56,7 +55,6 @@ export default function ChildMedical() {
           canProceed={true}
           nextLabel="Continue"
         >
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <View style={styles.stepContent}>
               <View style={styles.titleContainer}>
                 <Text style={styles.titleStyle}>Medical History</Text>
@@ -91,10 +89,8 @@ export default function ChildMedical() {
                 onChangeText={setMedicalNotes}
               />
             </View>
-          </ScrollView>
         </OnboardingLayout>
       </View>
-    </TouchableWithoutFeedback>
   );
 }
 
