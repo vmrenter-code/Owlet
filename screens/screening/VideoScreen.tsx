@@ -7,7 +7,6 @@ import { Svg, Path } from 'react-native-svg';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
 import { useScreening, calculateRMSSD } from '../../context/ScreeningContext';
-import { uploadScreeningVideo } from '../../src/services/uploadService';
 
 // Video sources for each screening video
 const videoSources: { [key: number]: any } = {
@@ -37,8 +36,9 @@ export default function VideoScreen() {
     useScreeningLandscape();
     
     // Get screeningID from context (primary) or route params (fallback)
-const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
+const { screeningId: screeningID, heartRateLog, rrLog, addHeartRateDataPoint, clearHeartRateLog, clearRrLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
 const heartRateLogRef = useRef<typeof heartRateLog>([]);
+const rrLogRef = useRef<number[]>([]);
 const heartRateRef = useRef<number | null>(null); // add this
 useEffect(() => {
     heartRateRef.current = heartRate;
@@ -61,6 +61,7 @@ useEffect(() => {
     console.log('Video number changed to:', videoNumber, '- clearing?', videoNumber === 1);
     if (videoNumber === 1) {
         clearHeartRateLog();
+        clearRrLog();
         setScreeningStartTime(Date.now());
     }
 }, [videoNumber]);
@@ -69,6 +70,11 @@ useEffect(() => {
     console.log('heartRateLog updated, length:', heartRateLog.length);
     heartRateLogRef.current = heartRateLog;
 }, [heartRateLog]);
+
+useEffect(() => {
+    console.log('rrLog updated, length:', rrLog.length);
+    rrLogRef.current = rrLog;
+}, [rrLog]);
 
 useEffect(() => {
     console.log('Heart rate effect fired - connected:', connected);
@@ -84,6 +90,25 @@ useEffect(() => {
 
     return () => clearInterval(interval);
 }, [connected]); // heartRate removed from dependency array
+
+const loadMockHeartRateData = () => {
+    const mockHeartRateLog = [
+        { time: 0, bpm: 122 },
+        { time: 1, bpm: 121 },
+        { time: 2, bpm: 119 },
+        { time: 3, bpm: 120 },
+        { time: 4, bpm: 118 },
+    ];
+    const mockRrLog = [812, 798, 805, 790, 796, 802];
+
+    heartRateLogRef.current = mockHeartRateLog;
+    rrLogRef.current = mockRrLog;
+
+    console.log('Mock heart-rate data loaded:', {
+        heartRateCount: mockHeartRateLog.length,
+        rrCount: mockRrLog.length,
+    });
+};
 
 
     
