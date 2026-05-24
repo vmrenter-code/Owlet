@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Svg, Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useScreening } from '../../context/ScreeningContext';
@@ -16,10 +16,12 @@ const PlayIcon = () => (
 
 export default function EKGPlacement() {
     const navigation = useNavigation<any>();
-    const { heartRate, connected, scanning, error, connectToH9 } = useScreening();
+    const route = useRoute<any>();
+    const { heartRate, connected, scanning, error, connectToH9, screeningId: contextScreeningId } = useScreening();
+    const screeningId = contextScreeningId ?? route.params?.screeningId;
 
     const handleBeginScreening = () => {
-        navigation.navigate('PositionChild');
+        navigation.navigate('PositionChild', { screeningId });
     };
 
     return (

@@ -1,229 +1,103 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useEffect } from 'react';
+import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import { useScreening } from '../../context/ScreeningContext';
+import ScreeningCameraLayout from '../../components/ScreeningCameraLayout';
 
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
     const { screeningId: screeningIDFromContext } = useScreening();
-
-    // Fall back to route params if context doesn't have it
     const screeningId = screeningIDFromContext ?? route.params?.screeningId;
+
+    const [permission, requestPermission] = useCameraPermissions();
+    const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
+
+    useEffect(() => {
+        if (!permission || permission.status === 'undetermined') {
+            requestPermission();
+        }
+        if (!microphonePermission || microphonePermission.status === 'undetermined') {
+            requestMicrophonePermission();
+        }
+    }, [microphonePermission, requestMicrophonePermission, permission, requestPermission]);
+
+    const cameraReady = permission?.granted && microphonePermission?.granted;
 
     const handleBegin = () => {
         navigation.navigate('VideoScreen', { videoNumber: 1, screeningId });
     };
 
-    return (
-        <View style={styles.container}>
-            {/* Placeholder for camera with face detected */}
-            <View style={styles.cameraPlaceholder}>
-                <Text style={styles.cameraText}>Camera View - Face Detected</Text>
-            </View>
-
-            {/* Header with back button and record indicator */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>‹</Text>
-                </Pressable>
-                
-                <View style={styles.recordIndicator}>
-                    <View style={styles.recordDot} />
+    const renderCamera = () => {
+        if (!cameraReady) {
+            return (
+                <View style={styles.cameraFallback}>
+                    <Text style={styles.cameraFallbackText}>Starting camera...</Text>
                 </View>
-            </View>
+            );
+        }
+        return <CameraView style={StyleSheet.absoluteFillObject} facing="front" />;
+    };
 
-            {/* Face positioning circle */}
-            <View style={styles.circleContainer}>
-                <View style={styles.faceCircle} />
-            </View>
-
-            {/* Begin button */}
-            <View style={styles.buttonContainer}>
-                <Pressable 
+    return (
+        <ScreeningCameraLayout
+            onBack={() => navigation.goBack()}
+            instruction="Face detected — tap Begin when ready"
+            showFaceGuide={cameraReady}
+            footer={
+                <Pressable
                     style={({ pressed }) => [
-                        styles.beginButtonActive,
-                        pressed && styles.beginButtonPressed
+                        styles.beginButton,
+                        pressed && styles.beginButtonPressed,
+                        !cameraReady && styles.beginButtonDisabled,
                     ]}
                     onPress={handleBegin}
+                    disabled={!cameraReady}
                 >
                     <Text style={styles.beginButtonText}>Begin</Text>
                 </Pressable>
-            </View>
-        </View>
+            }
+        >
+            {renderCamera()}
+        </ScreeningCameraLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#2a2a2a',
-    },
-
-    cameraPlaceholder: {
+    cameraFallback: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: '#4a4a4a',
         justifyContent: 'center',
         alignItems: 'center',
     },
-
-    cameraText: {
+    cameraFallbackText: {
         color: '#888',
-        fontSize: 18,
+        fontSize: 16,
     },
-
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 50,
-        zIndex: 10,
-    },
-
-    backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    backArrow: {
-        color: '#ffffff',
-        fontSize: 28,
-        fontWeight: '300',
-        marginTop: -2,
-    },
-
-    
-
-    recordIndicator: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    recordDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#ff4444',
-    },
-
-    circleContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    faceCircle: {
-        width: 250,
-        height: 250,
-        borderRadius: 125,
-        borderWidth: 3,
-        borderColor: '#8b7bc7',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        paddingBottom: 10,
-    },
-
-  
-
-    buttonContainer: {
-        paddingHorizontal: 50,
-        paddingBottom: 80,
-        zIndex: 10,
-    },
-
-    beginButtonActive: {
+    beginButton: {
         backgroundColor: '#f0a090',
-        paddingVertical: 15,
-        borderRadius: 30,
+        paddingVertical: 10,
+        paddingHorizontal: 36,
+        borderRadius: 22,
         alignItems: 'center',
+        minWidth: 140,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
     },
-
     beginButtonPressed: {
         backgroundColor: '#e8958a',
         transform: [{ scale: 0.98 }],
     },
-
+    beginButtonDisabled: {
+        opacity: 0.55,
+    },
     beginButtonText: {
         color: '#ffffff',
-        fontSize: 18,
-        fontWeight: '600',
-    },
-
-
-    h9Container: {
-        position: 'absolute',
-        bottom: 160,
-        left: 50,
-        right: 50,
-        alignItems: 'center',
-        zIndex: 10,
-    },
-
-    connectButton: {
-        backgroundColor: 'rgba(95, 212, 212, 0.9)',
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-        borderRadius: 20,
-        alignItems: 'center',
-    },
-
-    connectButtonPressed: {
-        backgroundColor: 'rgba(95, 212, 212, 0.7)',
-    },
-
-    connectButtonText: {
-        color: '#ffffff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-
-    connectedBadge: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        paddingVertical: 8,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        alignItems: 'center',
-        gap: 4,
-    },
-
-    connectedText: {
-        color: '#5fd4d4',
         fontSize: 15,
         fontWeight: '600',
     },
-
-    heartRatePreview: {
-        color: '#ffffff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-
-    errorText: {
-        color: '#ff6b6b',
-        fontSize: 13,
-        marginTop: 6,
-        textAlign: 'center',
-    },
-
-    beginButtonDisabled: {
-        backgroundColor: '#888888',
-        opacity: 0.6,
-    },
 });
-

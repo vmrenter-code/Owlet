@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Modal, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, Platform, useWindowDimensions } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -17,6 +17,9 @@ const videoSources: { [key: number]: any } = {
     5: require('../../assets/videos/Video5.mp4'),
 };
 import { uploadScreeningVideo } from '../../src/services/uploadService';
+import { useScreeningLandscape } from '../../hooks/useScreeningLandscape';
+import RotateDeviceOverlay from '../../components/RotateDeviceOverlay';
+import TroubleshootingOverlay from '../../components/TroubleshootingOverlay';
 
 const createLocalScreeningId = () => `local_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
@@ -26,6 +29,9 @@ const createLocalScreeningId = () => `local_${Date.now()}_${Math.random().toStri
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
+    const { width, height } = useWindowDimensions();
+    const isWide = width >= height;
+    useScreeningLandscape();
     
     // Get screeningID from context (primary) or route params (fallback)
 const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
@@ -101,11 +107,11 @@ useEffect(() => {
     const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
     const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
     
-    // Track if video is playing or finished
-    const [isPlaying, setIsPlaying] = useState(true);
+    const [videoFinished, setVideoFinished] = useState(false);
     
     // Track exit confirmation modal visibility
     const [showExitModal, setShowExitModal] = useState(false);
+    const [showTroubleshooting, setShowTroubleshooting] = useState(false);
     const [isCameraMounted, setIsCameraMounted] = useState(false);
 
     // added readiness tracking to ensure we don't try to start recording before camera is fully ready, which was causing crashes before
@@ -279,15 +285,39 @@ useEffect(() => {
         saveProgress();
     }, [activeScreeningId, currentVideoNumber]);
     
-    // Reset playing state when video number changes
     useEffect(() => {
-        setIsPlaying(true);
-        const timer = setTimeout(() => {
-            setIsPlaying(false);
-        }, 5000); // Video "finishes" after 3 seconds
-        
-        return () => clearTimeout(timer);
-    }, [currentVideoNumber]);
+        setVideoFinished(false);
+    }, [currentVideoNumber, videoNumber]);
+
+    const openTroubleshooting = async () => {
+        const video = videoRef.current;
+        if (video) {
+            try {
+                const status = await video.getStatusAsync();
+                if (status.isLoaded && status.isPlaying) {
+                    await video.pauseAsync();
+                }
+            } catch {
+                // ignore pause errors
+            }
+        }
+        setShowTroubleshooting(true);
+    };
+
+    const closeTroubleshooting = async () => {
+        setShowTroubleshooting(false);
+        setVideoFinished(false);
+
+        const video = videoRef.current;
+        if (!video) return;
+
+        try {
+            await video.setPositionAsync(0);
+            await video.playAsync();
+        } catch {
+            // ignore restart errors
+        }
+    };
 
     // safe recording start
     useEffect(() => {
@@ -411,7 +441,27 @@ useEffect(() => {
                 />
             )}
 
-            {/* Header with exit, progress and troubleshooting */}
+            <View style={styles.videoContainer}>
+                {isWide ? (
+                    <Video
+                        ref={videoRef}
+                        source={videoSources[videoNumber]}
+                        style={styles.video}
+                        resizeMode={ResizeMode.COVER}
+                        shouldPlay={!videoFinished}
+                        isLooping={false}
+                        onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
+                            if (status.isLoaded && status.didJustFinish) {
+                                setVideoFinished(true);
+                            }
+                        }}
+                    />
+                ) : null}
+            </View>
+
+            {!isWide ? <RotateDeviceOverlay /> : null}
+
+            {isWide ? (
             <View style={styles.headerContainer}>
                 {/* Exit button on the far left */}
                 <Pressable 
@@ -464,34 +514,14 @@ useEffect(() => {
                 {/* Troubleshooting button on the right */}
                 <Pressable 
                     style={styles.troubleshootButton}
-                    onPress={() => navigation.navigate('TroubleshootingScreen', { videoNumber: currentVideoNumber })}
+                    onPress={openTroubleshooting}
                 >
                     <Text style={styles.troubleshootIcon}>!</Text>
                 </Pressable>
             </View>
+            ) : null}
 
-        
-
-            
-
-            {/* Video Player */}
-            <View style={styles.videoContainer}>
-                <Video
-                    ref={videoRef}
-                    source={videoSources[videoNumber]}
-                    style={styles.video}
-                    resizeMode={ResizeMode.CONTAIN}
-                    shouldPlay={isPlaying}
-                    isLooping={false}
-                    onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
-                        if (status.isLoaded && status.didJustFinish) {
-                            setIsPlaying(false);
-                        }
-                    }}
-                />
-            </View>
-
-            {/* Skip button - always visible */}
+            {isWide && !videoFinished ? (
             <View style={styles.skipButtonContainer}>
                 <Pressable 
                     style={({ pressed }) => [
@@ -504,23 +534,10 @@ useEffect(() => {
                         {videoNumber < totalVideos ? 'Skip →' : 'Finish →'}
                     </Text>
                 </Pressable>
-                <View style={styles.videoPlaceholder}>
-                    <Text style={styles.videoPlaceholderText}>
-                        Video {currentVideoNumber} of {totalVideos}
-                    </Text>
-                </View>
             </View>
+            ) : null}
 
-            {/* Heart Rate Display */}
-    {connected && heartRate && (
-        <View style={styles.heartRateContainer}>
-            <Text style={styles.heartRateLabel}> Heart Rate</Text>
-            <Text style={styles.heartRateValue}>{heartRate} BPM</Text>
-        </View>
-    )}
-
-            {/* Bottom button - only show when video finishes */}
-            {!isPlaying && (
+            {isWide && videoFinished ? (
                 <View style={styles.buttonContainer}>
                     <Pressable 
                         style={({ pressed }) => [
@@ -534,7 +551,19 @@ useEffect(() => {
                         </Text>
                     </Pressable>
                 </View>
-            )}
+            ) : null}
+
+            {isWide && connected && heartRate ? (
+        <View style={styles.heartRateContainer}>
+            <Text style={styles.heartRateLabel}> Heart Rate</Text>
+            <Text style={styles.heartRateValue}>{heartRate} BPM</Text>
+        </View>
+            ) : null}
+
+            <TroubleshootingOverlay
+                visible={showTroubleshooting}
+                onClose={closeTroubleshooting}
+            />
 
             {/* Exit Confirmation Modal */}
             <Modal
@@ -595,7 +624,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: 50,
+        paddingTop: 16,
         paddingHorizontal: 20,
         zIndex: 10,
     },
@@ -694,18 +723,15 @@ skipIcon: {
 
     videoContainer: {
         ...StyleSheet.absoluteFillObject,
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: '#000',
         zIndex: 1,
         overflow: 'hidden',
-        top: 100,
     },
 
     video: {
-        position: 'absolute',
-        width: Dimensions.get('window').height,
-        height: Dimensions.get('window').width,
-        transform: [{ rotate: '90deg' }],
+        ...StyleSheet.absoluteFillObject,
+        width: '100%',
+        height: '100%',
     },
 
     videoLabelContainer: {
@@ -725,24 +751,6 @@ skipIcon: {
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 16,
-    },
-
-    videoPlaceholder: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#4a4a4a',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1,
-    },
-
-    videoPlaceholderText: {
-        color: '#ffffff',
-        fontSize: 18,
-        fontWeight: '600',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
     },
 
     videoStatusText: {
@@ -766,19 +774,20 @@ skipIcon: {
 
     buttonContainer: {
         position: 'absolute',
-        bottom: 0,
+        bottom: 32,
         left: 0,
         right: 0,
-        paddingHorizontal: 50,
-        paddingBottom: 80,
+        alignItems: 'center',
         zIndex: 10,
     },
 
     nextButton: {
         backgroundColor: '#f0a090',
-        paddingVertical: 15,
-        borderRadius: 30,
+        paddingVertical: 10,
+        paddingHorizontal: 36,
+        borderRadius: 22,
         alignItems: 'center',
+        minWidth: 140,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
@@ -793,7 +802,7 @@ skipIcon: {
 
     buttonText: {
         color: '#ffffff',
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: '600',
     },
 
@@ -884,7 +893,7 @@ skipIcon: {
 
     heartRateContainer: {
     position: 'absolute',
-    top: 110,
+    top: 56,
     right: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     paddingVertical: 8,

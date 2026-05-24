@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import React, { useRef, useState, useEffect } from 'react';
 import InputFields from '../components/InputFields';
@@ -11,9 +11,6 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '../src/config/firebase';
 import { Svg, Path, Rect } from 'react-native-svg';
-import { TextInputProps } from 'react-native';
-
-
 const UserIcon = ({ width = 20, height = 20, color = '#585858' }) => (
   <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
     <Path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -107,13 +104,12 @@ export default function Login() {
 
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ flex: 1 }}>
-        <View style={styles.formatBg} pointerEvents="none">
-          <HomeBg />
-        </View>
+    <View style={{ flex: 1 }}>
+      <View style={styles.formatBg} pointerEvents="none">
+        <HomeBg />
+      </View>
 
-        <View style={styles.container}>
+      <View style={styles.container}>
           <BackArrow />
 
           <View style={styles.centerSection}>
@@ -179,8 +175,7 @@ export default function Login() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+    </View>
   );
 }
 
