@@ -1,31 +1,19 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useMemo, useState, useEffect, useRef } from 'react';
+import { useWindowDimensions } from 'react-native';
+import { Svg, Path } from 'react-native-svg';
 
 type Props = {
-  /** Currently selected date as ISO YYYY-MM-DD, or null. */
   value: string | null;
-  /** Called with ISO YYYY-MM-DD when a day is tapped. */
   onChange: (isoDate: string) => void;
-  /** Inclusive max selectable date. Defaults to today. */
   maxDate?: Date;
-  /** Inclusive min selectable date. Defaults to ~120 years before today. */
   minDate?: Date;
 };
 
-const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 function pad(n: number): string {
@@ -46,12 +34,49 @@ function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
+const ChevronLeft = ({ size = 18 }: { size?: number }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M15 18l-6-6 6-6" stroke="#5058b4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+const ChevronRight = ({ size = 18 }: { size?: number }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M9 18l6-6-6-6" stroke="#5058b4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+const ChevronsLeft = () => (
+  <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+    <Path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" stroke="#5058b4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+const ChevronsRight = () => (
+  <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+    <Path d="M13 17l5-5-5-5M6 17l5-5-5-5" stroke="#5058b4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+const CaretDown = () => (
+  <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+    <Path d="M6 9l6 6 6-6" stroke="#5058b4" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+const CaretUp = () => (
+  <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+    <Path d="M18 15l-6-6-6 6" stroke="#5058b4" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
 export default function CalendarPicker({ value, onChange, maxDate, minDate }: Props) {
+  const { width: screenWidth } = useWindowDimensions();
+  const calendarPadding = 40 + 8;
+  const cellSize = Math.floor((screenWidth - calendarPadding) / 7);
+
   const today = useMemo(() => startOfDay(new Date()), []);
-  const effectiveMax = useMemo(
-    () => startOfDay(maxDate ?? today),
-    [maxDate, today],
-  );
+  const effectiveMax = useMemo(() => startOfDay(maxDate ?? today), [maxDate, today]);
   const effectiveMin = useMemo(() => {
     if (minDate) return startOfDay(minDate);
     const d = new Date(today);
@@ -97,38 +122,26 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
   while (cells.length % 7 !== 0) cells.push(null);
 
   const goPrevMonth = () => {
-    if (viewMonth === 0) {
-      setViewYear((y) => y - 1);
-      setViewMonth(11);
-    } else {
-      setViewMonth((m) => m - 1);
-    }
+    if (viewMonth === 0) { setViewYear((y) => y - 1); setViewMonth(11); }
+    else { setViewMonth((m) => m - 1); }
   };
 
   const goNextMonth = () => {
-    if (viewMonth === 11) {
-      setViewYear((y) => y + 1);
-      setViewMonth(0);
-    } else {
-      setViewMonth((m) => m + 1);
-    }
+    if (viewMonth === 11) { setViewYear((y) => y + 1); setViewMonth(0); }
+    else { setViewMonth((m) => m + 1); }
   };
 
   const goPrevYear = () => setViewYear((y) => y - 1);
   const goNextYear = () => setViewYear((y) => y + 1);
 
-  const isOutOfRange = (date: Date): boolean => {
-    return date < effectiveMin || date > effectiveMax;
-  };
+  const isOutOfRange = (date: Date): boolean => date < effectiveMin || date > effectiveMax;
 
   const isSameDay = (a: Date | null, b: Date | null): boolean => {
     if (!a || !b) return false;
-    return (
-      a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth() &&
-      a.getDate() === b.getDate()
-    );
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   };
+
+  const pillSize = Math.min(cellSize - 4, 36);
 
   return (
     <View style={styles.container}>
@@ -137,68 +150,59 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
           <Pressable
             onPress={goPrevYear}
             disabled={mode !== 'days'}
-            style={({ pressed }) => [
-              styles.navButton,
-              pressed && mode === 'days' && styles.navPressed,
-              mode !== 'days' && styles.navHidden,
-            ]}
+            style={({ pressed }) => [styles.navButton, pressed && mode === 'days' && styles.navPressed, mode !== 'days' && styles.navHidden]}
+            accessibilityRole="button"
             accessibilityLabel="Previous year"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.navText}>‹‹</Text>
+            <ChevronsLeft />
           </Pressable>
           <Pressable
             onPress={goPrevMonth}
             disabled={mode !== 'days'}
-            style={({ pressed }) => [
-              styles.navButton,
-              pressed && mode === 'days' && styles.navPressed,
-              mode !== 'days' && styles.navHidden,
-            ]}
+            style={({ pressed }) => [styles.navButton, pressed && mode === 'days' && styles.navPressed, mode !== 'days' && styles.navHidden]}
+            accessibilityRole="button"
             accessibilityLabel="Previous month"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.navText}>‹</Text>
+            <ChevronLeft />
           </Pressable>
         </View>
 
         <Pressable
           onPress={() => setMode((m) => (m === 'days' ? 'years' : 'days'))}
-          style={({ pressed }) => [
-            styles.headerLabelButton,
-            pressed && styles.headerLabelButtonPressed,
-          ]}
+          style={({ pressed }) => [styles.headerLabelButton, pressed && styles.headerLabelButtonPressed]}
           accessibilityRole="button"
           accessibilityLabel={mode === 'days' ? 'Choose year' : 'Back to days'}
         >
           <Text style={styles.headerLabel}>
             {mode === 'days' ? `${MONTH_NAMES[viewMonth]} ${viewYear}` : `${viewYear}`}
           </Text>
-          <Text style={styles.headerLabelCaret}>{mode === 'days' ? '▾' : '▴'}</Text>
+          <View style={styles.headerLabelCaret}>
+            {mode === 'days' ? <CaretDown /> : <CaretUp />}
+          </View>
         </Pressable>
 
         <View style={styles.navGroup}>
           <Pressable
             onPress={goNextMonth}
             disabled={mode !== 'days'}
-            style={({ pressed }) => [
-              styles.navButton,
-              pressed && mode === 'days' && styles.navPressed,
-              mode !== 'days' && styles.navHidden,
-            ]}
+            style={({ pressed }) => [styles.navButton, pressed && mode === 'days' && styles.navPressed, mode !== 'days' && styles.navHidden]}
+            accessibilityRole="button"
             accessibilityLabel="Next month"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.navText}>›</Text>
+            <ChevronRight />
           </Pressable>
           <Pressable
             onPress={goNextYear}
             disabled={mode !== 'days'}
-            style={({ pressed }) => [
-              styles.navButton,
-              pressed && mode === 'days' && styles.navPressed,
-              mode !== 'days' && styles.navHidden,
-            ]}
+            style={({ pressed }) => [styles.navButton, pressed && mode === 'days' && styles.navPressed, mode !== 'days' && styles.navHidden]}
+            accessibilityRole="button"
             accessibilityLabel="Next year"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.navText}>››</Text>
+            <ChevronsRight />
           </Pressable>
         </View>
       </View>
@@ -207,16 +211,16 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
         <>
           <View style={styles.weekRow}>
             {WEEKDAYS.map((d, i) => (
-              <Text key={`${d}-${i}`} style={styles.weekday}>
-                {d}
-              </Text>
+              <View key={`${d}-${i}`} style={[styles.weekdayCell, { width: cellSize }]}>
+                <Text style={styles.weekday}>{d}</Text>
+              </View>
             ))}
           </View>
 
           <View style={styles.grid}>
             {cells.map((day, idx) => {
               if (day === null) {
-                return <View key={`empty-${idx}`} style={styles.cell} />;
+                return <View key={`empty-${idx}`} style={{ width: cellSize, height: cellSize }} />;
               }
               const cellDate = new Date(viewYear, viewMonth, day);
               const disabled = isOutOfRange(cellDate);
@@ -229,27 +233,25 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
                   disabled={disabled}
                   onPress={() => onChange(toIso(viewYear, viewMonth, day))}
                   style={({ pressed }) => [
-                    styles.cell,
+                    { width: cellSize, height: cellSize, alignItems: 'center', justifyContent: 'center' },
                     pressed && !disabled && styles.cellPressed,
                   ]}
                   accessibilityRole="button"
+                  accessibilityLabel={`${MONTH_NAMES[viewMonth]} ${day} ${viewYear}`}
                   accessibilityState={{ selected: isSelected, disabled }}
                 >
-                  <View
-                    style={[
-                      styles.dayPill,
-                      isToday && styles.dayPillToday,
-                      isSelected && styles.dayPillSelected,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.dayText,
-                        disabled && styles.dayTextDisabled,
-                        isToday && !isSelected && styles.dayTextToday,
-                        isSelected && styles.dayTextSelected,
-                      ]}
-                    >
+                  <View style={[
+                    styles.dayPill,
+                    { width: pillSize, height: pillSize, borderRadius: pillSize / 2 },
+                    isToday && styles.dayPillToday,
+                    isSelected && styles.dayPillSelected,
+                  ]}>
+                    <Text style={[
+                      styles.dayText,
+                      disabled && styles.dayTextDisabled,
+                      isToday && !isSelected && styles.dayTextToday,
+                      isSelected && styles.dayTextSelected,
+                    ]}>
                       {day}
                     </Text>
                   </View>
@@ -271,29 +273,22 @@ export default function CalendarPicker({ value, onChange, maxDate, minDate }: Pr
             return (
               <Pressable
                 key={year}
-                style={({ pressed }) => [
-                  styles.yearCell,
-                  pressed && styles.yearCellPressed,
-                ]}
-                onPress={() => {
-                  setViewYear(year);
-                  setMode('days');
-                }}
+                style={({ pressed }) => [styles.yearCell, pressed && styles.yearCellPressed]}
+                onPress={() => { setViewYear(year); setMode('days'); }}
+                accessibilityRole="button"
+                accessibilityLabel={`Select year ${year}`}
+                accessibilityState={{ selected: isCurrent }}
               >
-                <View
-                  style={[
-                    styles.yearPill,
-                    isThisYear && !isCurrent && styles.yearPillToday,
-                    isCurrent && styles.yearPillSelected,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.yearText,
-                      isThisYear && !isCurrent && styles.yearTextToday,
-                      isCurrent && styles.yearTextSelected,
-                    ]}
-                  >
+                <View style={[
+                  styles.yearPill,
+                  isThisYear && !isCurrent && styles.yearPillToday,
+                  isCurrent && styles.yearPillSelected,
+                ]}>
+                  <Text style={[
+                    styles.yearText,
+                    isThisYear && !isCurrent && styles.yearTextToday,
+                    isCurrent && styles.yearTextSelected,
+                  ]}>
                     {year}
                   </Text>
                 </View>
@@ -315,56 +310,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 16,
   },
 
   headerLabelButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 100,
   },
 
   headerLabelButtonPressed: {
-    backgroundColor: '#eef7f9',
+    backgroundColor: '#f0fafa',
   },
 
   headerLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: 'NotoSans-SemiBold',
+    color: '#151515',
+    letterSpacing: -0.2,
   },
 
   headerLabelCaret: {
     marginLeft: 6,
-    color: '#49A3BD',
-    fontSize: 12,
   },
 
   navGroup: {
     flexDirection: 'row',
+    gap: 4,
   },
 
   navButton: {
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    minWidth: 28,
+    width: 36,
+    height: 36,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
   },
 
   navPressed: {
-    opacity: 0.5,
+    backgroundColor: '#f0fafa',
   },
 
   navHidden: {
     opacity: 0,
-  },
-
-  navText: {
-    fontSize: 18,
-    color: '#49A3BD',
-    fontWeight: '600',
   },
 
   weekRow: {
@@ -372,12 +362,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
+  weekdayCell: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 32,
+  },
+
   weekday: {
-    flex: 1,
-    textAlign: 'center',
     fontSize: 12,
     color: '#888',
-    fontWeight: '600',
+    fontFamily: 'NotoSans-SemiBold',
+    letterSpacing: 0.1,
+    textAlign: 'center',
   },
 
   grid: {
@@ -385,52 +381,43 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
 
-  cell: {
-    width: `${100 / 7}%`,
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   cellPressed: {
     opacity: 0.7,
   },
 
   dayPill: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   dayPillToday: {
-    borderWidth: 1,
-    borderColor: '#49A3BD',
+    borderWidth: 1.5,
+    borderColor: '#5058b4',
   },
 
   dayPillSelected: {
-    backgroundColor: '#49A3BD',
+    backgroundColor: '#5058b4',
     borderWidth: 0,
   },
 
   dayText: {
     fontSize: 14,
-    color: '#333',
+    color: '#151515',
+    fontFamily: 'NotoSans-Regular',
   },
 
   dayTextDisabled: {
-    color: '#ccc',
+    color: 'rgba(0,0,0,0.2)',
   },
 
   dayTextToday: {
-    color: '#49A3BD',
-    fontWeight: '600',
+    color: '#5058b4',
+    fontFamily: 'NotoSans-SemiBold',
   },
 
   dayTextSelected: {
     color: '#ffffff',
-    fontWeight: '600',
+    fontFamily: 'NotoSans-SemiBold',
   },
 
   yearScroll: {
@@ -458,33 +445,34 @@ const styles = StyleSheet.create({
     minWidth: 60,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   yearPillToday: {
-    borderWidth: 1,
-    borderColor: '#49A3BD',
+    borderWidth: 1.5,
+    borderColor: '#5058b4',
   },
 
   yearPillSelected: {
-    backgroundColor: '#49A3BD',
+    backgroundColor: '#5058b4',
     borderWidth: 0,
   },
 
   yearText: {
     fontSize: 14,
-    color: '#333',
+    color: '#151515',
+    fontFamily: 'NotoSans-Regular',
   },
 
   yearTextToday: {
-    color: '#49A3BD',
-    fontWeight: '600',
+    color: '#5058b4',
+    fontFamily: 'NotoSans-SemiBold',
   },
 
   yearTextSelected: {
     color: '#ffffff',
-    fontWeight: '600',
+    fontFamily: 'NotoSans-SemiBold',
   },
 });

@@ -1,19 +1,26 @@
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, CommonActions } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppState } from '../context/AppStateContext';
+
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import userAuthServices from '../src/services/userAuthServices';
+
+import BackArrow from '../components/BackArrow';
 import { useChildProfile } from '../context/ChildProfileContext';
 import CalendarPicker from '../components/CalendarPicker';
 
 export default function Account() {
+    const { logout } = useAppState();
     const navigation = useNavigation<any>();
     const [userName, setUserName] = useState('username');
     const [userEmail, setUserEmail] = useState('username@gmail.com');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const insets = useSafeAreaInsets();
     const [raceEthnicitySummary, setRaceEthnicitySummary] = useState<string>('Not set');
     const [editNameVisible, setEditNameVisible] = useState(false);
     const [nameDraft, setNameDraft] = useState('');
@@ -106,11 +113,20 @@ export default function Account() {
                         const result = await userAuthServices.deleteAccount();
                         setIsDeleting(false);
 
-                        if (result.success) {
-                            Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
-                            navigation.reset({ index: 0, routes: [{ name: 'Launch' }] });
-                            return;
-                        }
+                       if (result.success) {
+    Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
+
+    logout();
+
+  navigation.getParent()?.dispatch(
+  CommonActions.reset({
+    index: 0,
+    routes: [{ name: 'Launch' }],
+  })
+);
+
+    return;
+}
 
                         Alert.alert('Unable to Delete Account', result.error ?? 'Please try again.');
                     },
@@ -120,21 +136,27 @@ export default function Account() {
     };
 
     const handleLogout = async () => {
-        if (isLoggingOut) {
-            return;
-        }
+    if (isLoggingOut) return;
 
-        setIsLoggingOut(true);
-        const result = await userAuthServices.logout();
-        setIsLoggingOut(false);
+    setIsLoggingOut(true);
 
-        if (!result.success) {
-            Alert.alert('Unable to Log Out', result.error ?? 'Please try again.');
-            return;
-        }
+    const result = await userAuthServices.logout();
+    setIsLoggingOut(false);
 
-        navigation.reset({ index: 0, routes: [{ name: 'Launch' }] });
-    };
+    if (!result.success) {
+        Alert.alert('Unable to Log Out', result.error ?? 'Please try again.');
+        return;
+    }
+
+    logout();
+
+navigation.getParent()?.dispatch(
+  CommonActions.reset({
+    index: 0,
+    routes: [{ name: 'Launch' }],
+  })
+);
+};
 
     useEffect(() => {
     const auth = getAuth();
@@ -156,18 +178,11 @@ export default function Account() {
                 style={styles.gradient}
             />
             {/* Header */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-            </View>
+           <BackArrow />
+           <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Account</Text>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Account Section */}
-                <Text style={styles.sectionTitle}>Account</Text>
+               
 
                 <View style={styles.section}>
                     {/* Username */}
@@ -371,10 +386,7 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
     },
 
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
+
 
     backButton: {
         width: 40,
@@ -468,6 +480,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#e74c3c',
     },
+
+    title: {
+        fontSize: 24,
+        fontFamily: 'NotoSans-Bold',
+        color: '#1f2a2f',
+        paddingHorizontal: 24,
+        paddingBottom: 16,
+        letterSpacing: -0.5,
+    },
+
 
     editNameRoot: {
         flex: 1,

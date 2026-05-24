@@ -1,23 +1,34 @@
-import {View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView} from 'react-native';
+import {View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, Pressable} from 'react-native';
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useWindowDimensions } from 'react-native';
 
-import PrimaryBlueButton from '../components/PrimaryBlueButton';
-import SelectedProfilePicture from '../components/SelectedProfilePic';
-import ProfilePicture from '../components/ProfilePicture';
 import HomeBg from '../components/HomeBg';
+import OnboardingLayout from '../components/OnboardingLayout';
+
+import { auth } from '../src/config/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { useProfile } from '../context/ProfileContext';
+import { useAppState } from '../context/AppStateContext';
+
+const AVATARS = [
+  { id: '1', label: '' },
+  { id: '2', label: '' },
+  { id: '3', label: '' },
+  { id: '4', label: '' },
+  { id: '5', label: '' },
+  { id: '6', label: '' },
+];
 
 export default function PickProfile() {
+  const { completeOnboarding } = useAppState();
+  const { setProfileComplete } = useProfile();
   const navigation = useNavigation<any>();
-  const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
-
-  const isSmallDevice = height < 700;
+  const { width } = useWindowDimensions();
 
   const [dob, setDob] = useState('');
   const [childName, setChildName] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const isFormValid = childName.trim().length > 0 && dob.length === 10;
 
@@ -26,67 +37,82 @@ export default function PickProfile() {
     if (cleaned.length <= 2) return cleaned;
     if (cleaned.length <= 4) return `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
     return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
-
-    
   };
+
+  const handleContinue = async () => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    setProfileComplete(true);
+    completeOnboarding();
+  };
+
+  const avatarSize = (width - 60 - 16) / 2;
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1 }}>
 
-        {/* Background */}
         <View style={styles.formatBg} pointerEvents="none">
           <HomeBg />
         </View>
 
-        {/* Scrollable content */}
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            {
-              paddingTop: insets.top + (isSmallDevice ? 16 : 24),
-              paddingBottom: insets.bottom + 24,
-            },
-          ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+        <OnboardingLayout
+          step={5}
+          totalSteps={5}
+          onBack={() => navigation.goBack()}
+          onNext={handleContinue}
+          canProceed={!!selectedId}
+          nextLabel="Continue"
         >
-          <View style={styles.container}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.container}>
 
-            {/* Title */}
-            <View style={styles.titleContainer}>
-              <Text style={[styles.titleStyle, isSmallDevice && { fontSize: 24 }]}>
-               Profile Picture
-              </Text>
-              <Text style={[styles.subtitleStyle, isSmallDevice && { fontSize: 14 }]}>
-                Pick a profile picture for your child.
-              </Text>
+              <View style={styles.titleContainer}>
+                <Text style={styles.titleStyle}>Select Your Avatar</Text>
+                <Text style={styles.subtitleStyle}>
+                  Pick a profile picture for your child.
+                </Text>
+              </View>
+
+              <View style={styles.grid}>
+                {AVATARS.map((avatar) => {
+                  const isSelected = selectedId === avatar.id;
+                  return (
+                    <Pressable
+                      key={avatar.id}
+                      onPress={() => setSelectedId(avatar.id)}
+                      accessibilityRole="radio"
+                      accessibilityLabel={`${avatar.label} avatar`}
+                      accessibilityState={{ checked: isSelected }}
+                      hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                      style={styles.avatarWrapper}
+                    >
+                      <View style={[
+                        styles.avatarCircle,
+                        { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 },
+                        isSelected && styles.avatarCircleSelected,
+                      ]}>
+                        <View style={[
+                          styles.avatarPlaceholder,
+                          { width: avatarSize - 8, height: avatarSize - 8, borderRadius: (avatarSize - 8) / 2 },
+                          isSelected && styles.avatarPlaceholderSelected,
+                        ]} />
+                      </View>
+                      <Text style={[styles.avatarLabel, isSelected && styles.avatarLabelSelected]}>
+                        {avatar.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
             </View>
+          </ScrollView>
+        </OnboardingLayout>
 
-            <View style = {styles.selectedProfileContainer}>
-              <SelectedProfilePicture />
-            </View>
-
-            <View style = {styles.row}>
-              <ProfilePicture />
-              <ProfilePicture />
-              <ProfilePicture />
-            </View>
-
-            <View style ={styles.row}>
-              <ProfilePicture />
-              <ProfilePicture />
-              <ProfilePicture />
-            </View>
-
-            <View style={styles.buttonContainer}>
-              <PrimaryBlueButton onPress={() => navigation.replace('MainTabs')}>
-                  Continue
-              </PrimaryBlueButton>
-            </View>
-
-          </View>
-        </ScrollView>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -104,46 +130,82 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 24,
   },
 
   container: {
     flex: 1,
-    paddingHorizontal: 28,
-    gap: 4,
+    gap: 28,
   },
 
   titleContainer: {
     gap: 6,
-    marginBottom: 40,
   },
 
   titleStyle: {
     fontSize: 22,
     color: '#151515',
     fontFamily: 'NotoSans-SemiBold',
+    letterSpacing: -0.2,
   },
 
   subtitleStyle: {
     fontSize: 15,
     color: '#2E3332',
     fontFamily: 'NotoSans-Regular',
-    lineHeight: 22,
+    lineHeight: 21,
+    letterSpacing: 0.1,
   },
 
-  row: {
+  grid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
     justifyContent: 'space-between',
-    marginBottom: 24,
   },
 
-  selectedProfileContainer: {
-    flexDirection: 'row',
+  avatarWrapper: {
+    width: '47%',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  avatarCircle: {
+    backgroundColor: '#eae9fa',
+    borderWidth: 3,
+    borderColor: 'transparent',
     justifyContent: 'center',
-    marginBottom: 12,
+    alignItems: 'center',
+    shadowColor: '#1a1a1a',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 4,
   },
 
-  buttonContainer: {
-    marginTop: 100
-  }
+  avatarCircleSelected: {
+    borderColor: '#5058b4',
+    backgroundColor: '#f9fdfd',
+  },
 
+  avatarPlaceholder: {
+    backgroundColor: '#fdfdfd',
+  },
+
+  avatarPlaceholderSelected: {
+    backgroundColor: '#ffffff',
+  },
+
+  avatarLabel: {
+    fontSize: 13,
+    fontFamily: 'NotoSans-Regular',
+    color: '#2E3332',
+    textAlign: 'center',
+    letterSpacing: 0.1,
+  },
+
+  avatarLabelSelected: {
+    color: '#5058b4',
+    fontFamily: 'NotoSans-SemiBold',
+  },
 });

@@ -1,19 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { View, FlatList, StyleSheet, useWindowDimensions, Animated, ViewToken } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import LaunchSlides from './LaunchSlides';
 import LaunchItems from './LaunchItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
-import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
+import SkipButton from '../components/SkipButton';
 import HomeBg from '../components/HomeBg';
-
+import OnboardingBack from '../components/OnboardingBack';
+import NextButton from '../components/NextButton';
 
 export default function Launch() {
   const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const insets = useSafeAreaInsets();
 
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef<FlatList>(null);
@@ -28,51 +31,74 @@ export default function Launch() {
 
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
-  return (
+  const isLast = currentIndex === LaunchSlides.length - 1;
 
+  const handleNext = () => {
+    if (isLast) {
+      navigation.navigate('Welcome');
+    } else {
+      slidesRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+    }
+  };
+
+  const handleBack = () => {
+    slidesRef.current?.scrollToIndex({ index: currentIndex - 1, animated: true });
+  };
+
+  const handleSkip = () => {
+    navigation.navigate('Welcome');
+  };
+
+  return (
     <View style={styles.container}>
 
-
-      <View style={styles.formatBg}>
-              <HomeBg />
+      <View style={styles.formatBg} pointerEvents="none">
+        <HomeBg />
       </View>
 
-
-
       <View style={styles.container}>
-        <View style={{ flex: 3 }}>
-          <FlatList
-            data={LaunchSlides}
-            renderItem={({ item }) => <LaunchItems item={item} />}
-            keyExtractor={(item) => item.id}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            style={{ width }}
-            bounces={false}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
-            )}
-            scrollEventThrottle={32}
-            onViewableItemsChanged={viewableItemsChanged}
-            viewabilityConfig={viewConfig}
-            ref={slidesRef}
-          />
-        </View>
+        <FlatList
+          data={LaunchSlides}
+          renderItem={({ item }) => <LaunchItems item={item} />}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          style={{ flex: 1, width }}
+          bounces={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+          onViewableItemsChanged={viewableItemsChanged}
+          viewabilityConfig={viewConfig}
+          ref={slidesRef}
+        />
 
-        <Paginator data={LaunchSlides} scrollX={scrollX} />
+        {isLast && (
+          <View style={[styles.backArrowWrapper, { top: insets.top }]}>
+            <OnboardingBack onPress={handleBack} />
+          </View>
+        )}
 
-
-        <View style={styles.buttonWrapper}>
-          <PrimaryBlueButton onPress={() => navigation.navigate('Signup')}>Create Account</PrimaryBlueButton>
-          <PrimaryWhiteButton onPress={() => navigation.navigate('Login')}>Login</PrimaryWhiteButton>
+        <View style={[styles.bottomRow, { paddingBottom: insets.bottom + 16 }]}>
+          {isLast ? (
+            <View style={styles.lastRow}>
+              <PrimaryBlueButton onPress={handleNext} fullWidth>Let's begin</PrimaryBlueButton>
+            </View>
+          ) : (
+            <View style={styles.navRow}>
+              <SkipButton onPress={handleSkip} label="Skip" />
+              <Paginator data={LaunchSlides} scrollX={scrollX} />
+              <NextButton onPress={handleNext} />
+            </View>
+          )}
         </View>
       </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -84,14 +110,36 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 0
+    zIndex: 0,
   },
 
-  buttonWrapper: {
+  bottomRow: {
     width: '100%',
-    paddingHorizontal: 28,   
-    marginBottom: 50,        
+    paddingHorizontal: 20,
     marginTop: 12,
-    gap: 20         
-  }
+    flexShrink: 0,
+  },
+
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  startButton: {
+    flex: 1,
+    marginLeft: 16,
+  },
+
+  backArrowWrapper: {
+    position: 'absolute',
+    left: 8,
+    zIndex: 100,
+  },
+
+  lastRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

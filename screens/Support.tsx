@@ -1,9 +1,12 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import BackArrow from '../components/BackArrow';
 
 export default function Support() {
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
 
     return (
         <View style={styles.container}>
@@ -14,18 +17,11 @@ export default function Support() {
                 style={styles.gradient}
             />
             
-            {/* Header */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-            </View>
+           
+                <BackArrow/>
 
             {/* Title */}
-            <Text style={styles.title}>Support</Text>
+            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Support</Text>
 
             {/* Support Options */}
             <View style={styles.section}>
@@ -70,11 +66,10 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#333',
         paddingHorizontal: 25,
-        paddingTop: 20,
         paddingBottom: 12,
     },
 

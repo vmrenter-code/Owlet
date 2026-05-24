@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Svg, Path, Circle, Rect } from 'react-native-svg';
+import BackArrow from '../components/BackArrow';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Icons
 const DocumentIcon = () => (
@@ -61,7 +63,7 @@ const getIcon = (type: string) => {
 
 export default function NotificationCenter() {
     const navigation = useNavigation<any>();
-
+    const insets = useSafeAreaInsets();
     const renderNotification = (item: any) => (
         <Pressable 
             key={item.id} 
@@ -82,59 +84,9 @@ export default function NotificationCenter() {
                 style={styles.gradient}
             />
             
-            {/* Header */}
-            <View style={styles.header}>
-                <Pressable 
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
-
-                <View style={styles.headerIcons}>
-                    {/* Chat icon */}
-                    <Svg width={24} height={24} viewBox="0 0 27 27" fill="none">
-                        <Path
-                            d="M4 5c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H8l-4 3V5z"
-                            stroke="#151515"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                        <Circle cx={8} cy={10} r={1.2} fill="#151515" />
-                        <Circle cx={12} cy={10} r={1.2} fill="#151515" />
-                        <Circle cx={16} cy={10} r={1.2} fill="#151515" />
-                    </Svg>
-
-                    {/* Bell icon */}
-                    <Svg width={24} height={24} viewBox="0 0 30 30" fill="none">
-                        <Path
-                            d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-                            stroke="#151515"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </Svg>
-
-                    {/* Settings icon */}
-                    <Pressable onPress={() => navigation.navigate('Settings')}>
-                        <Svg width={24} height={24} viewBox="0 0 29 29" fill="none">
-                            <Path
-                                d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z
-                                   M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.07 7.07 0 0 0-1.7-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65c-.63.26-1.21.59-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.49.39 1.07.72 1.7.98l.38 2.65c.06.25.26.42.5.42h4c.24 0 .44-.17.5-.42l.38-2.65c.63-.26 1.21-.59 1.7-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65z"
-                                stroke="#151515"
-                                strokeWidth={2}
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </Svg>
-                    </Pressable>
-                </View>
-            </View>
-
-            {/* Title */}
-            <Text style={styles.title}>Notifications</Text>
+            <BackArrow />
+            
+            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Notifications</Text>
 
             <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
                 {/* Today Section */}
@@ -187,12 +139,11 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 22,
+        fontSize: 28,
         fontWeight: 'bold',
         color: '#333',
         paddingHorizontal: 25,
-        paddingTop: 20,
-        paddingBottom: 16,
+        paddingBottom: 20,
     },
 
     scrollView: {

@@ -1,8 +1,3 @@
-// possible needd future update for native ios and android support
-//current react native support via typescript limits features, as well
-//as it increase latency by nearly 5x. not noticeable for most users, but something to keep in mind
-//import { BleManager, Device } from 'react-native-ble-plx';
-//import { Platform, PermissionsAndroid } from 'react-native';
 import { useState, useEffect } from 'react';
 import { BleManager, Device } from 'react-native-ble-plx';
 import { Platform, PermissionsAndroid } from 'react-native';
@@ -14,6 +9,7 @@ const manager = new BleManager();
 
 export function usePolarH9() {
   const [heartRate, setHeartRate] = useState<number | null>(null);
+  const [rrInterval, setRrInterval] = useState<number | null>(null);
   const [connected, setConnected] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +36,6 @@ export function usePolarH9() {
         return;
       }
 
-      // Look for Polar H9
       if (device?.name?.includes('Polar H9') || device?.name?.includes('H9')) {
         manager.stopDeviceScan();
         setScanning(false);
@@ -49,7 +44,6 @@ export function usePolarH9() {
           .then(d => d.discoverAllServicesAndCharacteristics())
           .then(d => {
             setConnected(true);
-            // Start reading heart rate
             d.monitorCharacteristicForService(
               HEART_RATE_SERVICE,
               HEART_RATE_CHARACTERISTIC,
@@ -60,8 +54,26 @@ export function usePolarH9() {
                 }
                 if (characteristic?.value) {
                   const raw = atob(characteristic.value);
-                  const hr = raw.charCodeAt(1); // Heart rate BPM
+                  const bytes = Array.from(raw).map(c => c.charCodeAt(0));
+                  
+                  const flags = bytes[0];
+                  const hr16bit = flags & 0x01;
+                  
+                  // Parse BPM
+                  const hr = hr16bit ? (bytes[2] << 8) | bytes[1] : bytes[1];
                   setHeartRate(hr);
+
+                  // Parse RR intervals (bit 4 of flags indicates RR present)
+                  const rrPresent = (flags & 0x10) !== 0;
+                  if (rrPresent) {
+                    const rrOffset = hr16bit ? 3 : 2;
+                    // Each RR is 2 bytes, in units of 1/1024 seconds
+                    for (let i = rrOffset; i + 1 < bytes.length; i += 2) {
+                      const rrRaw = (bytes[i + 1] << 8) | bytes[i];
+                      const rrMs = Math.round((rrRaw / 1024) * 1000);
+                      setRrInterval(rrMs);
+                    }
+                  }
                 }
               }
             );
@@ -73,7 +85,6 @@ export function usePolarH9() {
       }
     });
 
-    // Stop scanning after 10 seconds if no device found
     setTimeout(() => {
       manager.stopDeviceScan();
       setScanning(false);
@@ -84,6 +95,7 @@ export function usePolarH9() {
     manager.stopDeviceScan();
     setConnected(false);
     setHeartRate(null);
+    setRrInterval(null);
   };
 
   useEffect(() => {
@@ -93,5 +105,5 @@ export function usePolarH9() {
     };
   }, []);
 
-  return { heartRate, connected, scanning, error, connectToH9, disconnect };
+  return { heartRate, rrInterval, connected, scanning, error, connectToH9, disconnect };
 }

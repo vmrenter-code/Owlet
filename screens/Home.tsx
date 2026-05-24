@@ -1,5 +1,6 @@
-import { View, StyleSheet, Text, ScrollView, Pressable } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeBg from '../components/HomeBg';
 import Modal from '../components/Modal';
@@ -16,6 +17,7 @@ export default function Home() {
   const navigation = useNavigation<any>();
   const { activeChildId, activeChild, birthDates, openSwitcher } = useChildProfile();
   const activeAge = formatChildAge(birthDates[activeChildId]);
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.container}>
@@ -26,7 +28,7 @@ export default function Home() {
 
       <ScrollView
         style={styles.bgContainer}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 80 }]}
         showsVerticalScrollIndicator={false}
       >
 
@@ -37,6 +39,7 @@ export default function Home() {
             onPress={openSwitcher}
             accessibilityRole="button"
             accessibilityLabel={`Switch child profile, currently ${activeChild.name}`}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <ProfileContainer>
               <ChildProfileAvatar childId={activeChildId} size={34} />
@@ -46,7 +49,16 @@ export default function Home() {
                 <Text style={styles.profileChildName} numberOfLines={1}>
                   {activeChild.name}
                 </Text>
-                <Text style={styles.profileChevron}>▾</Text>
+                <Svg width={16} height={16} viewBox="0 0 24 24" style={styles.profileChevronIcon}>
+                  <Path
+                    d="M6 9l6 6 6-6"
+                    stroke="#49A3BD"
+                    strokeWidth={2.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </Svg>
               </View>
               {activeAge ? (
                 <Text style={styles.profileChildMeta}>{activeAge}</Text>
@@ -57,21 +69,32 @@ export default function Home() {
           </Pressable>
 
           <View style={styles.iconContainer}>
-            <Svg width={24} height={24} viewBox="0 0 27 27" fill="none">
-              <Path
-                d="M4 5c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H8l-4 3V5z"
-                stroke="#151515"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <Circle cx={8} cy={10} r={1.2} fill="#151515" />
-              <Circle cx={12} cy={10} r={1.2} fill="#151515" />
-              <Circle cx={16} cy={10} r={1.2} fill="#151515" />
-            </Svg>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Messages"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+                <Path
+                  d="M4 5c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H8l-4 3V5z"
+                  stroke="#151515"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <Circle cx={8} cy={10} r={1.2} fill="#151515" />
+                <Circle cx={12} cy={10} r={1.2} fill="#151515" />
+                <Circle cx={16} cy={10} r={1.2} fill="#151515" />
+              </Svg>
+            </Pressable>
 
-            <Pressable onPress={() => navigation.navigate('NotificationCenter')}>
-              <Svg width={24} height={24} viewBox="0 0 30 30" fill="none">
+            <Pressable
+              onPress={() => navigation.navigate('NotificationCenter')}
+              accessibilityRole="button"
+              accessibilityLabel="Notifications"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
                 <Path
                   d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
                   stroke="#151515"
@@ -82,8 +105,13 @@ export default function Home() {
               </Svg>
             </Pressable>
 
-            <Pressable onPress={() => navigation.navigate('Settings')}>
-              <Svg width={24} height={24} viewBox="0 0 29 29" fill="none">
+            <Pressable
+              onPress={() => navigation.navigate('Settings')}
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
                 <Path
                   d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.07 7.07 0 0 0-1.7-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65c-.63.26-1.21.59-1.7.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.49.39 1.07.72 1.7.98l.38 2.65c.06.25.26.42.5.42h4c.24 0 .44-.17.5-.42l.38-2.65c.63-.26 1.21-.59 1.7-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65z"
                   stroke="#151515"
@@ -103,26 +131,25 @@ export default function Home() {
             <BeginCard childName={activeChild.name} />
           </View>
 
-          <Pressable style={styles.row} onPress={() => navigation.navigate('PastScreenings')}>
-            <Text style={styles.headerStyle}>Recent History</Text>
-            <View style={styles.chevronWrapper}>
-              <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
-                <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#0b0c0c" />
-              </Svg>
-            </View>
-          </Pressable>
+         <View style={styles.row}>
+  <Text style={styles.headerStyle}>Recent History</Text>
+  <View style={styles.chevronWrapper}>
+    <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
+      <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#161B1A" />
+    </Svg>
+  </View>
+</View>
 
-          <Pressable onPress={() => navigation.navigate('PastScreenings')}>
-            <View style={styles.cardContainer}>
-              <Card />
-            </View>
-          </Pressable>
+  <View style={styles.cardContainer}>
+    <Card  onPress={() => navigation.navigate('History')}
+/>
+  </View>
 
           <View style={styles.row}>
             <Text style={styles.headerStyle}>Learn More</Text>
             <View style={styles.chevronWrapper}>
               <Svg height={24} width={24} viewBox="0 -960 960 960" fill="none">
-                <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#0d0e0d" />
+                <Path d="M380-720 620-480 380-240 340-280 540-480 340-680Z" fill="#161B1A" />
               </Svg>
             </View>
           </View>
@@ -172,7 +199,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 38
   },
 
   formatBg: {
@@ -190,26 +216,25 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 80,
   },
 
   heroContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 12,
+    marginBottom: 8,
   },
 
   iconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
   },
 
   headerStyle: {
-    fontSize: 20,
-    marginBottom: 12,
-    letterSpacing: -0.2,
+    fontSize: 18,
+    letterSpacing: 0,
     fontWeight: '600',
     color: '#161B1A',
     fontFamily: 'NotoSans-SemiBold',
@@ -217,25 +242,23 @@ const styles = StyleSheet.create({
 
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     width: '100%',
-    gap: 8,
+    marginBottom: 12,
+    marginTop: 6,
   },
 
   chevronWrapper: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
   },
 
   cardContainer: {
-    marginTop: 12,
-    zIndex: 20,
     marginBottom: 22,
   },
 
   toolContainer: {
-    marginTop: 12,
     marginBottom: 16,
     flexDirection: 'row',
     gap: 12,
@@ -271,27 +294,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexShrink: 1,
+    gap: 4,
   },
 
   profileChildName: {
-    fontSize: 22,
+    fontSize: 20,
     color: '#151515',
     fontFamily: 'NotoSans-SemiBold',
-    lineHeight: 26,
+    lineHeight: 28,
     letterSpacing: -0.2,
     flexShrink: 1,
   },
 
+  profileChevronIcon: {
+    marginTop: 2,
+  },
+
   profileChildMeta: {
-    fontSize: 14,
-    color: '#2E3332',
+    fontSize: 13,
+    color: '#888',
     fontFamily: 'NotoSans-Regular',
     marginTop: 2,
   },
 
   profileChildMetaMuted: {
-    fontSize: 14,
-    color: '#9aa3a3',
+    fontSize: 13,
+    color: '#bbb',
     fontFamily: 'NotoSans-Regular',
     fontStyle: 'italic',
     marginTop: 2,
@@ -306,16 +334,14 @@ const styles = StyleSheet.create({
 
   toolText: {
     color: '#161B1A',
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'NotoSans-SemiBold',
-    letterSpacing: -0.2,
-    marginBottom: 4,
-    marginTop: 8,
+    letterSpacing: -0.1,
   },
 
   toolSubText: {
     color: '#2E3332',
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'NotoSans-Regular',
     lineHeight: 18,
   },
