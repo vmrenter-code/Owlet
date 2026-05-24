@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert, Pressable, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import userAuthServices from '../src/services/userAuthServices';
 import { useRef, useState } from 'react';
@@ -234,7 +234,6 @@ export default function Signup() {
     };
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={{ flex: 1 }}>
                 <View style={styles.formatBg} pointerEvents="none">
                     <HomeBg />
@@ -450,7 +449,6 @@ export default function Signup() {
                     </View>
                 </View>
             </View>
-        </TouchableWithoutFeedback>
     );
 }
 

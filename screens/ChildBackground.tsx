@@ -123,7 +123,6 @@ export default function ChildBackground() {
 };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1 }}>
         <OnboardingLayout
           step={3}
@@ -132,7 +131,6 @@ export default function ChildBackground() {
           onNext={handleNext}
           canProceed={true}
         >
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <View style={styles.stepContent}>
               <View style={styles.titleContainer}>
                 <Text style={styles.titleStyle}>Personal details</Text>
@@ -164,10 +162,8 @@ export default function ChildBackground() {
 </View>
               </View>
             </View>
-          </ScrollView>
         </OnboardingLayout>
       </View>
-    </TouchableWithoutFeedback>
   );
 }
 

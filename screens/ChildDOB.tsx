@@ -1,36 +1,30 @@
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useMemo, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import OnboardingLayout from '../components/OnboardingLayout';
+import CalendarPicker from '../components/CalendarPicker';
+
+function formatDisplayDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+}
 
 export default function ChildDOB() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { childName } = route.params ?? {};
 
-  const [dob, setDob] = useState('');
-  const [dobDate, setDobDate] = useState<Date | null>(null);
-  const [showPicker, setShowPicker] = useState(false);
+  const [dobIso, setDobIso] = useState<string | null>(null);
 
-  const formatDate = (date: Date) => {
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    const y = date.getFullYear();
-    return `${m}/${d}/${y}`;
-  };
-
-  const handleChange = (_event: any, selectedDate?: Date) => {
-    setShowPicker(false);
-
-    if (selectedDate) {
-      setDobDate(selectedDate);
-      setDob(formatDate(selectedDate));
-    }
-  };
+  const defaultViewDate = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 2);
+    return d;
+  }, []);
 
   const handleNext = () => {
-    navigation.navigate('ChildBackground', { childName, dob });
+    if (!dobIso) return;
+    navigation.navigate('ChildBackground', { childName, dob: formatDisplayDate(dobIso) });
   };
 
   return (
@@ -40,11 +34,9 @@ export default function ChildDOB() {
         totalSteps={5}
         onBack={() => navigation.goBack()}
         onNext={handleNext}
-        canProceed={!!dob}
+        canProceed={!!dobIso}
       >
-        <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.stepContent}>
-
             <View style={styles.titleContainer}>
               <Text style={styles.titleStyle}>When were they born?</Text>
               <Text style={styles.subtitleStyle}>
@@ -52,31 +44,21 @@ export default function ChildDOB() {
               </Text>
             </View>
 
-            {/* Trigger field */}
-            <Pressable
-              onPress={() => setShowPicker(true)}
-              style={styles.inputBox}
-            >
-              <Text style={[styles.inputText, !dob && styles.placeholder]}>
-                {dob || 'Select date of birth'}
-              </Text>
-            </Pressable>
+            {dobIso ? (
+              <View style={styles.selectedDateBadge}>
+                <Text style={styles.selectedDateText}>{formatDisplayDate(dobIso)}</Text>
+              </View>
+            ) : null}
 
-            {/* Native picker */}
-            {showPicker && (
-              <DateTimePicker
-                value={dobDate || new Date()}
-                mode="date"
-                display="spinner"
-                maximumDate={new Date()}
-                onChange={handleChange}
+            <View style={styles.calendarWrapper}>
+              <CalendarPicker
+                value={dobIso}
+                maxDate={new Date()}
+                defaultViewDate={defaultViewDate}
+                onChange={setDobIso}
               />
-            )}
-
-           
-
+            </View>
           </View>
-        </ScrollView>
       </OnboardingLayout>
     </View>
   );
@@ -86,19 +68,16 @@ const styles = StyleSheet.create({
   stepContent: {
     gap: 20,
   },
-
   titleContainer: {
     gap: 6,
     marginBottom: 8,
   },
-
   titleStyle: {
     fontSize: 22,
     color: '#151515',
     fontFamily: 'NotoSans-SemiBold',
     letterSpacing: -0.2,
   },
-
   subtitleStyle: {
     fontSize: 15,
     color: '#2E3332',
@@ -106,7 +85,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     letterSpacing: 0.1,
   },
-
   calendarWrapper: {
     backgroundColor: '#ffffff',
     borderRadius: 20,
@@ -117,7 +95,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-
   selectedDateBadge: {
     alignSelf: 'center',
     backgroundColor: '#f3f0fa',
@@ -127,30 +104,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
-
   selectedDateText: {
     fontSize: 13,
     fontFamily: 'NotoSans-SemiBold',
     color: '#5058b4',
     letterSpacing: 0.1,
   },
-
-  inputBox: {
-  backgroundColor: '#fff',
-  borderRadius: 100,
-  paddingVertical: 16,
-  paddingHorizontal: 20,
-  borderWidth: 1,
-  borderColor: 'rgba(0,0,0,0.1)',
-},
-
-inputText: {
-  fontSize: 15,
-  fontFamily: 'NotoSans-Regular',
-  color: '#151515',
-},
-
-placeholder: {
-  color: '#aaa',
-},
 });

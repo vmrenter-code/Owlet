@@ -1,8 +1,16 @@
 import React, {createContext, useContext, useState, ReactNode,} from 'react';
 
+/** Set to false to restore Launch → login → onboarding. */
+const DEV_START_AT_HOME = false;
+
 type AppUser = {
   uid: string;
   hasCompletedOnboarding: boolean;
+};
+
+const DEV_HOME_USER: AppUser = {
+  uid: 'dev-local',
+  hasCompletedOnboarding: true,
 };
 
 type AppStateContextType = {
@@ -20,7 +28,9 @@ export function AppStateProvider({
 }: {
   children: ReactNode;
 }) {
-  const [user, setUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<AppUser | null>(
+    DEV_START_AT_HOME ? DEV_HOME_USER : null
+  );
 
   const loginUser = (completed = true) => {
     setUser({
