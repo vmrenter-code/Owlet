@@ -80,6 +80,25 @@ export default function VideoScreen() {
         return () => clearInterval(interval);
     }, [connected]);
 
+    const loadMockHeartRateData = () => {
+        const mockHeartRateLog = [
+            { time: 0, bpm: 122 },
+            { time: 1, bpm: 121 },
+            { time: 2, bpm: 119 },
+            { time: 3, bpm: 120 },
+            { time: 4, bpm: 118 },
+        ];
+        const mockRrLog = [812, 798, 805, 790, 796, 802];
+
+        heartRateLogRef.current = mockHeartRateLog;
+        rrLogRef.current = mockRrLog;
+
+        console.log('Mock heart-rate data loaded:', {
+            heartRateCount: mockHeartRateLog.length,
+            rrCount: mockRrLog.length,
+        });
+    };
+
     useEffect(() => {
         return () => {
             if (videoRef.current) {
@@ -422,6 +441,14 @@ export default function VideoScreen() {
                         {videoNumber < totalVideos ? 'Skip →' : 'Finish →'}
                     </Text>
                 </Pressable>
+                {__DEV__ && (
+                    <Pressable
+                        style={({ pressed }) => [styles.mockButton, pressed && styles.buttonPressed]}
+                        onPress={loadMockHeartRateData}
+                    >
+                        <Text style={styles.mockButtonText}>Load Mock HR Data</Text>
+                    </Pressable>
+                )}
                 <View style={styles.videoPlaceholder}>
                     <Text style={styles.videoPlaceholderText}>
                         Video {currentVideoNumber} of {totalVideos}
@@ -506,6 +533,8 @@ const styles = StyleSheet.create({
     skipButtonContainer: { position: 'absolute', bottom: 100, right: 20, zIndex: 10 },
     skipButton: { backgroundColor: 'rgba(255, 255, 255, 0.3)', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20 },
     skipButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+    mockButton: { marginTop: 10, backgroundColor: 'rgba(95, 212, 212, 0.9)', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, alignSelf: 'flex-end' },
+    mockButtonText: { color: '#14313a', fontSize: 13, fontWeight: '700' },
     buttonContainer: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 50, paddingBottom: 80, zIndex: 10 },
     nextButton: { backgroundColor: '#f0a090', paddingVertical: 15, borderRadius: 30, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 },
     buttonPressed: { backgroundColor: '#e8958a', transform: [{ scale: 0.98 }] },
