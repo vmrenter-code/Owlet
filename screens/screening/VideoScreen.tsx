@@ -751,13 +751,13 @@ const styles = StyleSheet.create({
     },
 
     progressDotActive: {
-        backgroundColor: '#5fd4d4',
+        backgroundColor: '#5058b4',
         borderWidth: 3,
         borderColor: '#ffffff',
     },
 
     progressDotComplete: {
-        backgroundColor: '#5fd4d4',
+        backgroundColor: '#5058b4',
     },
 
     progressDotPending: {
@@ -774,12 +774,12 @@ const styles = StyleSheet.create({
     },
 
     progressLineComplete: {
-        backgroundColor: '#5fd4d4',
+        backgroundColor: '#5058b4',
     },
 
     progressNumber: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: 13,
+        fontFamily: 'NotoSans-SemiBold',
     },
 
     progressNumberActive: {
@@ -857,8 +857,9 @@ skipIcon: {
     },
 
     videoStatusText: {
-        color: '#5fd4d4',
-        fontSize: 18,
+        color: '#5058b4',
+        fontSize: 16,
+        fontFamily: 'NotoSans-SemiBold',
     },
 
     skipButtonContainer: {
@@ -871,8 +872,8 @@ skipIcon: {
 
     skipButtonText: {
         color: '#ffffff',
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 14,
+        fontFamily: 'NotoSans-SemiBold',
     },
 
     buttonContainer: {
@@ -885,28 +886,24 @@ skipIcon: {
     },
 
     nextButton: {
-        backgroundColor: '#f0a090',
-        paddingVertical: 10,
-        paddingHorizontal: 36,
-        borderRadius: 22,
+        backgroundColor: '#5058b4',
+        paddingVertical: 14,
+        paddingHorizontal: 40,
+        borderRadius: 100,
         alignItems: 'center',
-        minWidth: 140,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+        minWidth: 160,
     },
 
     buttonPressed: {
-        backgroundColor: '#e8958a',
+        opacity: 0.85,
         transform: [{ scale: 0.98 }],
     },
 
     buttonText: {
         color: '#ffffff',
         fontSize: 15,
-        fontWeight: '600',
+        fontFamily: 'NotoSans-SemiBold',
+        letterSpacing: 0.1,
     },
 
     exitButton: {
@@ -937,60 +934,62 @@ skipIcon: {
     },
 
     modalTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#333',
-        marginBottom: 12,
+        fontSize: 18,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        marginBottom: 10,
+        letterSpacing: -0.2,
     },
 
     modalMessage: {
-        fontSize: 16,
+        fontSize: 15,
+        fontFamily: 'NotoSans-Regular',
         color: '#555',
         textAlign: 'center',
-        marginBottom: 12,
+        marginBottom: 10,
         lineHeight: 22,
     },
 
     modalNote: {
-        fontSize: 14,
-        color: '#7FB8C4',
+        fontSize: 13,
+        fontFamily: 'NotoSans-Regular',
+        color: '#888',
         textAlign: 'center',
         marginBottom: 24,
-        lineHeight: 20,
-        fontStyle: 'italic',
+        lineHeight: 19,
     },
 
     modalButtons: {
         flexDirection: 'row',
-        gap: 12,
+        gap: 10,
         width: '100%',
     },
 
     cancelButton: {
         flex: 1,
         paddingVertical: 14,
-        borderRadius: 12,
-        backgroundColor: '#f0f0f0',
+        borderRadius: 100,
+        backgroundColor: 'rgba(0,0,0,0.06)',
         alignItems: 'center',
     },
 
     cancelButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#666',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#555',
     },
 
     exitConfirmButton: {
         flex: 1,
         paddingVertical: 14,
-        borderRadius: 12,
-        backgroundColor: '#e74c3c',
+        borderRadius: 100,
+        backgroundColor: '#5058b4',
         alignItems: 'center',
     },
 
     exitConfirmButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
         color: '#ffffff',
     },
 
