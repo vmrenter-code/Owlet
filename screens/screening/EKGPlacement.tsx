@@ -1,218 +1,240 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Svg, Path } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import HomeBg from '../../components/HomeBg';
+import ImageCard from '../../components/ImageCard';
+import PrimaryBlueButton from '../../components/PrimaryBlueButton';
 import { useScreening } from '../../context/ScreeningContext';
-
-
-const PlayIcon = () => (
-    <Svg width={50} height={50} viewBox="0 0 24 24" fill="none">
-        <Path 
-            d="M8 5v14l11-7L8 5z" 
-            fill="#d0d0d0"
-        />
-    </Svg>
-);
 
 export default function EKGPlacement() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
+    const insets = useSafeAreaInsets();
     const { heartRate, connected, scanning, error, connectToH9, screeningId: contextScreeningId } = useScreening();
     const screeningId = contextScreeningId ?? route.params?.screeningId;
 
-    const goToPositionChild = () => {
-        navigation.navigate('PositionChild', { screeningId });
-    };
-
-    const handleBeginScreening = () => {
-        goToPositionChild();
-    };
-
     return (
         <View style={styles.container}>
-            {/* Background gradient */}
-            <LinearGradient
-                colors={['#e8f4f8', '#f5f5f5']}
-                style={styles.gradient}
-            />
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
+            </View>
 
-            {/* Video Player Area */}
-            <View style={styles.videoContainer}>
-                <Pressable style={styles.playButton}>
-                    <PlayIcon />
+            {/* Back button overlaid on image */}
+            <View style={[styles.backWrap, { paddingTop: insets.top + 8 }]}>
+                <Pressable
+                    style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.5 }]}
+                    onPress={() => navigation.goBack()}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Go back"
+                >
+                    <Ionicons name="chevron-back" size={24} color="#0a0a0a" />
                 </Pressable>
             </View>
 
-            {/* Instructions */}
-            <View style={styles.instructionContainer}>
-                <Text style={styles.instructionTitle}>EKG Placement</Text>
-                <Text style={styles.instructionText}>
-                    Please follow the video to place the EKG wearable on your child.
-                </Text>
-
-                {/* H9 Connection Section */}
-                <View style={styles.h9Container}>
-                    {!connected ? (
-                        <Pressable
-                            style={({ pressed }) => [
-                                styles.connectButton,
-                                pressed && styles.connectButtonPressed
-                            ]}
-                            onPress={connectToH9}
-                            disabled={scanning}
-                        >
-                            <Text style={styles.connectButtonText}>
-                                {scanning ? '🔍 Scanning for H9...' : ' Connect Polar H9'}
-                            </Text>
-                        </Pressable>
-                    ) : (
-                        <View style={styles.connectedBadge}>
-                            <Text style={styles.connectedText}> H9 Connected</Text>
-                            {heartRate && (
-                                <Text style={styles.heartRatePreview}>{heartRate} BPM</Text>
-                            )}
+            {/* Main layout mirrors ScreeningInstructions */}
+            <View style={styles.slideArea}>
+                {/* Top — image area */}
+                <View style={styles.imageBox}>
+                    <ImageCard style={styles.imageFill}>
+                        {/* Centered play icon placeholder */}
+                        <View style={styles.playOverlay}>
+                            <View style={styles.playCircle}>
+                                <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
+                                    <Path d="M8 5v14l11-7L8 5z" fill="rgba(80,88,180,0.5)" />
+                                </Svg>
+                            </View>
                         </View>
-                    )}
-                    {error && <Text style={styles.errorText}>{error}</Text>}
+                    </ImageCard>
                 </View>
 
-                {/* Begin Screening Button */}
-                <Pressable 
-                    style={({ pressed }) => [
-                        styles.beginButton,
-                        pressed && styles.beginButtonPressed
-                    ]}
-                    onPress={handleBeginScreening}
+                {/* Bottom — scrollable content */}
+                <ScrollView
+                    style={styles.textBox}
+                    contentContainerStyle={styles.textContent}
+                    showsVerticalScrollIndicator={false}
                 >
-                    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" style={styles.buttonIcon}>
-                        <Path d="M8 5v14l11-7L8 5z" fill="#ffffff" />
-                    </Svg>
-                    <Text style={styles.beginButtonText}>Begin Screening</Text>
-                </Pressable>
+                    <Text style={styles.title}>EKG Placement</Text>
+                    <Text style={styles.desc}>
+                        Follow the video above to place the EKG wearable on your child before beginning the screening.
+                    </Text>
+
+                    {/* H9 card */}
+                    <View style={styles.h9Card}>
+                        {connected ? (
+                            <View style={styles.connectedRow}>
+                                <View style={styles.connectedDot} />
+                                <View>
+                                    <Text style={styles.h9Title}>Polar H9 Connected</Text>
+                                    {heartRate ? <Text style={styles.h9Sub}>{heartRate} BPM</Text> : null}
+                                </View>
+                            </View>
+                        ) : (
+                            <View style={styles.connectRow}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.h9Title}>Polar H9 Monitor</Text>
+                                    <Text style={styles.h9Sub}>Optional — for heart rate tracking</Text>
+                                </View>
+                                <Pressable
+                                    style={({ pressed }) => [styles.connectBtn, pressed && { opacity: 0.8 }, scanning && { opacity: 0.6 }]}
+                                    onPress={connectToH9}
+                                    disabled={scanning}
+                                    accessibilityRole="button"
+                                >
+                                    <Text style={styles.connectBtnText}>{scanning ? 'Scanning…' : 'Connect'}</Text>
+                                </Pressable>
+                            </View>
+                        )}
+                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                    </View>
+                </ScrollView>
+            </View>
+
+            {/* Button pinned to bottom */}
+            <View style={styles.footer}>
+                <PrimaryBlueButton
+                    onPress={() => navigation.navigate('PositionChild', { screeningId })}
+                    fullWidth
+                >
+                    Begin Screening
+                </PrimaryBlueButton>
             </View>
         </View>
     );
 }
 
+const INDIGO = '#5058b4';
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    gradient: {
+    container: { flex: 1 },
+    bg: {
         ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
     },
-    videoContainer: {
+    backWrap: {
+        position: 'absolute',
+        top: 0,
+        left: 8,
+        zIndex: 20,
+    },
+    backButton: {
+        width: 44,
+        height: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    slideArea: {
         flex: 1,
-        maxHeight: '60%',
-        marginTop: 0,
-        marginHorizontal: 0,
-        backgroundColor: '#ffffff',
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-        elevation: 3,
+        zIndex: 1,
+        minHeight: 0,
     },
-    playButton: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        backgroundColor: 'rgba(200, 200, 200, 0.1)',
+    imageBox: {
+        flex: 3,
+        width: '100%',
+    },
+    imageFill: {
+        width: '100%',
+        height: '100%',
+    },
+    playOverlay: {
+        ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    instructionContainer: {
-        paddingHorizontal: 28,
-        paddingTop: 30,
-    },
-    instructionTitle: {
-        color: '#1a1a1a',
-        fontSize: 24,
-        fontWeight: '700',
-        marginBottom: 12,
-        fontFamily: 'NotoSans-Bold',
-    },
-    instructionText: {
-        color: '#666666',
-        fontSize: 16,
-        lineHeight: 24,
-        marginBottom: 24,
-        fontFamily: 'NotoSans-Regular',
-    },
-    h9Container: {
+    playCircle: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: 'rgba(80,88,180,0.1)',
+        justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 24,
+        borderWidth: 1.5,
+        borderColor: 'rgba(80,88,180,0.2)',
     },
-    connectButton: {
-        backgroundColor: 'rgba(95, 212, 212, 0.9)',
-        paddingVertical: 12,
+    textBox: {
+        flex: 2,
+        minHeight: 0,
+    },
+    textContent: {
         paddingHorizontal: 24,
-        borderRadius: 20,
-        alignItems: 'center',
+        paddingVertical: 20,
+        gap: 14,
     },
-    connectButtonPressed: {
-        backgroundColor: 'rgba(95, 212, 212, 0.7)',
-    },
-    connectButtonText: {
-        color: '#ffffff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    connectedBadge: {
-        backgroundColor: 'rgba(0, 0, 0, 0.05)',
-        paddingVertical: 8,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        alignItems: 'center',
-        gap: 4,
-    },
-    connectedText: {
-        color: '#5fd4d4',
-        fontSize: 15,
-        fontWeight: '600',
-    },
-    heartRatePreview: {
-        color: '#1a1a1a',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    errorText: {
-        color: '#ff6b6b',
-        fontSize: 13,
-        marginTop: 6,
+    title: {
+        fontSize: 22,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        letterSpacing: -0.2,
         textAlign: 'center',
     },
-    beginButton: {
-        backgroundColor: '#7FB8C9',
-        paddingVertical: 16,
-        borderRadius: 30,
-        alignItems: 'center',
+    desc: {
+        fontSize: 15,
+        fontFamily: 'NotoSans-Regular',
+        color: '#2E3332',
+        lineHeight: 21,
+        letterSpacing: 0.1,
+        textAlign: 'center',
+    },
+    h9Card: {
+        backgroundColor: '#ffffff',
+        borderRadius: 14,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.07)',
+    },
+    connectRow: {
         flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 3,
+        alignItems: 'center',
+        gap: 12,
     },
-    beginButtonPressed: {
-        backgroundColor: '#6BA8B9',
-        transform: [{ scale: 0.98 }],
+    connectedRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
     },
-    beginButtonText: {
+    connectedDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#4CAF50',
+        flexShrink: 0,
+    },
+    h9Title: {
+        fontSize: 14,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+    },
+    h9Sub: {
+        fontSize: 12,
+        fontFamily: 'NotoSans-Regular',
+        color: '#888',
+        marginTop: 2,
+    },
+    connectBtn: {
+        backgroundColor: INDIGO,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 100,
+    },
+    connectBtnText: {
         color: '#ffffff',
-        fontSize: 18,
-        fontWeight: '600',
+        fontSize: 13,
         fontFamily: 'NotoSans-SemiBold',
     },
-    buttonIcon: {
-        marginRight: 4,
+    errorText: {
+        fontSize: 12,
+        fontFamily: 'NotoSans-Regular',
+        color: '#e74c3c',
+        marginTop: 6,
+    },
+    footer: {
+        paddingHorizontal: 28,
+        paddingTop: 8,
+        paddingBottom: 28,
+        flexShrink: 0,
+        zIndex: 1,
     },
 });

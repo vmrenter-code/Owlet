@@ -1,132 +1,142 @@
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-// Success screen shown after all videos are uploaded
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Svg, Path } from 'react-native-svg';
+import HomeBg from '../../components/HomeBg';
+import PrimaryBlueButton from '../../components/PrimaryBlueButton';
 
 export default function ScreeningComplete() {
     const navigation = useNavigation<any>();
-
-    const handleOk = () => {
-        navigation.navigate('MainTabs');
-        setTimeout(() => {
-            Alert.alert(
-            "Screening Reviewed",
-            "Your results are ready to view in Past Screenings."
-          );
-        }, 5000);
-    };
+    const insets = useSafeAreaInsets();
 
     return (
         <View style={styles.container}>
-            {/* Checkmark circle */}
-            <View style={styles.checkmarkContainer}>
-                <View style={styles.checkmarkCircle}>
-                    <Text style={styles.checkmark}>✓</Text>
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
+            </View>
+
+            {/* Centred content */}
+            <View style={[styles.content, { paddingTop: insets.top + 40 }]}>
+                <View style={styles.iconWrap}>
+                    <View style={styles.iconCircle}>
+                        <Svg width={40} height={40} viewBox="0 0 24 24" fill="none">
+                            <Path
+                                d="M5 12l5 5L20 7"
+                                stroke="#ffffff"
+                                strokeWidth={2.5}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </Svg>
+                    </View>
+                </View>
+
+                <Text style={styles.heading}>Screening Complete!</Text>
+                <Text style={styles.subtitle}>
+                    Great job. Your child's screening has been submitted successfully.
+                </Text>
+
+                <View style={styles.infoCard}>
+                    <View style={styles.infoRow}>
+                        <View style={styles.infoDot} />
+                        <Text style={styles.infoText}>Results will be reviewed by a clinician</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                        <View style={styles.infoDot} />
+                        <Text style={styles.infoText}>You'll be notified when results are ready</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                        <View style={styles.infoDot} />
+                        <Text style={styles.infoText}>View past screenings anytime in History</Text>
+                    </View>
                 </View>
             </View>
 
-            {/* Success message */}
-            <Text style={styles.successText}>
-                You have successfully uploaded your screening!
-            </Text>
-
-            {/* What's next info */}
-            <View style={styles.nextInfoContainer}>
-                <Text style={styles.nextInfoText}>
-                    What's next:{'\n'}
-                    you will be able to access your results on the home page
-                </Text>
-
-                {/* OK button */}
-                <Pressable 
-                    style={({ pressed }) => [
-                        styles.okButton,
-                        pressed && styles.okButtonPressed
-                    ]}
-                    onPress={handleOk}
-                >
-                    <Text style={styles.okButtonText}>OK</Text>
-                </Pressable>
+            {/* Button pinned to bottom */}
+            <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+                <PrimaryBlueButton onPress={() => navigation.navigate('MainTabs')} fullWidth>
+                    Back to Home
+                </PrimaryBlueButton>
             </View>
         </View>
     );
 }
 
+const INDIGO = '#5058b4';
+
 const styles = StyleSheet.create({
-    container: {
+    container: { flex: 1 },
+    bg: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
+    },
+    content: {
         flex: 1,
-        backgroundColor: '#7FB8C9',
+        zIndex: 1,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    iconWrap: { marginBottom: 28 },
+    iconCircle: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        backgroundColor: INDIGO,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 30,
+        boxShadow: '0px 4px 20px rgba(80,88,180,0.35)',
+    } as any,
+    heading: {
+        fontSize: 28,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        textAlign: 'center',
+        letterSpacing: -0.4,
+        marginBottom: 10,
     },
-
-    checkmarkContainer: {
-        marginBottom: 40,
+    subtitle: {
+        fontSize: 15,
+        fontFamily: 'NotoSans-Regular',
+        color: '#555',
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 32,
     },
-
-    checkmarkCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+    infoCard: {
+        width: '100%',
         backgroundColor: '#ffffff',
-        justifyContent: 'center',
+        borderRadius: 20,
+        padding: 20,
+        gap: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(80,88,180,0.10)',
         alignItems: 'center',
     },
-
-    checkmark: {
-        fontSize: 50,
-        color: '#7FB8C9',
-        fontWeight: '300',
-    },
-
-    successText: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#ffffff',
-        textAlign: 'center',
-        lineHeight: 42,
-        marginBottom: 60,
-    },
-
-    nextInfoContainer: {
-        position: 'absolute',
-        bottom: 80,
-        left: 30,
-        right: 30,
-    },
-
-    nextInfoText: {
-        fontSize: 16,
-        color: '#ffffff',
-        textAlign: 'center',
-        lineHeight: 24,
-        fontWeight: '600',
-    },
-
-    okButton: {
-        backgroundColor: '#f0a090',
-        paddingVertical: 15,
-        paddingHorizontal: 80,
-        borderRadius: 30,
+    infoRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 30,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+        gap: 12,
     },
-
-    okButtonPressed: {
-        backgroundColor: '#e8958a',
-        transform: [{ scale: 0.98 }],
+    infoDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: INDIGO,
+        flexShrink: 0,
     },
-
-    okButtonText: {
-        color: '#ffffff',
-        fontSize: 18,
-        fontWeight: '600',
+    infoText: {
+        fontSize: 14,
+        fontFamily: 'NotoSans-Regular',
+        color: '#333',
+        lineHeight: 21,
+        textAlign: 'center',
+    },
+    footer: {
+        paddingHorizontal: 28,
+        paddingTop: 8,
+        paddingBottom: 28,
+        flexShrink: 0,
+        zIndex: 1,
     },
 });
-
