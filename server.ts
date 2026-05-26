@@ -90,7 +90,7 @@ app.post('/users/sync', async (req, res) => {
         name,
       },
     });
-
+    /*
     // Check if user already has a child profile, if not create a default one
     const existingChild = await prisma.child.findFirst({ where: { userId: user.id } });
     if (!existingChild) {
@@ -104,6 +104,7 @@ app.post('/users/sync', async (req, res) => {
       });
     }
     return res.json({ success: true, user });
+    */
 
   } catch (err) {
     console.error("Error syncing user:", err);

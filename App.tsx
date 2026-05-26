@@ -9,6 +9,7 @@ import { AppStateProvider } from './context/AppStateContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { ChildProfileProvider } from './context/ChildProfileContext';
 import { ScreeningProvider } from './context/ScreeningContext';
+import { ChildProvider } from './context/ChildContext';
 
 export default function App() {
    const [fontsLoaded] = useFonts({
@@ -19,6 +20,7 @@ export default function App() {
   });
   return (
     <AppStateProvider>
+      <ChildProvider>
       <ProfileProvider>
         <ChildProfileProvider>
           <ScreeningProvider>
@@ -28,6 +30,7 @@ export default function App() {
           </ScreeningProvider>
         </ChildProfileProvider>
       </ProfileProvider>
+      </ChildProvider>
     </AppStateProvider>
   );
 }

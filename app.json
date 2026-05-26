@@ -62,6 +62,13 @@
             "useFrameworks": "static"
           }
         }
+        
+      ],
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
       ],
       "react-native-ble-plx",
       "@react-native-community/datetimepicker"
