@@ -12,6 +12,7 @@ import userAuthServices from '../src/services/userAuthServices';
 import BackArrow from '../components/BackArrow';
 import { useChildProfile } from '../context/ChildProfileContext';
 import CalendarPicker from '../components/CalendarPicker';
+import { useChild } from '../context/ChildContext';
 
 export default function Account() {
     const { logout } = useAppState();
@@ -36,14 +37,15 @@ export default function Account() {
 
     const activeBirthDate = birthDates[activeChildId] ?? null;
 
-    const formatBirthDate = (iso: string | null): string => {
-        if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return 'Not set';
-        const [y, m, d] = iso.split('-');
-        return `${m}/${d}/${y}`;
+    const {selectedChild} = useChild();
+
+    const formatBirthDate = (bday: Date | null | undefined): string => {
+        if (!bday) return 'Not set';
+        return new Date(bday).toLocaleDateString('en-US');
     };
 
     const openEditName = () => {
-        setNameDraft(activeChild.name);
+        setNameDraft(selectedChild?.name ?? 'Set name');
         setEditNameVisible(true);
     };
 
@@ -169,6 +171,17 @@ navigation.getParent()?.dispatch(
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+        if (!selectedChild) return;
+
+        setChildName(selectedChild.name || '');
+        setChildBday(
+            selectedChild.birthday
+                ? new Date(selectedChild.birthday).toLocaleDateString()
+                : ''
+        );
+    }, [selectedChild]);
+
     return (
         <View style={styles.container}>
             <LinearGradient
@@ -216,7 +229,7 @@ navigation.getParent()?.dispatch(
                         onPress={openEditName}
                     >
                         <Text style={styles.itemLabel}>Name</Text>
-                        <Text style={styles.itemValue}>{activeChild.name}</Text>
+                        <Text style={styles.itemValue}>{selectedChild?.name ?? 'NoChild'}</Text>
                         <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
 
@@ -226,7 +239,9 @@ navigation.getParent()?.dispatch(
                         onPress={() => setBirthDateModalVisible(true)}
                     >
                         <Text style={styles.itemLabel}>Birth Date</Text>
-                        <Text style={styles.itemValue}>{formatBirthDate(activeBirthDate)}</Text>
+                        <Text style={styles.itemValue}>{
+                            selectedChild?.birthday ? new Date(selectedChild.birthday).toLocaleDateString('en-US') : 'Add birthdate'
+                        }</Text>
                         <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
 
