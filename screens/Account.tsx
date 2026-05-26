@@ -171,17 +171,6 @@ navigation.getParent()?.dispatch(
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-        if (!selectedChild) return;
-
-        setChildName(selectedChild.name || '');
-        setChildBday(
-            selectedChild.birthday
-                ? new Date(selectedChild.birthday).toLocaleDateString()
-                : ''
-        );
-    }, [selectedChild]);
-
     return (
         <View style={styles.container}>
             <LinearGradient
