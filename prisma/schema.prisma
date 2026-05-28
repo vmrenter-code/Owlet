@@ -29,9 +29,15 @@ model Child {
   id            String   @id @default(uuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id])
+  
   name          String?
   birthday      DateTime?
+  race          String?
+  ethnicity     String?
+  medicalHistory String?
+  medicalNotes   String?
   createdAt     DateTime  @default(now())
+
   screenings    Screening[]
 }
 

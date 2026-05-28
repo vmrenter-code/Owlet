@@ -10,6 +10,7 @@ import { getAuth } from 'firebase/auth';
 
 import { API_BASE_URL } from '../src/config/apiBaseUrl';
 import { useChildProfile } from '../context/ChildProfileContext';
+import {useChild} from '../context/ChildContext';
 
 export default function PastScreenings() {
     const navigation = useNavigation<any>();
@@ -19,6 +20,7 @@ export default function PastScreenings() {
     const [latestScreeningId, setLatestScreeningId] = useState<string | null>(null);
     const [pastScreenings, setPastScreenings] = useState<any[]>([]);
     const { activeChild } = useChildProfile();
+    const { selectedChild } = useChild();
 
     // Check for incomplete screening on mount
     useEffect(() => {
@@ -77,11 +79,11 @@ export default function PastScreenings() {
         const fetchPastScreenings = async () => {
             try {
                 const user = getAuth().currentUser;
-                if (!user || !activeChild) return;
+                if (!user || !selectedChild) return;
                 const token = await user.getIdToken();
 
                 const response = await fetch(
-                    `${API_BASE_URL}/screenings?childId=${activeChild.id}`,
+                    `${API_BASE_URL}/screenings?childId=${selectedChild.id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

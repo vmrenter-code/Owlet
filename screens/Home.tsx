@@ -13,6 +13,7 @@ import { Svg, Path, Circle } from 'react-native-svg';
 import { useChildProfile } from '../context/ChildProfileContext';
 import { formatChildAge } from '../utils/formatChildAge';
 import { usePortraitLock } from '../hooks/usePortraitLock';
+import { useChild } from '../context/ChildContext';
 
 export default function Home() {
   usePortraitLock();
@@ -20,6 +21,7 @@ export default function Home() {
   const { activeChildId, activeChild, birthDates, openSwitcher } = useChildProfile();
   const activeAge = formatChildAge(birthDates[activeChildId]);
   const insets = useSafeAreaInsets();
+  const { selectedChild } = useChild();
 
   return (
     <View style={styles.container}>
@@ -49,7 +51,7 @@ export default function Home() {
             <View style={styles.profileTextWrap}>
               <View style={styles.profileTopRow}>
                 <Text style={styles.profileChildName} numberOfLines={1}>
-                  {activeChild.name}
+                  {selectedChild?.name ?? 'NoChild'}
                 </Text>
                 <Svg width={16} height={16} viewBox="0 0 24 24" style={styles.profileChevronIcon}>
                   <Path
@@ -65,7 +67,13 @@ export default function Home() {
               {activeAge ? (
                 <Text style={styles.profileChildMeta}>{activeAge}</Text>
               ) : (
-                <Text style={styles.profileChildMetaMuted}>Add birth date</Text>
+                <Text style={styles.profileChildMetaMuted}>
+                  {
+                    selectedChild?.birthday
+                    ? new Date(selectedChild.birthday).toLocaleDateString('en-US')
+                    : 'Add birthdate'
+                  }
+                </Text>
               )}
             </View>
           </Pressable>

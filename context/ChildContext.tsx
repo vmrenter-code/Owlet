@@ -65,7 +65,7 @@ export const ChildProvider = ({ children: ReactChildren }: any) => {
             Authorization: `Bearer ${token}`,
           },
         });
-        const text = await res.text(); // 👈 IMPORTANT
+        const text = await res.text();
         //console.log("RAW RESPONSE:", text);
 
         const data = JSON.parse(text);
