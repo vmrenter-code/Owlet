@@ -4,11 +4,9 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
-  useWindowDimensions,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useScreeningLandscape } from '../../hooks/useScreeningLandscape';
-import RotateDeviceOverlay from '../../components/RotateDeviceOverlay';
+import LandscapeStage from '../../components/LandscapeStage';
 
 const troubleshootingOptions = [
   { id: 1, label: "I can't hear the sound" },
@@ -22,9 +20,6 @@ const troubleshootingOptions = [
 export default function TroubleshootingScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { width, height } = useWindowDimensions();
-  const isWide = width >= height;
-  useScreeningLandscape();
 
   const videoNumber = route.params?.videoNumber || 1;
 
@@ -37,55 +32,47 @@ export default function TroubleshootingScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {!isWide ? <RotateDeviceOverlay /> : null}
+    <LandscapeStage backgroundColor="#ffffff">
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Pressable style={styles.closeButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.closeIcon}>✕</Text>
+          </Pressable>
+        </View>
 
-      {isWide ? (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <Pressable style={styles.closeButton} onPress={() => navigation.goBack()}>
-              <Text style={styles.closeIcon}>✕</Text>
-            </Pressable>
-          </View>
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>🛠 Troubleshooting</Text>
+          <Text style={styles.subtitle}>
+            We'll help you get back on track. Your progress is saved.
+          </Text>
+        </View>
 
-          <View style={styles.titleSection}>
-            <Text style={styles.title}>🛠 Troubleshooting</Text>
-            <Text style={styles.subtitle}>
-              We'll help you get back on track. Your progress is saved.
-            </Text>
-          </View>
+        <Text style={styles.sectionTitle}>What's going wrong?</Text>
 
-          <Text style={styles.sectionTitle}>What's going wrong?</Text>
-
-          {troubleshootingOptions.map((option) => (
-            <Pressable
-              key={option.id}
-              style={({ pressed }) => [
-                styles.optionItem,
-                pressed && styles.optionItemPressed,
-              ]}
-              onPress={() => handleOptionPress(option)}
-            >
-              <View style={styles.radioCircle} />
-              <Text style={styles.optionLabel}>{option.label}</Text>
-              <Text style={styles.optionArrow}>›</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      ) : null}
-    </View>
+        {troubleshootingOptions.map((option) => (
+          <Pressable
+            key={option.id}
+            style={({ pressed }) => [
+              styles.optionItem,
+              pressed && styles.optionItemPressed,
+            ]}
+            onPress={() => handleOptionPress(option)}
+          >
+            <View style={styles.radioCircle} />
+            <Text style={styles.optionLabel}>{option.label}</Text>
+            <Text style={styles.optionArrow}>›</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </LandscapeStage>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
   scroll: {
     flex: 1,
   },

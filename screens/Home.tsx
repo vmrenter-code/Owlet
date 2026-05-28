@@ -12,8 +12,10 @@ import ChildProfileAvatar from '../components/ChildProfileAvatar';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { useChildProfile } from '../context/ChildProfileContext';
 import { formatChildAge } from '../utils/formatChildAge';
+import { usePortraitLock } from '../hooks/usePortraitLock';
 
 export default function Home() {
+  usePortraitLock();
   const navigation = useNavigation<any>();
   const { activeChildId, activeChild, birthDates, openSwitcher } = useChildProfile();
   const activeAge = formatChildAge(birthDates[activeChildId]);

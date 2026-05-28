@@ -1,13 +1,6 @@
 import { ReactNode } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  useWindowDimensions,
-} from 'react-native';
-import { useScreeningLandscape } from '../hooks/useScreeningLandscape';
-import RotateDeviceOverlay from './RotateDeviceOverlay';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import LandscapeStage from './LandscapeStage';
 
 type Props = {
   children: ReactNode;
@@ -24,18 +17,10 @@ export default function ScreeningCameraLayout({
   onBack,
   footer,
 }: Props) {
-  useScreeningLandscape();
-  const { width, height } = useWindowDimensions();
-  const isWide = width >= height;
-  const layoutWide = isWide;
-  const showRotateHint = !isWide;
-
   return (
-    <View style={styles.root}>
+    <LandscapeStage>
       <View style={styles.cameraStage}>
         {children}
-
-        {showRotateHint ? <RotateDeviceOverlay /> : null}
 
         <View style={styles.header}>
           <Pressable style={styles.backButton} onPress={onBack}>
@@ -46,35 +31,25 @@ export default function ScreeningCameraLayout({
           </View>
         </View>
 
-        {layoutWide && instruction ? (
+        {instruction ? (
           <View style={styles.instructionWrap}>
             <Text style={styles.instructionText}>{instruction}</Text>
           </View>
         ) : null}
 
-        {layoutWide && showFaceGuide ? (
+        {showFaceGuide ? (
           <View style={styles.guideWrap} pointerEvents="none">
             <View style={styles.faceGuide} />
           </View>
         ) : null}
 
-        {!layoutWide && instruction ? (
-          <View style={styles.portraitInstruction}>
-            <Text style={styles.instructionText}>{instruction}</Text>
-          </View>
-        ) : null}
-
         <View style={styles.footerOverlay}>{footer}</View>
       </View>
-    </View>
+    </LandscapeStage>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
   cameraStage: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
@@ -127,14 +102,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
-  portraitInstruction: {
-    position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 20,
-    alignItems: 'center',
-    zIndex: 15,
-  },
   instructionText: {
     color: '#ffffff',
     fontSize: 20,
@@ -142,7 +109,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 28,
     textShadow: '0px 1px 3px rgba(0,0,0,0.5)',
-  },
+  } as any,
   guideWrap: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',

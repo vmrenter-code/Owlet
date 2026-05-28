@@ -4,8 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Svg, Path } from 'react-native-svg';
 import HomeBg from '../../components/HomeBg';
 import PrimaryBlueButton from '../../components/PrimaryBlueButton';
+import { usePortraitLock } from '../../hooks/usePortraitLock';
 
 export default function ScreeningComplete() {
+    usePortraitLock();
     const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
 
