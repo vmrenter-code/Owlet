@@ -8,8 +8,10 @@ import HomeBg from '../../components/HomeBg';
 import ImageCard from '../../components/ImageCard';
 import PrimaryBlueButton from '../../components/PrimaryBlueButton';
 import { useScreening } from '../../context/ScreeningContext';
+import { usePortraitLock } from '../../hooks/usePortraitLock';
 
 export default function EKGPlacement() {
+    usePortraitLock();
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
     const insets = useSafeAreaInsets();

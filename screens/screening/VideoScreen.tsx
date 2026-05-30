@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Modal, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -17,8 +17,7 @@ const videoSources: { [key: number]: any } = {
     5: require('../../assets/videos/Video5.mp4'),
 };
 import { uploadScreeningVideo } from '../../src/services/uploadService';
-import { useScreeningLandscape } from '../../hooks/useScreeningLandscape';
-import RotateDeviceOverlay from '../../components/RotateDeviceOverlay';
+import LandscapeStage from '../../components/LandscapeStage';
 import TroubleshootingOverlay from '../../components/TroubleshootingOverlay';
 
 const createLocalScreeningId = () => `local_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -30,85 +29,37 @@ export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
     const isFocused = useIsFocused();
-    const { width, height } = useWindowDimensions();
-    const isWide = width >= height;
-    const layoutWide = isWide;
-    useScreeningLandscape();
-    
-    // Get screeningID from context (primary) or route params (fallback)
-const { screeningId: screeningID, heartRateLog, rrLog, addHeartRateDataPoint, clearHeartRateLog, clearRrLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
-const heartRateLogRef = useRef<typeof heartRateLog>([]);
-const rrLogRef = useRef<number[]>([]);
-const heartRateRef = useRef<number | null>(null); // add this
-useEffect(() => {
-    heartRateRef.current = heartRate;
-}, [heartRate]);
-    console.log('VideoScreen render - connected:', connected, 'heartRate:', heartRate);
-    // Use context screeningID, or fall back to route params if available
+
+    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
+    const heartRateLogRef = useRef<typeof heartRateLog>([]);
+    const heartRateRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        heartRateRef.current = heartRate;
+    }, [heartRate]);
+
     const currentScreeningID = screeningID || route.params?.screeningId;
     const videoNumber = route.params?.videoNumber || 1;
 
-    //HeartRate
-
-
-    // Log screeningID for debugging
     useEffect(() => {
-        console.log('VideoScreen - Current Screening ID:', currentScreeningID);
-        console.log('VideoScreen - Video Number:', videoNumber);
-    }, [currentScreeningID, videoNumber]);
-
-    useEffect(() => {
-    console.log('Video number changed to:', videoNumber, '- clearing?', videoNumber === 1);
-    if (videoNumber === 1) {
-        clearHeartRateLog();
-        clearRrLog();
-        setScreeningStartTime(Date.now());
-    }
-}, [videoNumber]);
-
-useEffect(() => {
-    console.log('heartRateLog updated, length:', heartRateLog.length);
-    heartRateLogRef.current = heartRateLog;
-}, [heartRateLog]);
-
-useEffect(() => {
-    console.log('rrLog updated, length:', rrLog.length);
-    rrLogRef.current = rrLog;
-}, [rrLog]);
-
-useEffect(() => {
-    console.log('Heart rate effect fired - connected:', connected);
-    if (!connected) return;
-
-    const interval = setInterval(() => {
-        const currentBpm = heartRateRef.current;
-        if (currentBpm) {
-            console.log('Adding data point:', currentBpm, 'BPM');
-            addHeartRateDataPoint(currentBpm);
+        if (videoNumber === 1) {
+            clearHeartRateLog();
+            setScreeningStartTime(Date.now());
         }
-    }, 1000);
+    }, [videoNumber]);
 
-    return () => clearInterval(interval);
-}, [connected]); // heartRate removed from dependency array
+    useEffect(() => {
+        heartRateLogRef.current = heartRateLog;
+    }, [heartRateLog]);
 
-const loadMockHeartRateData = () => {
-    const mockHeartRateLog = [
-        { time: 0, bpm: 122 },
-        { time: 1, bpm: 121 },
-        { time: 2, bpm: 119 },
-        { time: 3, bpm: 120 },
-        { time: 4, bpm: 118 },
-    ];
-    const mockRrLog = [812, 798, 805, 790, 796, 802];
-
-    heartRateLogRef.current = mockHeartRateLog;
-    rrLogRef.current = mockRrLog;
-
-    console.log('Mock heart-rate data loaded:', {
-        heartRateCount: mockHeartRateLog.length,
-        rrCount: mockRrLog.length,
-    });
-};
+    useEffect(() => {
+        if (!connected) return;
+        const interval = setInterval(() => {
+            const currentBpm = heartRateRef.current;
+            if (currentBpm) addHeartRateDataPoint(currentBpm);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [connected]);
 
 
     
@@ -185,7 +136,7 @@ const loadMockHeartRateData = () => {
                 });
 
                 if (!response.ok) {
-                    console.log('Failed to create screening session:', response.status);
+                    //
                     if (isMounted) {
                         setActiveScreeningId(createLocalScreeningId());
                     }
@@ -198,7 +149,7 @@ const loadMockHeartRateData = () => {
                     setActiveScreeningId(createdId);
                 }
             } catch (error) {
-                console.log('Error creating screening session in VideoScreen:', error);
+                //
                 if (isMounted) {
                     setActiveScreeningId(createLocalScreeningId());
                 }
@@ -240,7 +191,7 @@ const loadMockHeartRateData = () => {
                 });
 
                 if (!response.ok) {
-                    console.log('Failed to create screening session:', response.status);
+                    //
                     if (isMounted) {
                         setActiveScreeningId(createLocalScreeningId());
                     }
@@ -253,7 +204,7 @@ const loadMockHeartRateData = () => {
                     setActiveScreeningId(createdId);
                 }
             } catch (error) {
-                console.log('Error creating screening session in VideoScreen:', error);
+                //
                 if (isMounted) {
                     setActiveScreeningId(createLocalScreeningId());
                 }
@@ -287,7 +238,7 @@ const loadMockHeartRateData = () => {
     };
 
     const handleCameraReady = () => {
-        console.log('Camera ready! videoNumber:', currentVideoNumber);
+        //
         setCameraReady();
         setIsCameraReady(true);
     };
@@ -318,7 +269,7 @@ const loadMockHeartRateData = () => {
                     timestamp: Date.now()
                 }));
             } catch (e) {
-                console.log('Error saving progress');
+                //
             }
         };
         saveProgress();
@@ -370,7 +321,7 @@ const loadMockHeartRateData = () => {
             !hasAttemptedRecordingStartRef.current
         ) {
             hasAttemptedRecordingStartRef.current = true;
-            console.log('Starting screening recording safely...');
+            //
             const startTimer = setTimeout(() => {
                 startScreeningRecording().then((started) => {
                     if (!started) {
@@ -392,12 +343,12 @@ const loadMockHeartRateData = () => {
     if (videoNumber < totalVideos) {
         navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
     } else {
-        console.log('Video 5 completed, stopping recording...');
+        //
         let recordingPath: string | null = null;
         let uploadedObjectKey: string | null = null;
 
         if (!isCurrentlyRecording()) {
-            console.log('Recording not active at finish. Attempting recovery start...');
+            //
             const recovered = await startScreeningRecording();
             if (recovered) {
                 await new Promise((resolve) => setTimeout(resolve, 1200));
@@ -410,10 +361,10 @@ const loadMockHeartRateData = () => {
                 new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
             ]);
         } catch (e) {
-            console.log('Error stopping recording, continuing to completion');
+            //
         }
 
-        console.log('Recording saved to:', recordingPath);
+        //
 
         // S3 Upload
         if (recordingPath && activeScreeningId) {
@@ -427,12 +378,12 @@ const loadMockHeartRateData = () => {
 
             if (uploadResult.success) {
                 uploadedObjectKey = uploadResult.objectKey ?? null;
-                console.log('S3 upload complete:', uploadResult.objectKey);
+                //
             } else {
-                console.log('S3 upload failed:', uploadResult.error);
+                //
             }
         } else {
-            console.log('Skipping upload. Missing recording or screeningId.');
+            //
         }
 
         // Save screening progress
@@ -446,77 +397,26 @@ const loadMockHeartRateData = () => {
                 s3ObjectKey: uploadedObjectKey,
             }));
         } catch (e) {
-            console.log('Error saving completion progress');
+            //
         }
 
         // Save heart rate log BEFORE disconnecting
         try {
-            console.log('Saving heart rate log, length:', heartRateLogRef.current.length);
+            //
             await AsyncStorage.setItem(
                 `heartRateLog_${currentScreeningID}`,
                 JSON.stringify(heartRateLogRef.current)
             );
         } catch (e) {
-            console.log('Error saving heart rate log');
+            //
         }
 
-            // Save RR interval log for HRV calculation
-            try {
-                console.log('Saving RR log, length:', rrLogRef.current.length);
-                await AsyncStorage.setItem(
-                    `rrLog_${currentScreeningID}`,
-                    JSON.stringify(rrLogRef.current)
-                );
-            } catch (e) {
-                console.log('Error saving RR log');
-            }
+        disconnect(); // disconnect AFTER saving
+        navigation.navigate('ScreeningComplete');
+    }
+};
+//hidden camera. must have it to run without preview
 
-            // Upload heart rate and RR logs to S3 via backend (include RMSSD)
-            if (currentScreeningID) {
-                const rmssd = calculateRMSSD(rrLogRef.current ?? []);
-                try {
-                    const heartRateResponse = await fetch(`${BASE_URL}/screening/${currentScreeningID}/heart-rate-csv`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            videoNumber: totalVideos,
-                            heartRateLog: heartRateLogRef.current,
-                            rrLog: rrLogRef.current,
-                            rmssd,
-                            completedAt: new Date().toISOString(),
-                        }),
-                    });
-
-                    if (!heartRateResponse.ok) {
-                        console.log('Heart rate CSV upload failed:', heartRateResponse.status);
-                    } else {
-                        const payload = await heartRateResponse.json();
-                        console.log('Heart rate CSV uploaded successfully:', payload);
-                    }
-                } catch (e) {
-                    console.log('Error uploading heart rate CSVs', e);
-                }
-            }
-
-            disconnect();
-
-            //Update screening with completedAt in backend
-            try {
-                await fetch(`${BASE_URL}/screening/${screeningID}/complete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        completedAt: new Date().toISOString(),
-                    }),
-                });
-                console.log(`Screening ${screeningID} marked as complete`);
-            } catch (e) {
-                console.log('Error updating screening completion', e);
-            }
-
-            navigation.navigate('ScreeningComplete');
-        }
-    };
 
     return (
         <View style={styles.container}>
@@ -531,8 +431,8 @@ const loadMockHeartRateData = () => {
                 />
             )}
 
-            <View style={styles.videoContainer}>
-                {layoutWide ? (
+            <LandscapeStage backgroundColor="#000">
+                <View style={styles.videoContainer}>
                     <Video
                         ref={videoRef}
                         source={videoSources[videoNumber]}
@@ -546,162 +446,133 @@ const loadMockHeartRateData = () => {
                             }
                         }}
                     />
-                ) : null}
-            </View>
-
-            {!layoutWide ? <RotateDeviceOverlay /> : null}
-
-            {layoutWide ? (
-            <View style={styles.headerContainer}>
-                {/* Exit button on the far left */}
-                <Pressable 
-                    style={styles.exitButton}
-                    onPress={() => setShowExitModal(true)}
-                >
-                    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-                        <Path 
-                            d="M18 6L6 18M6 6l12 12" 
-                            stroke="#ffffff" 
-                            strokeWidth={2.5} 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round"
-                        />
-                    </Svg>
-                </Pressable>
-
-                {/* Progress indicators */}
-                <View style={styles.progressContainer}>
-                    {[1, 2, 3, 4, 5].map((num, index) => (
-                        <View key={num} style={styles.progressItemContainer}>
-                            <View
-                                style={[
-                                    styles.progressDot,
-                                    num === currentVideoNumber && styles.progressDotActive,
-                                    num < currentVideoNumber && styles.progressDotComplete,
-                                    num > currentVideoNumber && styles.progressDotPending,
-                                ]}
-                            >
-                                <Text style={[
-                                    styles.progressNumber,
-                                    num === currentVideoNumber && styles.progressNumberActive,
-                                    num < currentVideoNumber && styles.progressNumberComplete,
-                                    num > currentVideoNumber && styles.progressNumberPending,
-                                ]}>
-                                    {num < currentVideoNumber ? '✓' : num}
-                                </Text>
-                            </View>
-                            {/* Connecting line (except after last dot) */}
-                            {index < 4 && (
-                                <View style={[
-                                    styles.progressLine,
-                                    num < currentVideoNumber && styles.progressLineComplete,
-                                ]} />
-                            )}
-                        </View>
-                    ))}
                 </View>
 
-                {/* Troubleshooting button on the right */}
-                <Pressable 
-                    style={styles.troubleshootButton}
-                    onPress={openTroubleshooting}
-                >
-                    <Text style={styles.troubleshootIcon}>!</Text>
-                </Pressable>
-            </View>
-            ) : null}
-
-            {layoutWide && !videoFinished ? (
-            <View style={styles.skipButtonContainer}>
-                <Pressable 
-                    style={({ pressed }) => [
-                        styles.skipButton,
-                        pressed && styles.buttonPressed
-                    ]}
-                    onPress={handleNext}
-                >
-                    <Text style={styles.skipButtonText}>
-                        {videoNumber < totalVideos ? 'Skip →' : 'Finish →'}
-                    </Text>
-                </Pressable>
-                {__DEV__ && (
+                <View style={styles.headerContainer}>
                     <Pressable
-                        style={({ pressed }) => [styles.mockButton, pressed && styles.buttonPressed]}
-                        onPress={loadMockHeartRateData}
+                        style={styles.exitButton}
+                        onPress={() => setShowExitModal(true)}
                     >
-                        <Text style={styles.mockButtonText}>Load Mock HR Data</Text>
+                        <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                            <Path
+                                d="M18 6L6 18M6 6l12 12"
+                                stroke="#ffffff"
+                                strokeWidth={2.5}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </Svg>
                     </Pressable>
+
+                    <View style={styles.progressContainer}>
+                        {[1, 2, 3, 4, 5].map((num, index) => (
+                            <View key={num} style={styles.progressItemContainer}>
+                                <View
+                                    style={[
+                                        styles.progressDot,
+                                        num === currentVideoNumber && styles.progressDotActive,
+                                        num < currentVideoNumber && styles.progressDotComplete,
+                                        num > currentVideoNumber && styles.progressDotPending,
+                                    ]}
+                                >
+                                    <Text style={[
+                                        styles.progressNumber,
+                                        num === currentVideoNumber && styles.progressNumberActive,
+                                        num < currentVideoNumber && styles.progressNumberComplete,
+                                        num > currentVideoNumber && styles.progressNumberPending,
+                                    ]}>
+                                        {num < currentVideoNumber ? '✓' : num}
+                                    </Text>
+                                </View>
+                                {index < 4 && (
+                                    <View style={[
+                                        styles.progressLine,
+                                        num < currentVideoNumber && styles.progressLineComplete,
+                                    ]} />
+                                )}
+                            </View>
+                        ))}
+                    </View>
+
+                    <Pressable
+                        style={styles.troubleshootButton}
+                        onPress={openTroubleshooting}
+                    >
+                        <Text style={styles.troubleshootIcon}>!</Text>
+                    </Pressable>
+                </View>
+
+                {!videoFinished ? (
+                    <View style={styles.skipButtonContainer}>
+                        <Pressable
+                            style={({ pressed }) => [
+                                styles.skipButton,
+                                pressed && styles.buttonPressed,
+                            ]}
+                            onPress={handleNext}
+                        >
+                            <Text style={styles.skipButtonText}>
+                                {videoNumber < totalVideos ? 'Skip →' : 'Finish →'}
+                            </Text>
+                        </Pressable>
+                    </View>
+                ) : (
+                    <View style={styles.buttonContainer}>
+                        <Pressable
+                            style={({ pressed }) => [
+                                styles.nextButton,
+                                pressed && styles.buttonPressed,
+                            ]}
+                            onPress={handleNext}
+                        >
+                            <Text style={styles.buttonText}>
+                                {currentVideoNumber < totalVideos ? 'Next' : 'Finish and Submit'}
+                            </Text>
+                        </Pressable>
+                    </View>
                 )}
-                <View style={styles.videoPlaceholder}>
-                    <Text style={styles.videoPlaceholderText}>
-                        Video {currentVideoNumber} of {totalVideos}
-                    </Text>
-                </View>
-            </View>
-            ) : null}
 
-            {layoutWide && videoFinished ? (
-                <View style={styles.buttonContainer}>
-                    <Pressable 
-                        style={({ pressed }) => [
-                            styles.nextButton,
-                            pressed && styles.buttonPressed
-                        ]}
-                        onPress={handleNext}
-                    >
-                        <Text style={styles.buttonText}>
-                            {currentVideoNumber < totalVideos ? 'Next' : 'Finish and Submit'}
-                        </Text>
-                    </Pressable>
-                </View>
-            ) : null}
+                {connected && heartRate ? (
+                    <View style={styles.heartRateContainer}>
+                        <Text style={styles.heartRateLabel}> Heart Rate</Text>
+                        <Text style={styles.heartRateValue}>{heartRate} BPM</Text>
+                    </View>
+                ) : null}
 
-            {layoutWide && connected && heartRate ? (
-        <View style={styles.heartRateContainer}>
-            <Text style={styles.heartRateLabel}> Heart Rate</Text>
-            <Text style={styles.heartRateValue}>{heartRate} BPM</Text>
-        </View>
-            ) : null}
+                {showExitModal ? (
+                    <View style={styles.modalOverlay} pointerEvents="auto">
+                        <View style={styles.modalContainer}>
+                            <Text style={styles.modalTitle}>Exit Screening?</Text>
+                            <Text style={styles.modalMessage}>
+                                Are you sure you want to exit the screening process?
+                            </Text>
+                            <Text style={styles.modalNote}>
+                                Don't worry — your completed videos are automatically saved. You can resume from where you left off anytime.
+                            </Text>
 
-            <TroubleshootingOverlay
-                visible={showTroubleshooting}
-                onClose={closeTroubleshooting}
-            />
-
-            {/* Exit Confirmation Modal */}
-            <Modal
-                visible={showExitModal}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowExitModal(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Exit Screening?</Text>
-                        <Text style={styles.modalMessage}>
-                            Are you sure you want to exit the screening process?
-                        </Text>
-                        <Text style={styles.modalNote}>
-                            Don't worry — your completed videos are automatically saved. You can resume from where you left off anytime.
-                        </Text>
-                        
-                        <View style={styles.modalButtons}>
-                            <Pressable 
-                                style={styles.cancelButton}
-                                onPress={() => setShowExitModal(false)}
-                            >
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
-                            </Pressable>
-                            <Pressable 
-                                style={styles.exitConfirmButton}
-                                onPress={handleExitScreening}
-                            >
-                                <Text style={styles.exitConfirmButtonText}>Exit</Text>
-                            </Pressable>
+                            <View style={styles.modalButtons}>
+                                <Pressable
+                                    style={styles.cancelButton}
+                                    onPress={() => setShowExitModal(false)}
+                                >
+                                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                                </Pressable>
+                                <Pressable
+                                    style={styles.exitConfirmButton}
+                                    onPress={handleExitScreening}
+                                >
+                                    <Text style={styles.exitConfirmButtonText}>Exit</Text>
+                                </Pressable>
+                            </View>
                         </View>
                     </View>
-                </View>
-            </Modal>
+                ) : null}
+
+                <TroubleshootingOverlay
+                    visible={showTroubleshooting}
+                    onClose={closeTroubleshooting}
+                />
+            </LandscapeStage>
         </View>
     );
 }
@@ -917,11 +788,12 @@ skipIcon: {
     },
 
     modalOverlay: {
-        flex: 1,
+        ...StyleSheet.absoluteFillObject,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        zIndex: 50,
     },
 
     modalContainer: {

@@ -4,6 +4,10 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { auth } from '../src/config/firebase';
 import LargeInput from '../components/LargeInput';
 import OnboardingLayout from '../components/OnboardingLayout';
+import { getAuth } from 'firebase/auth';
+import { useChild } from '../context/ChildContext';
+
+const BASE_URL = 'http://localhost:4000';
 
 const MEDICAL_CHIPS = [
   'Premature birth',
@@ -25,6 +29,7 @@ export default function ChildMedical() {
 
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
   const [medicalNotes, setMedicalNotes] = useState('');
+  const { updateChildren, setSelectedChild } = useChild();
 
   const toggleChip = (chip: string) => {
     if (chip === 'None of the above') {
@@ -39,11 +44,47 @@ export default function ChildMedical() {
     });
   };
 
+  const createChildProfile = async () => {
+        const user = getAuth().currentUser;
+        if (!user) {
+            console.log('No user logged in');
+            return;
+        }
+
+        const token = await user.getIdToken();
+        const res = await fetch(`${BASE_URL}/children`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: childName,
+                birthday: dob,
+                race: race,
+                ethnicity: ethnicity,
+                medicalHistory: selectedChips,
+                medicalNotes: medicalNotes,
+
+            }),
+        });
+        const data = await res.json();
+        console.log('Created child profile:', data);
+        const newChild = data.child;
+        await updateChildren();
+        if (newChild) {
+            setSelectedChild(newChild);
+        }
+    }
+
   const handleContinue = async () => {
-  const uid = auth.currentUser?.uid;
-  if (!uid) return;
-  navigation.navigate('PickProfile');
-};
+    try {
+      const newChild = await createChildProfile();
+    } catch (error) {
+      console.error('Error creating child profile:', error);
+    }
+    navigation.navigate('PickProfile');
+  };
 
   return (
       <View style={{ flex: 1 }}>

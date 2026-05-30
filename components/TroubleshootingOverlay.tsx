@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Modal,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
@@ -102,25 +101,21 @@ export default function TroubleshootingOverlay({ visible, onClose }: Props) {
   const cardMaxWidth = isWide ? Math.min(480, width * 0.55) : Math.min(400, width * 0.9);
   const cardMaxHeight = isWide ? height * 0.82 : height * 0.75;
 
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={handleClose}
-    >
-      <View style={styles.root}>
-        <Pressable
-          style={styles.scrim}
-          onPress={handleClose}
-          accessibilityRole="button"
-          accessibilityLabel="Close troubleshooting menu"
-        />
+  if (!visible) return null;
 
-        <View
-          style={[styles.card, { maxWidth: cardMaxWidth, maxHeight: cardMaxHeight }]}
-          onStartShouldSetResponder={() => true}
-        >
+  return (
+    <View style={styles.root} pointerEvents="auto">
+      <Pressable
+        style={styles.scrim}
+        onPress={handleClose}
+        accessibilityRole="button"
+        accessibilityLabel="Close troubleshooting menu"
+      />
+
+      <View
+        style={[styles.card, { maxWidth: cardMaxWidth, maxHeight: cardMaxHeight }]}
+        onStartShouldSetResponder={() => true}
+      >
           {step === 'list' ? (
             <>
               <View style={styles.cardHeader}>
@@ -209,18 +204,18 @@ export default function TroubleshootingOverlay({ visible, onClose }: Props) {
               </ScrollView>
             </>
           )}
-        </View>
       </View>
-    </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    zIndex: 60,
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,

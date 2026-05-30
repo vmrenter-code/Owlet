@@ -1,41 +1,22 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Svg, Path, Circle, Rect } from 'react-native-svg';
 import BackArrow from '../components/BackArrow';
+import HomeBg from '../components/HomeBg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Icons
-const DocumentIcon = () => (
-    <View style={styles.iconBg}>
-        <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-            <Rect x={4} y={2} width={16} height={20} rx={2} stroke="#5BA3B0" strokeWidth={2} />
-            <Path d="M8 6h8M8 10h8M8 14h4" stroke="#5BA3B0" strokeWidth={2} strokeLinecap="round" />
-        </Svg>
-    </View>
-);
+const INDIGO = '#5058b4';
+const ICON_BG = 'rgba(80, 88, 180, 0.12)';
 
-const HeadphonesIcon = () => (
-    <View style={[styles.iconBg, { backgroundColor: '#F5E6FF' }]}>
-        <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-            <Path d="M3 18v-6a9 9 0 0 1 18 0v6" stroke="#9B59B6" strokeWidth={2} strokeLinecap="round" />
-            <Path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z" stroke="#9B59B6" strokeWidth={2} />
-        </Svg>
-    </View>
-);
+type NotificationItem = {
+    id: number;
+    type: 'result' | 'support' | 'warning';
+    text: string;
+    unread: boolean;
+};
 
-const WarningIcon = () => (
-    <View style={[styles.iconBg, { backgroundColor: '#FFE6E6' }]}>
-        <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-            <Circle cx={12} cy={12} r={10} stroke="#E74C3C" strokeWidth={2} />
-            <Path d="M12 8v4M12 16h.01" stroke="#E74C3C" strokeWidth={2} strokeLinecap="round" />
-        </Svg>
-    </View>
-);
-
-const notificationsData = {
+const notificationsData: { today: NotificationItem[]; previously: NotificationItem[] } = {
     today: [
-        { id: 1, type: 'result', text: 'Your screening result from 03/04 has been uploaded', unread: true },
+        { id: 1, type: 'result', text: "Your screening result from 03/04 has been uploaded", unread: true },
     ],
     previously: [
         { id: 2, type: 'support', text: 'Updates from customer service', unread: false },
@@ -48,10 +29,45 @@ const notificationsData = {
     ],
 };
 
-const getIcon = (type: string) => {
+function DocumentIcon() {
+    return (
+        <View style={styles.iconBg}>
+            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                <Rect x={4} y={2} width={16} height={20} rx={2} stroke={INDIGO} strokeWidth={2} />
+                <Path d="M8 6h8M8 10h8M8 14h4" stroke={INDIGO} strokeWidth={2} strokeLinecap="round" />
+            </Svg>
+        </View>
+    );
+}
+
+function HeadphonesIcon() {
+    return (
+        <View style={styles.iconBg}>
+            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                <Path d="M3 18v-6a9 9 0 0 1 18 0v6" stroke={INDIGO} strokeWidth={2} strokeLinecap="round" />
+                <Path
+                    d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z"
+                    stroke={INDIGO}
+                    strokeWidth={2}
+                />
+            </Svg>
+        </View>
+    );
+}
+
+function WarningIcon() {
+    return (
+        <View style={[styles.iconBg, styles.iconBgWarning]}>
+            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                <Circle cx={12} cy={12} r={10} stroke="#c47a20" strokeWidth={2} />
+                <Path d="M12 8v4M12 16h.01" stroke="#c47a20" strokeWidth={2} strokeLinecap="round" />
+            </Svg>
+        </View>
+    );
+}
+
+function getIcon(type: NotificationItem['type']) {
     switch (type) {
-        case 'result':
-            return <DocumentIcon />;
         case 'support':
             return <HeadphonesIcon />;
         case 'warning':
@@ -59,14 +75,14 @@ const getIcon = (type: string) => {
         default:
             return <DocumentIcon />;
     }
-};
+}
 
 export default function NotificationCenter() {
-    const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
-    const renderNotification = (item: any) => (
-        <Pressable 
-            key={item.id} 
+
+    const renderNotification = (item: NotificationItem) => (
+        <Pressable
+            key={item.id}
             style={({ pressed }) => [styles.notificationCard, pressed && styles.cardPressed]}
         >
             {getIcon(item.type)}
@@ -77,127 +93,111 @@ export default function NotificationCenter() {
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#ecfffb', '#fcecfb']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradient}
-            />
-            
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
+            </View>
+
             <BackArrow />
-            
-            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Notifications</Text>
 
-            <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
-                {/* Today Section */}
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.scroll}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 32 },
+                ]}
+            >
+                <Text style={styles.title}>Notifications</Text>
+                <Text style={styles.subtitle}>Screening updates and messages from our team.</Text>
+
                 <Text style={styles.sectionTitle}>Today</Text>
-                {notificationsData.today.map(renderNotification)}
+                <View style={styles.section}>
+                    {notificationsData.today.map(renderNotification)}
+                </View>
 
-                {/* Previously Section */}
-                <Text style={styles.sectionTitle}>Previously</Text>
-                {notificationsData.previously.map(renderNotification)}
-
-                <View style={{ height: 40 }} />
+                <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>Previously</Text>
+                <View style={styles.section}>
+                    {notificationsData.previously.map(renderNotification)}
+                </View>
             </ScrollView>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-
-    gradient: {
+    container: { flex: 1 },
+    bg: {
         ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
     },
-
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
-
-    backButton: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-    },
-
-    backArrow: {
-        fontSize: 24,
-        color: '#333',
-    },
-
-    headerIcons: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 16,
-    },
-
+    scroll: { flex: 1, zIndex: 1 },
+    scrollContent: { paddingHorizontal: 20, gap: 4 },
     title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#333',
-        paddingHorizontal: 25,
-        paddingBottom: 20,
+        fontSize: 26,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        letterSpacing: -0.3,
+        marginBottom: 4,
     },
-
-    scrollView: {
-        flex: 1,
-        paddingHorizontal: 20,
+    subtitle: {
+        fontSize: 14,
+        fontFamily: 'NotoSans-Regular',
+        color: '#888',
+        marginBottom: 24,
+        lineHeight: 20,
     },
-
     sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 12,
-        marginTop: 8,
+        fontSize: 13,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#888',
+        letterSpacing: 0.4,
+        textTransform: 'uppercase',
+        marginBottom: 10,
     },
-
+    sectionTitleSpaced: {
+        marginTop: 20,
+    },
+    section: {
+        gap: 10,
+        marginBottom: 8,
+    },
     notificationCard: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#ffffff',
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
-    },
-
+        borderRadius: 20,
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        gap: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
+        boxShadow: '0px 2px 12px rgba(129,115,139,0.08)',
+    } as any,
     cardPressed: {
-        backgroundColor: '#f8f8f8',
+        opacity: 0.92,
     },
-
     iconBg: {
-        width: 40,
-        height: 40,
-        borderRadius: 10,
-        backgroundColor: '#E6F7F9',
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: ICON_BG,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 12,
     },
-
+    iconBgWarning: {
+        backgroundColor: 'rgba(196, 122, 32, 0.12)',
+    },
     notificationText: {
         flex: 1,
         fontSize: 14,
-        color: '#333',
+        fontFamily: 'NotoSans-Regular',
+        color: '#151515',
         lineHeight: 20,
     },
-
     unreadDot: {
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#E74C3C',
-        marginLeft: 8,
+        backgroundColor: INDIGO,
     },
 });

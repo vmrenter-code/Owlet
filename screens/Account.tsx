@@ -12,6 +12,7 @@ import userAuthServices from '../src/services/userAuthServices';
 import BackArrow from '../components/BackArrow';
 import { useChildProfile } from '../context/ChildProfileContext';
 import CalendarPicker from '../components/CalendarPicker';
+import { useChild } from '../context/ChildContext';
 
 export default function Account() {
     const { logout } = useAppState();
@@ -41,82 +42,15 @@ export default function Account() {
 
     const activeBirthDate = birthDates[activeChildId] ?? null;
 
-    // Change password handler (reauthenticate then update)
-    const handleChangePassword = async () => {
-        if (isChangingPassword) return;
+    const {selectedChild} = useChild();
 
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            Alert.alert('Missing fields', 'Please fill out all password fields.');
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            Alert.alert('Password mismatch', 'New passwords do not match.');
-            return;
-        }
-
-        if (newPassword.length < 6) {
-            Alert.alert('Weak password', 'Passwords must be at least 6 characters long.');
-            return;
-        }
-
-        setIsChangingPassword(true);
-        try {
-            const auth = getAuth();
-            const user = auth.currentUser;
-            if (!user || !user.email) throw new Error('Not signed in');
-
-            const credential = EmailAuthProvider.credential(user.email, currentPassword);
-            await reauthenticateWithCredential(user, credential);
-            await updatePassword(user, newPassword);
-
-            Alert.alert('Success', 'Your password has been changed.');
-            setChangePasswordVisible(false);
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-        } catch (err: any) {
-            console.error('Change password error:', err);
-            const code = err?.code ?? '';
-            let msg = 'Unable to change password. Please try again.';
-
-            switch (code) {
-                case 'auth/wrong-password':
-                    msg = 'Current password is incorrect.';
-                    break;
-                case 'auth/invalid-credential':
-                    msg = 'Original password is wrong.';
-                    break;
-                case 'auth/weak-password':
-                    msg = 'New password is too weak. Use at least 6 characters.';
-                    break;
-                case 'auth/too-many-requests':
-                    msg = 'Too many attempts. Please try again later.';
-                    break;
-                case 'auth/requires-recent-login':
-                    msg = 'Please reauthenticate and try again.';
-                    break;
-                case 'auth/user-mismatch':
-                    msg = 'The provided credential does not match the signed-in user.';
-                    break;
-                default:
-                    if (err?.message) msg = err.message;
-            }
-
-            Alert.alert('Error', msg);
-        } finally {
-            setIsChangingPassword(false);
-        }
-    };
-
-    const formatBirthDate = (iso: string | null): string => {
-        if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return 'Not set';
-        const [y, m, d] = iso.split('-');
-        return `${m}/${d}/${y}`;
+    const formatBirthDate = (bday: Date | null | undefined): string => {
+        if (!bday) return 'Not set';
+        return new Date(bday).toLocaleDateString('en-US');
     };
 
     const openEditName = () => {
-        setNameDraft(activeChild.name);
+        setNameDraft(selectedChild?.name ?? 'Set name');
         setEditNameVisible(true);
     };
 
@@ -292,7 +226,7 @@ navigation.getParent()?.dispatch(
                         onPress={openEditName}
                     >
                         <Text style={styles.itemLabel}>Name</Text>
-                        <Text style={styles.itemValue}>{activeChild.name}</Text>
+                        <Text style={styles.itemValue}>{selectedChild?.name ?? 'NoChild'}</Text>
                         <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
 
@@ -302,7 +236,9 @@ navigation.getParent()?.dispatch(
                         onPress={() => setBirthDateModalVisible(true)}
                     >
                         <Text style={styles.itemLabel}>Birth Date</Text>
-                        <Text style={styles.itemValue}>{formatBirthDate(activeBirthDate)}</Text>
+                        <Text style={styles.itemValue}>{
+                            selectedChild?.birthday ? new Date(selectedChild.birthday).toLocaleDateString('en-US') : 'Add birthdate'
+                        }</Text>
                         <Text style={styles.itemArrow}>›</Text>
                     </Pressable>
 

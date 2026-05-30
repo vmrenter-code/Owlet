@@ -4,11 +4,9 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
-  useWindowDimensions,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useScreeningLandscape } from '../../hooks/useScreeningLandscape';
-import RotateDeviceOverlay from '../../components/RotateDeviceOverlay';
+import LandscapeStage from '../../components/LandscapeStage';
 
 const solutions: { [key: number]: { title: string; steps: string[] } } = {
   1: {
@@ -69,9 +67,6 @@ const solutions: { [key: number]: { title: string; steps: string[] } } = {
 export default function TroubleshootingSolution() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { width, height } = useWindowDimensions();
-  const isWide = width >= height;
-  useScreeningLandscape();
 
   const issueId = route.params?.issueId || 6;
   const videoNumber = route.params?.videoNumber || 1;
@@ -82,67 +77,59 @@ export default function TroubleshootingSolution() {
   };
 
   return (
-    <View style={styles.container}>
-      {!isWide ? <RotateDeviceOverlay /> : null}
+    <LandscapeStage backgroundColor="#ffffff">
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.backArrow}>‹</Text>
+          </Pressable>
 
-      {isWide ? (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Text style={styles.backArrow}>‹</Text>
-            </Pressable>
+          <Pressable style={styles.closeButton} onPress={handleBackToScreening}>
+            <Text style={styles.closeIcon}>✕</Text>
+          </Pressable>
+        </View>
 
-            <Pressable style={styles.closeButton} onPress={handleBackToScreening}>
-              <Text style={styles.closeIcon}>✕</Text>
-            </Pressable>
-          </View>
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>{solution.title}</Text>
+          <Text style={styles.subtitle}>Try these steps:</Text>
+        </View>
 
-          <View style={styles.titleSection}>
-            <Text style={styles.title}>{solution.title}</Text>
-            <Text style={styles.subtitle}>Try these steps:</Text>
-          </View>
-
-          <View style={styles.stepsSection}>
-            {solution.steps.map((step, index) => (
-              <View key={index} style={styles.stepItem}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>{index + 1}</Text>
-                </View>
-                <Text style={styles.stepText}>{step}</Text>
+        <View style={styles.stepsSection}>
+          {solution.steps.map((step, index) => (
+            <View key={index} style={styles.stepItem}>
+              <View style={styles.stepNumber}>
+                <Text style={styles.stepNumberText}>{index + 1}</Text>
               </View>
-            ))}
-          </View>
+              <Text style={styles.stepText}>{step}</Text>
+            </View>
+          ))}
+        </View>
 
-          <View style={styles.buttonContainer}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && styles.buttonPressed,
-              ]}
-              onPress={handleBackToScreening}
-            >
-              <Text style={styles.primaryButtonText}>Back to Screening</Text>
-            </Pressable>
+        <View style={styles.buttonContainer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handleBackToScreening}
+          >
+            <Text style={styles.primaryButtonText}>Back to Screening</Text>
+          </Pressable>
 
-            <Pressable style={styles.secondaryButton} onPress={() => {}}>
-              <Text style={styles.secondaryButtonText}>Still need help? Contact us</Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      ) : null}
-    </View>
+          <Pressable style={styles.secondaryButton} onPress={() => {}}>
+            <Text style={styles.secondaryButtonText}>Still need help? Contact us</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </LandscapeStage>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
   scroll: {
     flex: 1,
   },
