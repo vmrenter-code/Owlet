@@ -309,9 +309,12 @@ export default function VideoScreen() {
         }
     };
 
-    // safe recording start
+    const ownsRecordingSession = videoNumber === 1;
+
+    // safe recording start -- only the first screen should own the recording session
     useEffect(() => {
         if (
+            ownsRecordingSession &&
             isCameraReady &&
             isRefReady &&
             isCameraMounted &&
@@ -332,7 +335,7 @@ export default function VideoScreen() {
 
             return () => clearTimeout(startTimer);
         }
-    }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted]);
+    }, [ownsRecordingSession, cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted]);
     
     const handleNext = async () => {
     // Stop the current video before navigating
@@ -340,20 +343,12 @@ export default function VideoScreen() {
         await videoRef.current.stopAsync();
     }
 
-    if (videoNumber < totalVideos) {
-        navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
+        if (videoNumber < totalVideos) {
+        navigation.push('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
     } else {
         //
         let recordingPath: string | null = null;
         let uploadedObjectKey: string | null = null;
-
-        if (!isCurrentlyRecording()) {
-            //
-            const recovered = await startScreeningRecording();
-            if (recovered) {
-                await new Promise((resolve) => setTimeout(resolve, 1200));
-            }
-        }
 
         try {
             recordingPath = await Promise.race([

@@ -49,6 +49,42 @@ export default function Account() {
         return new Date(bday).toLocaleDateString('en-US');
     };
 
+    const handleChangePassword = async () => {
+        if (isChangingPassword) return;
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            Alert.alert('Missing fields', 'Please fill out all password fields.');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            Alert.alert('Password mismatch', 'New passwords do not match.');
+            return;
+        }
+
+        setIsChangingPassword(true);
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            if (!user || !user.email) {
+                throw new Error('No authenticated user.');
+            }
+
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, newPassword);
+
+            Alert.alert('Password changed', 'Your password has been updated.');
+            setChangePasswordVisible(false);
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (err: any) {
+            const message = err?.message ?? 'Unable to change password.';
+            Alert.alert('Error', message);
+        } finally {
+            setIsChangingPassword(false);
+        }
+    };
+
     const openEditName = () => {
         setNameDraft(selectedChild?.name ?? 'Set name');
         setEditNameVisible(true);
@@ -376,7 +412,7 @@ navigation.getParent()?.dispatch(
                         <View style={{ height: 12 }} />
                         <TextInput
                             value={newPassword}
-                            onChangeText={setNewPassword}
+                            onChangeText={(t) => setNewPassword(t)}
                             placeholder="New password"
                             placeholderTextColor="#999"
                             style={styles.editNameInput}

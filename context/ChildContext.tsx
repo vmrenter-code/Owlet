@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
-const BASE_URL = "http://localhost:4000";
+import { API_BASE_URL } from '../src/config/apiBaseUrl';
 
 type Child = {
   id: string;
@@ -28,7 +27,7 @@ export const ChildProvider = ({ children: ReactChildren }: any) => {
     if (!user) return;
 
     const token = await user.getIdToken();
-    const res = await fetch(`${BASE_URL}/children`, {
+    const res = await fetch(`${API_BASE_URL}/children`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -59,16 +58,14 @@ export const ChildProvider = ({ children: ReactChildren }: any) => {
       try {
         const token = await user.getIdToken();
         // Sync user + ensure default child exists
-        const res = await fetch(`${BASE_URL}/users/sync`, {
+        const res = await fetch(`${API_BASE_URL}/users/sync`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         const text = await res.text();
-        //console.log("RAW RESPONSE:", text);
-
-        const data = JSON.parse(text);
+        const data = text ? JSON.parse(text) : null;
         // Load full children list
         await updateChildren();
         // Set default child
@@ -78,6 +75,8 @@ export const ChildProvider = ({ children: ReactChildren }: any) => {
 
       } catch (err) {
         console.error("ChildContext init error:", err);
+        setChildren([]);
+        setSelectedChild(null);
       }
     });
 
