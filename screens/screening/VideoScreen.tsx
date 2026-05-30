@@ -30,7 +30,7 @@ export default function VideoScreen() {
     const route = useRoute<any>();
     const isFocused = useIsFocused();
 
-    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
+    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, rrLog, connected, disconnect } = useScreening();
     const heartRateLogRef = useRef<typeof heartRateLog>([]);
     const heartRateRef = useRef<number | null>(null);
 
@@ -47,6 +47,15 @@ export default function VideoScreen() {
             setScreeningStartTime(Date.now());
         }
     }, [videoNumber]);
+
+    useEffect(() => {
+        if (rrLog.length > 0) {
+            AsyncStorage.setItem(
+                `rrLog_${currentScreeningID}`,
+                JSON.stringify(rrLog)
+            ).catch(() => {});
+        }
+    }, [currentScreeningID, rrLog]);
 
     useEffect(() => {
         heartRateLogRef.current = heartRateLog;
@@ -349,6 +358,7 @@ export default function VideoScreen() {
         //
         let recordingPath: string | null = null;
         let uploadedObjectKey: string | null = null;
+        const screeningIdForUpload = activeScreeningId ?? currentScreeningID;
 
         try {
             recordingPath = await Promise.race([
@@ -362,10 +372,10 @@ export default function VideoScreen() {
         //
 
         // S3 Upload
-        if (recordingPath && activeScreeningId) {
+        if (recordingPath && screeningIdForUpload) {
             const uploadResult = await uploadScreeningVideo({
                 baseUrl: BASE_URL,
-                screeningId: activeScreeningId,
+                screeningId: screeningIdForUpload,
                 videoNumber: totalVideos,
                 recordingUri: recordingPath,
                 contentType: 'video/mp4',
@@ -384,7 +394,7 @@ export default function VideoScreen() {
         // Save screening progress
         try {
             await AsyncStorage.setItem('screeningProgress', JSON.stringify({
-                screeningId: activeScreeningId,
+                screeningId: screeningIdForUpload,
                 videoNumber: totalVideos,
                 completed: true,
                 timestamp: Date.now(),
@@ -399,11 +409,38 @@ export default function VideoScreen() {
         try {
             //
             await AsyncStorage.setItem(
-                `heartRateLog_${currentScreeningID}`,
+                `heartRateLog_${screeningIdForUpload}`,
                 JSON.stringify(heartRateLogRef.current)
+            );
+            await AsyncStorage.setItem(
+                `rrLog_${screeningIdForUpload}`,
+                JSON.stringify(rrLog)
             );
         } catch (e) {
             //
+        }
+
+        try {
+            const rmssd = calculateRMSSD(rrLog);
+            const response = await fetch(`${BASE_URL}/screening/${screeningIdForUpload}/heart-rate-csv`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    videoNumber: totalVideos,
+                    heartRateLog: heartRateLogRef.current,
+                    rrLog,
+                    rmssd,
+                    completedAt: new Date().toISOString(),
+                }),
+            });
+
+            if (!response.ok) {
+                console.warn('Heart rate upload failed:', await response.text());
+            }
+        } catch (error) {
+            console.warn('Heart rate upload error:', error);
         }
 
         disconnect(); // disconnect AFTER saving
