@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform, Modal, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -107,6 +107,7 @@ export default function VideoScreen() {
     const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
     
     const [videoFinished, setVideoFinished] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     
     // Track exit confirmation modal visibility
     const [showExitModal, setShowExitModal] = useState(false);
@@ -347,6 +348,10 @@ export default function VideoScreen() {
     }, [ownsRecordingSession, cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted]);
     
     const handleNext = async () => {
+    if (isUploading) {
+        return;
+    }
+
     // Stop the current video before navigating
     if (videoRef.current) {
         await videoRef.current.stopAsync();
@@ -356,95 +361,100 @@ export default function VideoScreen() {
         navigation.push('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
     } else {
         //
-        let recordingPath: string | null = null;
-        let uploadedObjectKey: string | null = null;
-        const screeningIdForUpload = activeScreeningId ?? currentScreeningID;
-
+        setIsUploading(true);
         try {
-            recordingPath = await Promise.race([
-                stopScreeningRecording(),
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
-            ]);
-        } catch (e) {
-            //
-        }
+            let recordingPath: string | null = null;
+            let uploadedObjectKey: string | null = null;
+            const screeningIdForUpload = activeScreeningId ?? currentScreeningID;
 
-        //
-
-        // S3 Upload
-        if (recordingPath && screeningIdForUpload) {
-            const uploadResult = await uploadScreeningVideo({
-                baseUrl: BASE_URL,
-                screeningId: screeningIdForUpload,
-                videoNumber: totalVideos,
-                recordingUri: recordingPath,
-                contentType: 'video/mp4',
-            });
-
-            if (uploadResult.success) {
-                uploadedObjectKey = uploadResult.objectKey ?? null;
+            try {
+                recordingPath = await Promise.race([
+                    stopScreeningRecording(),
+                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+                ]);
+            } catch (e) {
                 //
+            }
+
+            //
+
+            // S3 Upload
+            if (recordingPath && screeningIdForUpload) {
+                const uploadResult = await uploadScreeningVideo({
+                    baseUrl: BASE_URL,
+                    screeningId: screeningIdForUpload,
+                    videoNumber: totalVideos,
+                    recordingUri: recordingPath,
+                    contentType: 'video/mp4',
+                });
+
+                if (uploadResult.success) {
+                    uploadedObjectKey = uploadResult.objectKey ?? null;
+                    //
+                } else {
+                    //
+                }
             } else {
                 //
             }
-        } else {
-            //
-        }
 
-        // Save screening progress
-        try {
-            await AsyncStorage.setItem('screeningProgress', JSON.stringify({
-                screeningId: screeningIdForUpload,
-                videoNumber: totalVideos,
-                completed: true,
-                timestamp: Date.now(),
-                recordingUri: recordingPath,
-                s3ObjectKey: uploadedObjectKey,
-            }));
-        } catch (e) {
-            //
-        }
-
-        // Save heart rate log BEFORE disconnecting
-        try {
-            //
-            await AsyncStorage.setItem(
-                `heartRateLog_${screeningIdForUpload}`,
-                JSON.stringify(heartRateLogRef.current)
-            );
-            await AsyncStorage.setItem(
-                `rrLog_${screeningIdForUpload}`,
-                JSON.stringify(rrLog)
-            );
-        } catch (e) {
-            //
-        }
-
-        try {
-            const rmssd = calculateRMSSD(rrLog);
-            const response = await fetch(`${BASE_URL}/screening/${screeningIdForUpload}/heart-rate-csv`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+            // Save screening progress
+            try {
+                await AsyncStorage.setItem('screeningProgress', JSON.stringify({
+                    screeningId: screeningIdForUpload,
                     videoNumber: totalVideos,
-                    heartRateLog: heartRateLogRef.current,
-                    rrLog,
-                    rmssd,
-                    completedAt: new Date().toISOString(),
-                }),
-            });
-
-            if (!response.ok) {
-                console.warn('Heart rate upload failed:', await response.text());
+                    completed: true,
+                    timestamp: Date.now(),
+                    recordingUri: recordingPath,
+                    s3ObjectKey: uploadedObjectKey,
+                }));
+            } catch (e) {
+                //
             }
-        } catch (error) {
-            console.warn('Heart rate upload error:', error);
-        }
 
-        disconnect(); // disconnect AFTER saving
-        navigation.navigate('ScreeningComplete');
+            // Save heart rate log BEFORE disconnecting
+            try {
+                //
+                await AsyncStorage.setItem(
+                    `heartRateLog_${screeningIdForUpload}`,
+                    JSON.stringify(heartRateLogRef.current)
+                );
+                await AsyncStorage.setItem(
+                    `rrLog_${screeningIdForUpload}`,
+                    JSON.stringify(rrLog)
+                );
+            } catch (e) {
+                //
+            }
+
+            try {
+                const rmssd = calculateRMSSD(rrLog);
+                const response = await fetch(`${BASE_URL}/screening/${screeningIdForUpload}/heart-rate-csv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        videoNumber: totalVideos,
+                        heartRateLog: heartRateLogRef.current,
+                        rrLog,
+                        rmssd,
+                        completedAt: new Date().toISOString(),
+                    }),
+                });
+
+                if (!response.ok) {
+                    console.warn('Heart rate upload failed:', await response.text());
+                }
+            } catch (error) {
+                console.warn('Heart rate upload error:', error);
+            }
+
+            disconnect(); // disconnect AFTER saving
+            navigation.navigate('ScreeningComplete');
+        } finally {
+            setIsUploading(false);
+        }
     }
 };
 //hidden camera. must have it to run without preview
@@ -599,6 +609,16 @@ export default function VideoScreen() {
                         </View>
                     </View>
                 ) : null}
+
+                <Modal visible={isUploading} transparent statusBarTranslucent animationType="fade" onRequestClose={() => {}}>
+                    <View style={styles.uploadOverlay}>
+                        <View style={styles.uploadCard}>
+                            <ActivityIndicator size="large" color="#5058b4" />
+                            <Text style={styles.uploadTitle}>Video is uploading</Text>
+                            <Text style={styles.uploadMessage}>Please stay on this screen until the upload finishes.</Text>
+                        </View>
+                    </View>
+                </Modal>
 
                 <TroubleshootingOverlay
                     visible={showTroubleshooting}
@@ -867,6 +887,42 @@ skipIcon: {
         flexDirection: 'row',
         gap: 10,
         width: '100%',
+    },
+
+    uploadOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.72)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+
+    uploadCard: {
+        width: '100%',
+        maxWidth: 360,
+        borderRadius: 24,
+        paddingVertical: 28,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+        backgroundColor: 'rgba(18, 20, 28, 0.95)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.12)',
+    },
+
+    uploadTitle: {
+        marginTop: 18,
+        color: '#FFFFFF',
+        fontSize: 22,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+
+    uploadMessage: {
+        marginTop: 10,
+        color: 'rgba(255, 255, 255, 0.78)',
+        fontSize: 15,
+        lineHeight: 22,
+        textAlign: 'center',
     },
 
     cancelButton: {
