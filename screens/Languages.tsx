@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
+import HomeBg from '../components/HomeBg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackArrow from '../components/BackArrow';
 import { getAuth } from 'firebase/auth';
@@ -66,20 +66,16 @@ export default function Languages() {
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#ecfffb', '#fcecfb']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradient}
-            />
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
+            </View>
 
-            {/* Header */}
-                <BackArrow/>
+            <BackArrow />
 
-            {/* Title */}
-            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Languages</Text>
+            <View style={styles.content}>
+                <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Languages</Text>
 
-            <View style={styles.section}>
+                <View style={styles.section}>
                 <View style={styles.selectedItem}>
                     <Text style={styles.itemLabel}>Selected Language</Text>
                     <Text style={styles.itemValue}>{selectedLanguage}</Text>
@@ -106,6 +102,7 @@ export default function Languages() {
                         )}
                     </Pressable>
                 ))}
+                </View>
             </View>
         </View>
     );
@@ -116,8 +113,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    gradient: {
+    bg: {
         ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
+    },
+    content: {
+        flex: 1,
+        zIndex: 1,
     },
 
 
@@ -134,10 +136,11 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        paddingHorizontal: 25,
+        fontSize: 26,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        letterSpacing: -0.3,
+        paddingHorizontal: 20,
         paddingBottom: 12,
     },
 
@@ -145,8 +148,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
         marginBottom: 16,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
     },
 
     selectedItem: {
@@ -158,13 +163,15 @@ const styles = StyleSheet.create({
     },
 
     itemLabel: {
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
     },
 
     itemValue: {
-        fontSize: 16,
-        color: '#8BC0CF',
+        fontSize: 14,
+        fontFamily: 'NotoSans-Regular',
+        color: '#5058b4',
     },
 
     languageItem: {
@@ -178,7 +185,7 @@ const styles = StyleSheet.create({
     },
 
     languageItemPressed: {
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'rgba(80, 88, 180, 0.06)',
     },
 
     lastItem: {
@@ -186,13 +193,14 @@ const styles = StyleSheet.create({
     },
 
     languageLabel: {
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
     },
 
     checkmark: {
-        fontSize: 18,
-        color: '#8BC0CF',
-        fontWeight: '600',
+        fontSize: 16,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#5058b4',
     },
 });

@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation, useFocusEffect, CommonActions } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import HomeBg from '../components/HomeBg';
 import { useAppState } from '../context/AppStateContext';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
@@ -173,17 +173,13 @@ navigation.getParent()?.dispatch(
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#ecfffb', '#fcecfb']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradient}
-            />
-            {/* Header */}
-           <BackArrow />
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
+            </View>
+            <BackArrow />
            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Account</Text>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
                
 
                 <View style={styles.section}>
@@ -386,8 +382,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    gradient: {
+    bg: {
         ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
+    },
+    scroll: {
+        flex: 1,
+        zIndex: 1,
     },
 
 
@@ -405,10 +406,10 @@ const styles = StyleSheet.create({
     },
 
     sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
-        paddingHorizontal: 25,
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 12,
     },
@@ -417,8 +418,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
         marginBottom: 8,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
     },
 
     accountItem: {
@@ -435,18 +438,20 @@ const styles = StyleSheet.create({
     },
 
     accountItemPressed: {
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'rgba(80, 88, 180, 0.06)',
     },
 
     itemLabel: {
         flex: 1,
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
     },
 
     itemValue: {
-        fontSize: 16,
-        color: '#999',
+        fontSize: 14,
+        fontFamily: 'NotoSans-Regular',
+        color: '#888',
     },
 
     itemValueTrailing: {
@@ -465,8 +470,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
         marginTop: 20,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
     },
 
     dangerItem: {
@@ -481,17 +488,18 @@ const styles = StyleSheet.create({
     },
 
     dangerText: {
-        fontSize: 16,
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
         color: '#e74c3c',
     },
 
     title: {
-        fontSize: 24,
-        fontFamily: 'NotoSans-Bold',
-        color: '#1f2a2f',
-        paddingHorizontal: 24,
+        fontSize: 26,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        paddingHorizontal: 20,
         paddingBottom: 16,
-        letterSpacing: -0.5,
+        letterSpacing: -0.3,
     },
 
 
@@ -519,9 +527,9 @@ const styles = StyleSheet.create({
     },
 
     editNameTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
         marginBottom: 14,
     },
 
@@ -531,8 +539,9 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingHorizontal: 14,
         paddingVertical: 12,
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-Regular',
+        color: '#151515',
         backgroundColor: '#fafafa',
     },
 
@@ -559,18 +568,18 @@ const styles = StyleSheet.create({
 
     editNameCancelText: {
         fontSize: 15,
-        color: '#333',
-        fontWeight: '500',
+        fontFamily: 'NotoSans-Medium',
+        color: '#151515',
     },
 
     editNameSave: {
-        backgroundColor: '#49A3BD',
+        backgroundColor: '#5058b4',
     },
 
     editNameSaveText: {
         fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
         color: '#ffffff',
-        fontWeight: '600',
     },
 
     calendarCard: {

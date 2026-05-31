@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
+import HomeBg from '../components/HomeBg';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -62,17 +62,13 @@ export default function PrivacyData() {
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#ecfffb', '#fcecfb']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradient}
-            />
-            
-                <BackArrow/>
-           
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
+            </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <BackArrow />
+
+            <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
                 {/* Title */}
                 <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Privacy & Data</Text>
 
@@ -169,8 +165,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    gradient: {
+    bg: {
         ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
+    },
+    scroll: {
+        flex: 1,
+        zIndex: 1,
     },
 
 
@@ -187,18 +188,19 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        paddingHorizontal: 25,
+        fontSize: 26,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        letterSpacing: -0.3,
+        paddingHorizontal: 20,
         paddingBottom: 12,
     },
 
     sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        paddingHorizontal: 25,
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 12,
     },
@@ -207,8 +209,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
         marginBottom: 8,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
     },
 
     linkItem: {
@@ -222,7 +226,7 @@ const styles = StyleSheet.create({
     },
 
     linkItemPressed: {
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'rgba(80, 88, 180, 0.06)',
     },
 
     lastItem: {
@@ -230,8 +234,9 @@ const styles = StyleSheet.create({
     },
 
     linkLabel: {
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
     },
 
     linkArrow: {
@@ -248,12 +253,14 @@ const styles = StyleSheet.create({
 
     bodyText: {
         fontSize: 14,
-        color: '#333',
+        fontFamily: 'NotoSans-Regular',
+        color: '#2E3332',
         lineHeight: 20,
     },
 
     boldText: {
-        fontWeight: '600',
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
     },
 
     toggleItem: {

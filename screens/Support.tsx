@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackArrow from '../components/BackArrow';
+import HomeBg from '../components/HomeBg';
 
 export default function Support() {
     const navigation = useNavigation<any>();
@@ -10,21 +10,16 @@ export default function Support() {
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#ecfffb', '#fcecfb']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradient}
-            />
-            
-           
-                <BackArrow/>
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
+            </View>
 
-            {/* Title */}
-            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Support</Text>
+            <BackArrow />
 
-            {/* Support Options */}
-            <View style={styles.section}>
+            <View style={styles.content}>
+                <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Support</Text>
+
+                <View style={styles.section}>
                 <Pressable style={({ pressed }) => [styles.linkItem, pressed && styles.linkItemPressed]}>
                     <Text style={styles.linkLabel}>Contact Us</Text>
                     <Text style={styles.linkArrow}>›</Text>
@@ -34,6 +29,7 @@ export default function Support() {
                     <Text style={styles.linkLabel}>Feedback</Text>
                     <Text style={styles.linkArrow}>›</Text>
                 </Pressable>
+                </View>
             </View>
         </View>
     );
@@ -44,8 +40,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    gradient: {
+    bg: {
         ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
+    },
+    content: {
+        flex: 1,
+        zIndex: 1,
     },
 
     header: {
@@ -66,10 +67,11 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        paddingHorizontal: 25,
+        fontSize: 26,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        letterSpacing: -0.3,
+        paddingHorizontal: 20,
         paddingBottom: 12,
     },
 
@@ -77,8 +79,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
         marginBottom: 8,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
     },
 
     linkItem: {
@@ -92,7 +96,7 @@ const styles = StyleSheet.create({
     },
 
     linkItemPressed: {
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'rgba(80, 88, 180, 0.06)',
     },
 
     lastItem: {
@@ -100,8 +104,9 @@ const styles = StyleSheet.create({
     },
 
     linkLabel: {
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
     },
 
     linkArrow: {

@@ -1,14 +1,15 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { Svg, Path } from 'react-native-svg';
+import React, { useCallback, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { Video, ResizeMode } from 'expo-av';
 import HomeBg from '../../components/HomeBg';
-import ImageCard from '../../components/ImageCard';
 import PrimaryBlueButton from '../../components/PrimaryBlueButton';
 import { useScreening } from '../../context/ScreeningContext';
 import { usePortraitLock } from '../../hooks/usePortraitLock';
+
+const ekgInstructionVideo = require('../../assets/videos/ekginstruction.mp4');
 
 export default function EKGPlacement() {
     usePortraitLock();
@@ -17,6 +18,18 @@ export default function EKGPlacement() {
     const insets = useSafeAreaInsets();
     const { heartRate, connected, scanning, error, connectToH9, screeningId: contextScreeningId } = useScreening();
     const screeningId = contextScreeningId ?? route.params?.screeningId;
+    const videoRef = useRef<InstanceType<typeof Video> | null>(null);
+    const [videoReady, setVideoReady] = useState(false);
+
+    useFocusEffect(
+        useCallback(() => {
+            setVideoReady(true);
+            return () => {
+                setVideoReady(false);
+                videoRef.current?.stopAsync().catch(() => {});
+            };
+        }, [])
+    );
 
     return (
         <View style={styles.container}>
@@ -24,7 +37,6 @@ export default function EKGPlacement() {
                 <HomeBg />
             </View>
 
-            {/* Back button overlaid on image */}
             <View style={[styles.backWrap, { paddingTop: insets.top + 8 }]}>
                 <Pressable
                     style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.5 }]}
@@ -37,66 +49,70 @@ export default function EKGPlacement() {
                 </Pressable>
             </View>
 
-            {/* Main layout mirrors ScreeningInstructions */}
             <View style={styles.slideArea}>
-                {/* Top — image area */}
                 <View style={styles.imageBox}>
-                    <ImageCard style={styles.imageFill}>
-                        {/* Centered play icon placeholder */}
-                        <View style={styles.playOverlay}>
-                            <View style={styles.playCircle}>
-                                <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
-                                    <Path d="M8 5v14l11-7L8 5z" fill="rgba(80,88,180,0.5)" />
-                                </Svg>
-                            </View>
+                    {videoReady ? (
+                        <View style={styles.videoClip}>
+                            <Video
+                                ref={videoRef}
+                                source={ekgInstructionVideo}
+                                style={styles.imageFill}
+                                resizeMode={ResizeMode.CONTAIN}
+                                shouldPlay
+                                isLooping
+                                isMuted={false}
+                                volume={1.0}
+                                useNativeControls
+                            />
                         </View>
-                    </ImageCard>
+                    ) : null}
                 </View>
 
-                {/* Bottom — scrollable content */}
-                <ScrollView
-                    style={styles.textBox}
-                    contentContainerStyle={styles.textContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    <Text style={styles.title}>EKG Placement</Text>
-                    <Text style={styles.desc}>
-                        Follow the video above to place the EKG wearable on your child before beginning the screening.
+                <View style={styles.textBox}>
+                    <Text style={styles.title} accessibilityRole="header">
+                        EKG Placement
                     </Text>
-
-                    {/* H9 card */}
-                    <View style={styles.h9Card}>
-                        {connected ? (
-                            <View style={styles.connectedRow}>
-                                <View style={styles.connectedDot} />
-                                <View>
-                                    <Text style={styles.h9Title}>Polar H9 Connected</Text>
-                                    {heartRate ? <Text style={styles.h9Sub}>{heartRate} BPM</Text> : null}
-                                </View>
-                            </View>
-                        ) : (
-                            <View style={styles.connectRow}>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.h9Title}>Polar H9 Monitor</Text>
-                                    <Text style={styles.h9Sub}>Optional — for heart rate tracking</Text>
-                                </View>
-                                <Pressable
-                                    style={({ pressed }) => [styles.connectBtn, pressed && { opacity: 0.8 }, scanning && { opacity: 0.6 }]}
-                                    onPress={connectToH9}
-                                    disabled={scanning}
-                                    accessibilityRole="button"
-                                >
-                                    <Text style={styles.connectBtnText}>{scanning ? 'Scanning…' : 'Connect'}</Text>
-                                </Pressable>
-                            </View>
-                        )}
-                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-                    </View>
-                </ScrollView>
+                    <Text style={styles.desc}>
+                        Follow the video above to place the EKG wearable on your child before beginning
+                        the screening.
+                    </Text>
+                </View>
             </View>
 
-            {/* Button pinned to bottom */}
-            <View style={styles.footer}>
+            <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 28) }]}>
+                <View style={styles.h9Card}>
+                    {connected ? (
+                        <View style={styles.connectedRow}>
+                            <View style={styles.connectedDot} />
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.h9Title}>Polar H9 Connected</Text>
+                                {heartRate ? <Text style={styles.h9Sub}>{heartRate} BPM</Text> : null}
+                            </View>
+                        </View>
+                    ) : (
+                        <View style={styles.connectRow}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.h9Title}>Polar H9 Monitor</Text>
+                                <Text style={styles.h9Sub}>Optional — for heart rate tracking</Text>
+                            </View>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.connectBtn,
+                                    pressed && { opacity: 0.8 },
+                                    scanning && { opacity: 0.6 },
+                                ]}
+                                onPress={connectToH9}
+                                disabled={scanning}
+                                accessibilityRole="button"
+                            >
+                                <Text style={styles.connectBtnText}>
+                                    {scanning ? 'Scanning…' : 'Connect'}
+                                </Text>
+                            </Pressable>
+                        </View>
+                    )}
+                    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                </View>
                 <PrimaryBlueButton
                     onPress={() => navigation.navigate('PositionChild', { screeningId })}
                     fullWidth
@@ -136,39 +152,32 @@ const styles = StyleSheet.create({
     imageBox: {
         flex: 3,
         width: '100%',
+        backgroundColor: 'transparent',
+        paddingTop: 120,
+    },
+    videoClip: {
+        flex: 1,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
     },
     imageFill: {
         width: '100%',
         height: '100%',
-    },
-    playOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    playCircle: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: 'rgba(80,88,180,0.1)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: 'rgba(80,88,180,0.2)',
+        backgroundColor: 'transparent',
     },
     textBox: {
         flex: 2,
-        minHeight: 0,
-    },
-    textContent: {
+        justifyContent: 'center',
         paddingHorizontal: 24,
-        paddingVertical: 20,
-        gap: 14,
+        paddingVertical: 12,
     },
     title: {
         fontSize: 22,
         fontFamily: 'NotoSans-SemiBold',
         color: '#151515',
+        marginBottom: 8,
         letterSpacing: -0.2,
         textAlign: 'center',
     },
@@ -186,6 +195,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderWidth: 1,
         borderColor: 'rgba(0,0,0,0.07)',
+        marginBottom: 12,
     },
     connectRow: {
         flexDirection: 'row',
@@ -220,6 +230,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 16,
         borderRadius: 100,
+        flexShrink: 0,
     },
     connectBtnText: {
         color: '#ffffff',
@@ -235,7 +246,6 @@ const styles = StyleSheet.create({
     footer: {
         paddingHorizontal: 28,
         paddingTop: 8,
-        paddingBottom: 28,
         flexShrink: 0,
         zIndex: 1,
     },
