@@ -34,7 +34,7 @@ model Child {
   birthday      DateTime?
   race          String?
   ethnicity     String?
-  medicalHistory String?
+  medicalHistory String[]
   medicalNotes   String?
   createdAt     DateTime  @default(now())
 

@@ -13,6 +13,7 @@ import BackArrow from '../components/BackArrow';
 import { useChildProfile } from '../context/ChildProfileContext';
 import CalendarPicker from '../components/CalendarPicker';
 import { useChild } from '../context/ChildContext';
+import { API_BASE_URL } from '../src/config/apiBaseUrl';
 
 export default function Account() {
     const { logout } = useAppState();
@@ -29,15 +30,14 @@ export default function Account() {
     const {
         activeChildId,
         activeChild,
-        updateChildName,
         birthDates,
-        updateChildBirthDate,
+        //updateChildBirthDate,
         openSwitcher,
     } = useChildProfile();
 
     const activeBirthDate = birthDates[activeChildId] ?? null;
 
-    const {selectedChild} = useChild();
+    const {selectedChild, updateChildName, updateChildBirthDate} = useChild();
 
     const formatBirthDate = (bday: Date | null | undefined): string => {
         if (!bday) return 'Not set';
@@ -49,14 +49,48 @@ export default function Account() {
         setEditNameVisible(true);
     };
 
-    const saveChildName = () => {
+    const saveChildName = async () => {
         const trimmed = nameDraft.trim();
         if (trimmed.length === 0) {
             Alert.alert('Name required', 'Please enter a name.');
             return;
         }
-        updateChildName(activeChildId, trimmed);
-        setEditNameVisible(false);
+        // Update databse
+        try {
+            const user = getAuth().currentUser;
+            if (!user) {
+                console.log('No authenticated user found');
+                return;
+            }
+
+            const token = await user.getIdToken();
+            const response = await fetch(
+                `${API_BASE_URL}/children/${selectedChild?.id}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        name: trimmed,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update child name');
+            }
+
+            // Update local UI state
+            updateChildName(selectedChild?.id ?? '', trimmed);
+            setEditNameVisible(false);
+        } catch (error) {
+            console.error('Error updating child:', error);
+            Alert.alert('Error', 'Failed to update child name.');
+        }
     };
 
     useFocusEffect(
@@ -348,13 +382,13 @@ navigation.getParent()?.dispatch(
                     />
                     <View style={[styles.editNameCard, styles.calendarCard]}>
                         <Text style={styles.editNameTitle}>
-                            Select {activeChild.name}'s birth date
+                            Select {selectedChild?.name}'s birth date
                         </Text>
                         <CalendarPicker
                             value={activeBirthDate}
                             minDate={new Date(2000, 0, 1)}
                             onChange={(iso) => {
-                                updateChildBirthDate(activeChildId, iso);
+                                updateChildBirthDate(selectedChild?.id ?? '', iso);
                                 setBirthDateModalVisible(false);
                             }}
                         />

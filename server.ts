@@ -46,14 +46,12 @@ app.post('/profile', async (req, res) => {
     const user = await prisma.user.upsert({
       where: { firebaseUid },
       update: { 
-        name, 
-        babyBday: babyBday ? new Date(babyBday) : null, 
+        name,
         notifications 
       },
       create: { 
         firebaseUid, 
-        name, 
-        babyBday: babyBday ? new Date(babyBday) : null, 
+        name,
         notifications 
       },
     });
@@ -115,6 +113,7 @@ app.post('/users/sync', async (req, res) => {
   }
 });
 
+// Create a child profile linked to the user
 app.post('/children', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -124,7 +123,7 @@ app.post('/children', async (req, res) => {
     const token = authHeader.split("Bearer ")[1];
     const decodedToken = await admin.auth().verifyIdToken(token);
     const firebaseUid = decodedToken.uid;
-    const { name, birthday } = req.body;
+    const { name, birthday, race, ethnicity, medicalHistory, medicalNotes } = req.body;
 
     // Find user in the database
     const user = await prisma.user.findUnique({ where: { firebaseUid } });
@@ -139,6 +138,10 @@ app.post('/children', async (req, res) => {
         name: name || 'New Child',
         birthday: birthday ? new Date(birthday) : null,
         userId: user.id,
+        race: race,
+        ethnicity: ethnicity,
+        medicalHistory: medicalHistory,
+        medicalNotes: medicalNotes,
       },
     });
     return res.json({ success: true, child });
@@ -148,6 +151,7 @@ app.post('/children', async (req, res) => {
   }
 });
 
+// Fetch child profiles for the curr user
 app.get('/children', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -178,6 +182,53 @@ app.get('/children', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch children" });
   }
 });
+
+// Update a child profile
+app.put('/children/:childId', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Missing token" });
+    }
+    const token = authHeader.split("Bearer ")[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const firebaseUid = decodedToken.uid;
+    const { childId } = req.params;
+    const { name, birthday, race, medicalHistory, medicalNotes } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: { firebaseUid },
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const child = await prisma.child.findUnique({
+      where: {
+        id: childId,
+        userId: user.id,
+      },
+    });
+    if (!child) {
+      return res.status(404).json({ error: "Child not found" });
+    }
+
+    const updatedChild = await prisma.child.update({
+      where: { id: childId },
+      data: {
+        ...(name && { name }),
+        ...(birthday && { birthday: new Date(birthday) }),
+        ...(race && { race }),
+        ...(medicalHistory && { medicalHistory }),
+        ...(medicalNotes && { medicalNotes }),
+      },
+    });
+
+    res.json({ success: true, child: updatedChild });
+  } catch (err) {
+    console.error('Error updating child profile:', err);
+    res.status(500).json({ success: false, error: 'Failed to update child profile' });
+  }
+})
 
 // Create a new screening
 app.post('/screening', async (req, res) => {
@@ -234,7 +285,7 @@ app.post('/screening', async (req, res) => {
   }
 });
 
-// GET /screenings
+// Fetch screenings from a user & child profile
 app.get('/screenings', async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
