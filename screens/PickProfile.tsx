@@ -11,13 +11,22 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useProfile } from '../context/ProfileContext';
 import { useAppState } from '../context/AppStateContext';
 
+import jelli from '../assets/jellie.svg';
+import fibi from '../assets/fibi.svg';
+import cici from '../assets/cici.svg';
+import solie from '../assets/solie.svg';
+import suki from '../assets/suki.svg';
+import dumi from '../assets/dumi.svg';
+
+
+
 const AVATARS = [
-  { id: '1', label: '' },
-  { id: '2', label: '' },
-  { id: '3', label: '' },
-  { id: '4', label: '' },
-  { id: '5', label: '' },
-  { id: '6', label: '' },
+  { id: '1', component: jelli },
+  { id: '2', component: fibi },
+  { id: '3', component: cici },
+  { id: '4', component: solie },
+  { id: '5', component: suki },
+  { id: '6', component: dumi },
 ];
 
 export default function PickProfile() {
@@ -47,6 +56,7 @@ export default function PickProfile() {
   };
 
   const avatarSize = (width - 60 - 16) / 2;
+
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -80,29 +90,33 @@ export default function PickProfile() {
               <View style={styles.grid}>
                 {AVATARS.map((avatar) => {
                   const isSelected = selectedId === avatar.id;
+                  const AvatarSvg = avatar.component;
                   return (
                     <Pressable
                       key={avatar.id}
                       onPress={() => setSelectedId(avatar.id)}
                       accessibilityRole="radio"
-                      accessibilityLabel={`${avatar.label} avatar`}
                       accessibilityState={{ checked: isSelected }}
                       hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                       style={styles.avatarWrapper}
                     >
-                      <View style={[
-                        styles.avatarCircle,
-                        { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 },
-                        isSelected && styles.avatarCircleSelected,
-                      ]}>
-                        <View style={[
-                          styles.avatarPlaceholder,
-                          { width: avatarSize - 8, height: avatarSize - 8, borderRadius: (avatarSize - 8) / 2 },
-                          isSelected && styles.avatarPlaceholderSelected,
-                        ]} />
+                      <View
+                        style={[
+                          styles.avatarCircle,
+                          {
+                            width: avatarSize,
+                            height: avatarSize,
+                            borderRadius: avatarSize / 2,
+                          },
+                          isSelected && styles.avatarCircleSelected,
+                        ]}
+                      >
+                        <AvatarSvg
+                          width={avatarSize - 2}
+                          height={avatarSize - 2}
+                        />
                       </View>
                       <Text style={[styles.avatarLabel, isSelected && styles.avatarLabelSelected]}>
-                        {avatar.label}
                       </Text>
                     </Pressable>
                   );
@@ -171,7 +185,7 @@ const styles = StyleSheet.create({
   },
 
   avatarCircle: {
-    backgroundColor: '#eae9fa',
+    backgroundColor: '#ffffff',
     borderWidth: 3,
     borderColor: 'transparent',
     justifyContent: 'center',
@@ -181,6 +195,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,
     elevation: 4,
+    overflow: 'hidden',
   },
 
   avatarCircleSelected: {
