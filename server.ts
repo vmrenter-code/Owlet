@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import express from 'express';
 import { randomUUID } from 'crypto';
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg';
 import cors from 'cors';
@@ -8,7 +10,34 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 
 import admin from 'firebase-admin';
-import serviceAccount from './src/config/firebase-service-account.json' with {type: 'json'};
+
+function loadFirebaseServiceAccount(): admin.ServiceAccount {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON) as admin.ServiceAccount;
+  }
+
+  const candidates = [
+    process.env.FIREBASE_SERVICE_ACCOUNT_PATH,
+    resolve('src/config/firebase-service-account.json'),
+    resolve('firebase-service-account.json'),
+  ].filter((p): p is string => !!p);
+
+  for (const filePath of candidates) {
+    if (existsSync(filePath)) {
+      return JSON.parse(readFileSync(filePath, 'utf8')) as admin.ServiceAccount;
+    }
+  }
+
+  throw new Error(
+    'Firebase Admin credentials missing. Add src/config/firebase-service-account.json or set FIREBASE_SERVICE_ACCOUNT_PATH / FIREBASE_SERVICE_ACCOUNT_JSON in .env',
+  );
+}
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is missing from .env — required for the API server.');
+}
+
+const serviceAccount = loadFirebaseServiceAccount();
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -22,14 +51,64 @@ app.use(cors());
 const s3 = new S3Client({ region: process.env.AWS_REGION });
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+  credential: admin.credential.cert(serviceAccount),
 });
-console.log('Firebase admin initialized with service account:', serviceAccount.project_id);
+console.log('Firebase admin initialized for project:', serviceAccount.project_id);
+
+app.get('/health', (_req, res) => {
+  res.json({ ok: true });
+});
 
 // Helper to ensure param is a string
 function getParam(req: express.Request, key: string): string {
   const value = req.params[key];
   return Array.isArray(value) ? value[0] : value;
+}
+
+type DbChild = {
+  id: string;
+  userId: string;
+  name: string | null;
+  birthday: Date | null;
+  race: string | null;
+  ethnicity: string | null;
+  gender: string | null;
+  avatarKey: string | null;
+  medicalHistory: string | null;
+  medicalNotes: string | null;
+  createdAt: Date;
+};
+
+function serializeChild(child: DbChild) {
+  return {
+    id: child.id,
+    userId: child.userId,
+    name: child.name,
+    birthday: child.birthday ? child.birthday.toISOString().slice(0, 10) : null,
+    race: child.race,
+    ethnicity: child.ethnicity,
+    gender: child.gender,
+    avatarKey: child.avatarKey,
+    medicalHistory: child.medicalHistory,
+    medicalNotes: child.medicalNotes,
+    createdAt: child.createdAt.toISOString(),
+  };
+}
+
+async function resolveUserFromRequest(req: express.Request) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  const token = authHeader.split('Bearer ')[1];
+  const decoded = await admin.auth().verifyIdToken(token);
+  const displayName = decoded.name || decoded.email?.split('@')[0] || 'User';
+  const user = await prisma.user.upsert({
+    where: { firebaseUid: decoded.uid },
+    update: { name: displayName },
+    create: { firebaseUid: decoded.uid, name: displayName },
+  });
+  return user;
 }
 
 app.post('/profile', async (req, res) => {
@@ -90,22 +169,20 @@ app.post('/users/sync', async (req, res) => {
         name,
       },
     });
-    /*
-    // Check if user already has a child profile, if not create a default one
-    const existingChild = await prisma.child.findFirst({ where: { userId: user.id } });
-    if (!existingChild) {
-      console.log(`No child profile found for user ${user.id}, creating default child profile`);
-      await prisma.child.create({
-        data: {
-          name: 'Default Child',
-          birthday: null,
-          userId: user.id,
-        },
-      });
-    }
-    return res.json({ success: true, user });
-    */
 
+    const children = await prisma.child.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const serialized = children.map(serializeChild);
+
+    return res.json({
+      success: true,
+      user,
+      children: serialized,
+      defaultChild: serialized[0] ?? null,
+    });
   } catch (err) {
     console.error("Error syncing user:", err);
     return res.status(500).json({
@@ -117,31 +194,38 @@ app.post('/users/sync', async (req, res) => {
 
 app.post('/children', async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing token" });
-    }
-    const token = authHeader.split("Bearer ")[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const firebaseUid = decodedToken.uid;
-    const { name, birthday } = req.body;
-
-    // Find user in the database
-    const user = await prisma.user.findUnique({ where: { firebaseUid } });
+    const user = await resolveUserFromRequest(req);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(401).json({ error: 'Missing token' });
+    }
+    const { name, birthday, race, ethnicity, gender, medicalHistory, medicalNotes } = req.body;
+
+    let parsedBirthday: Date | null = null;
+    if (birthday) {
+      const asDate = new Date(birthday);
+      parsedBirthday = Number.isNaN(asDate.getTime()) ? null : asDate;
     }
 
-    // Create child linked to user
-    console.log(`Creating child profile for user ${user.id} with name: ${name} and birthday: ${birthday}`);
+    const historyValue = Array.isArray(medicalHistory)
+      ? JSON.stringify(medicalHistory)
+      : typeof medicalHistory === 'string'
+        ? medicalHistory
+        : null;
+
+    console.log(`Creating child profile for user ${user.id} with name: ${name}`);
     const child = await prisma.child.create({
       data: {
         name: name || 'New Child',
-        birthday: birthday ? new Date(birthday) : null,
+        birthday: parsedBirthday,
+        race: race ?? null,
+        ethnicity: ethnicity ?? null,
+        gender: gender ?? null,
+        medicalHistory: historyValue,
+        medicalNotes: medicalNotes ?? null,
         userId: user.id,
       },
     });
-    return res.json({ success: true, child });
+    return res.json({ success: true, child: serializeChild(child) });
   } catch (err) {
     console.error('Error creating child profile:', err);
     res.status(500).json({ success: false, error: 'Failed to create child profile' });
@@ -150,32 +234,85 @@ app.post('/children', async (req, res) => {
 
 app.get('/children', async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing token" });
-    }
-    const token = authHeader.split("Bearer ")[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const firebaseUid = decodedToken.uid;
-
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { firebaseUid },
-    });
+    const user = await resolveUserFromRequest(req);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(401).json({ error: 'Missing token' });
     }
 
-    // Get children
     const children = await prisma.child.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'asc' },
     });
 
-    res.json(children);
+    res.json(children.map(serializeChild));
   } catch (err) {
     console.error("Error fetching children:", err);
     res.status(500).json({ error: "Failed to fetch children" });
+  }
+});
+
+app.patch('/children/:id', async (req, res) => {
+  try {
+    const user = await resolveUserFromRequest(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Missing token' });
+    }
+    const { id } = req.params;
+    const {
+      name,
+      birthday,
+      race,
+      ethnicity,
+      gender,
+      avatarKey,
+      medicalHistory,
+      medicalNotes,
+    } = req.body;
+
+    const existing = await prisma.child.findFirst({
+      where: { id, userId: user.id },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: 'Child not found' });
+    }
+
+    let parsedBirthday: Date | null | undefined = undefined;
+    if (birthday !== undefined) {
+      if (birthday === null || birthday === '') {
+        parsedBirthday = null;
+      } else {
+        const asDate = new Date(birthday);
+        parsedBirthday = Number.isNaN(asDate.getTime()) ? null : asDate;
+      }
+    }
+
+    const historyValue =
+      medicalHistory === undefined
+        ? undefined
+        : Array.isArray(medicalHistory)
+          ? JSON.stringify(medicalHistory)
+          : typeof medicalHistory === 'string'
+            ? medicalHistory
+            : null;
+
+    const child = await prisma.child.update({
+      where: { id },
+      data: {
+        ...(name !== undefined ? { name } : {}),
+        ...(parsedBirthday !== undefined ? { birthday: parsedBirthday } : {}),
+        ...(race !== undefined ? { race } : {}),
+        ...(ethnicity !== undefined ? { ethnicity } : {}),
+        ...(gender !== undefined ? { gender } : {}),
+        ...(avatarKey !== undefined ? { avatarKey } : {}),
+        ...(historyValue !== undefined ? { medicalHistory: historyValue } : {}),
+        ...(medicalNotes !== undefined ? { medicalNotes } : {}),
+      },
+    });
+
+    return res.json({ success: true, child: serializeChild(child) });
+  } catch (err) {
+    console.error('Error updating child:', err);
+    res.status(500).json({ success: false, error: 'Failed to update child' });
   }
 });
 

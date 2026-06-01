@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Child" ADD COLUMN IF NOT EXISTS "gender" TEXT;
+ALTER TABLE "Child" ADD COLUMN IF NOT EXISTS "avatarKey" TEXT;

@@ -12,7 +12,7 @@ function formatDisplayDate(iso: string): string {
 export default function ChildDOB() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { childName } = route.params ?? {};
+  const { childName, flow = 'onboarding' } = route.params ?? {};
 
   const [dobIso, setDobIso] = useState<string | null>(null);
 
@@ -24,7 +24,11 @@ export default function ChildDOB() {
 
   const handleNext = () => {
     if (!dobIso) return;
-    navigation.navigate('ChildBackground', { childName, dob: formatDisplayDate(dobIso) });
+    navigation.navigate('ChildBackground', {
+      childName,
+      dob: formatDisplayDate(dobIso),
+      flow,
+    });
   };
 
   return (

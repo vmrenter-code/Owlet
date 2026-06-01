@@ -1,25 +1,18 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  ReactNode,
+} from 'react';
+import ChildSwitcherSheet from '../components/ChildSwitcherSheet';
+import { useChild } from './ChildContext';
+import { birthdayFromApi } from '../utils/childFlow';
 
 export type ChildProfile = {
   id: string;
   name: string;
 };
-
-export const DEFAULT_CHILD_PROFILES: ChildProfile[] = [
-  { id: 'babyy', name: 'Babyy' },
-  { id: 'baby2', name: 'Baby2' },
-  { id: 'baby3', name: 'Baby3' },
-];
-
-/** Backwards-compat re-export for existing imports. */
-export const CHILD_PROFILES = DEFAULT_CHILD_PROFILES;
-
-const ACTIVE_KEY = 'activeChildId';
-const NAMES_KEY = 'childProfileNames';
-const BIRTHDATES_KEY = 'childProfileBirthDates';
-const DEFAULT_CHILD_ID = 'baby2';
-const MAX_NAME_LENGTH = 30;
 
 type ChildProfileContextType = {
   activeChildId: string;
@@ -36,99 +29,55 @@ type ChildProfileContextType = {
 
 const ChildProfileContext = createContext<ChildProfileContextType | undefined>(undefined);
 
+const EMPTY_ACTIVE: ChildProfile = { id: '', name: 'Your child' };
+
 export function ChildProfileProvider({ children }: { children: ReactNode }) {
-  const [activeChildId, setActiveChildIdState] = useState<string>(DEFAULT_CHILD_ID);
-  const [profiles, setProfiles] = useState<ChildProfile[]>(DEFAULT_CHILD_PROFILES);
-  const [birthDates, setBirthDates] = useState<Record<string, string>>({});
+  const {
+    children: childList,
+    selectedChild,
+    setSelectedChild,
+    updateChildFields,
+  } = useChild();
+
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [savedActive, savedNamesRaw, savedBirthDatesRaw] = await Promise.all([
-          AsyncStorage.getItem(ACTIVE_KEY),
-          AsyncStorage.getItem(NAMES_KEY),
-          AsyncStorage.getItem(BIRTHDATES_KEY),
-        ]);
-        if (cancelled) return;
+  const profiles: ChildProfile[] = useMemo(
+    () =>
+      childList.map((c) => ({
+        id: c.id,
+        name: (c.name && c.name.trim()) || 'Child',
+      })),
+    [childList],
+  );
 
-        if (savedNamesRaw) {
-          try {
-            const overrides = JSON.parse(savedNamesRaw) as Record<string, string>;
-            setProfiles(
-              DEFAULT_CHILD_PROFILES.map((p) =>
-                overrides[p.id] && overrides[p.id].trim().length > 0
-                  ? { ...p, name: overrides[p.id] }
-                  : p,
-              ),
-            );
-          } catch {
-            // Ignore malformed override blob
-          }
-        }
+  const birthDates = useMemo(() => {
+    const map: Record<string, string> = {};
+    childList.forEach((c) => {
+      const iso = birthdayFromApi(c.birthday);
+      if (iso) map[c.id] = iso;
+    });
+    return map;
+  }, [childList]);
 
-        if (savedBirthDatesRaw) {
-          try {
-            const parsed = JSON.parse(savedBirthDatesRaw) as Record<string, string>;
-            if (parsed && typeof parsed === 'object') {
-              setBirthDates(parsed);
-            }
-          } catch {
-            // Ignore malformed birth date blob
-          }
-        }
-
-        if (savedActive && DEFAULT_CHILD_PROFILES.some((p) => p.id === savedActive)) {
-          setActiveChildIdState(savedActive);
-        }
-      } catch {
-        // Ignore: keep defaults
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const activeChildId = selectedChild?.id ?? profiles[0]?.id ?? '';
+  const activeChild =
+    profiles.find((p) => p.id === activeChildId) ?? profiles[0] ?? EMPTY_ACTIVE;
 
   const setActiveChildId = (id: string) => {
-    setActiveChildIdState(id);
-    AsyncStorage.setItem(ACTIVE_KEY, id).catch(() => {
-      // Non-fatal
-    });
+    const match = childList.find((c) => c.id === id);
+    if (match) setSelectedChild(match);
   };
 
   const updateChildName = (id: string, name: string) => {
-    const trimmed = name.trim().slice(0, MAX_NAME_LENGTH);
+    const trimmed = name.trim();
     if (!trimmed) return;
-    setProfiles((current) => {
-      const next = current.map((p) => (p.id === id ? { ...p, name: trimmed } : p));
-      const overrides: Record<string, string> = {};
-      next.forEach((p) => {
-        const original = DEFAULT_CHILD_PROFILES.find((d) => d.id === p.id);
-        if (original && original.name !== p.name) {
-          overrides[p.id] = p.name;
-        }
-      });
-      AsyncStorage.setItem(NAMES_KEY, JSON.stringify(overrides)).catch(() => {
-        // Non-fatal
-      });
-      return next;
-    });
+    updateChildFields(id, { name: trimmed }).catch(() => {});
   };
 
   const updateChildBirthDate = (id: string, isoDate: string) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return;
-    setBirthDates((current) => {
-      const next = { ...current, [id]: isoDate };
-      AsyncStorage.setItem(BIRTHDATES_KEY, JSON.stringify(next)).catch(() => {
-        // Non-fatal
-      });
-      return next;
-    });
+    updateChildFields(id, { birthday: isoDate }).catch(() => {});
   };
-
-  const activeChild = profiles.find((p) => p.id === activeChildId) ?? profiles[0];
 
   return (
     <ChildProfileContext.Provider
@@ -146,6 +95,7 @@ export function ChildProfileProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      <ChildSwitcherSheet />
     </ChildProfileContext.Provider>
   );
 }

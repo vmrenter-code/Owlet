@@ -22,13 +22,13 @@ export default function App() {
     <AppStateProvider>
       <ChildProvider>
       <ProfileProvider>
-        <ChildProfileProvider>
           <ScreeningProvider>
             <NavigationContainer>
-              <RootNavigator />
+              <ChildProfileProvider>
+                <RootNavigator />
+              </ChildProfileProvider>
             </NavigationContainer>
           </ScreeningProvider>
-        </ChildProfileProvider>
       </ProfileProvider>
       </ChildProvider>
     </AppStateProvider>

@@ -6,7 +6,6 @@ import HomeBg from '../components/HomeBg';
 import { useAppState } from '../context/AppStateContext';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import userAuthServices from '../src/services/userAuthServices';
 
 import BackArrow from '../components/BackArrow';
@@ -55,46 +54,18 @@ export default function Account() {
             Alert.alert('Name required', 'Please enter a name.');
             return;
         }
-        updateChildName(activeChildId, trimmed);
+        const childId = selectedChild?.id ?? activeChildId;
+        updateChildName(childId, trimmed);
         setEditNameVisible(false);
     };
 
     useFocusEffect(
         useCallback(() => {
-            let cancelled = false;
-            (async () => {
-                try {
-                    const raw = await AsyncStorage.getItem('raceEthnicity:' + activeChildId);
-                    if (cancelled) return;
-                    if (!raw) {
-                        setRaceEthnicitySummary('Not set');
-                        return;
-                    }
-                    const parsed = JSON.parse(raw) as {
-                        selections?: string[];
-                        races?: string[];
-                        ethnicity?: string | null;
-                    };
-                    let items: string[] = [];
-                    if (Array.isArray(parsed.selections)) {
-                        items = parsed.selections;
-                    } else {
-                        const merged = new Set<string>();
-                        if (Array.isArray(parsed.races)) parsed.races.forEach((r) => merged.add(r));
-                        if (parsed.ethnicity && parsed.ethnicity !== 'Not Hispanic or Latino') {
-                            merged.add(parsed.ethnicity);
-                        }
-                        items = Array.from(merged);
-                    }
-                    setRaceEthnicitySummary(items.length ? items.join(', ') : 'Not set');
-                } catch {
-                    setRaceEthnicitySummary('Not set');
-                }
-            })();
-            return () => {
-                cancelled = true;
-            };
-        }, [activeChildId]),
+            const parts = [selectedChild?.race, selectedChild?.ethnicity].filter(
+                (v): v is string => !!v && v.length > 0,
+            );
+            setRaceEthnicitySummary(parts.length ? parts.join(', ') : 'Not set');
+        }, [selectedChild?.race, selectedChild?.ethnicity]),
     );
 
     const handleDeleteAccount = () => {

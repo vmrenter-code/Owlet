@@ -34,6 +34,8 @@ model Child {
   birthday      DateTime?
   race          String?
   ethnicity     String?
+  gender        String?
+  avatarKey     String?
   medicalHistory String?
   medicalNotes   String?
   createdAt     DateTime  @default(now())
