@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     },
 
     titleStyle: {
-        fontSize: 28,
+        fontSize: 32,
         color: '#151515',
         textAlign: 'center',
         fontFamily: 'NotoSans-SemiBold',
