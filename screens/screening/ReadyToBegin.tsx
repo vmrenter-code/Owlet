@@ -4,12 +4,16 @@ import { useEffect } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import { useScreening } from '../../context/ScreeningContext';
 import ScreeningCameraLayout from '../../components/ScreeningCameraLayout';
+import { getAuth } from 'firebase/auth';
+import { useChild } from '../../context/ChildContext';
 
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
+    const BASE_URL = 'http://localhost:4000';
     const { screeningId: screeningIDFromContext } = useScreening();
     const screeningId = screeningIDFromContext ?? route.params?.screeningId;
+    const { selectedChild } = useChild();
 
     const [permission, requestPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
@@ -21,6 +25,55 @@ export default function ReadyToBegin() {
 
     const cameraReady = permission?.granted && microphonePermission?.granted;
 
+    const handleBegin = async () => {
+        // Start the screening process & navigate to first video
+        console.log('Starting screening with ID:', screeningId);
+        try {
+            const user = getAuth().currentUser;
+            if (!user) {
+                console.error("No logged-in user");
+                return;
+            }
+            const token = await user.getIdToken();
+            if (!selectedChild) {
+                console.error("No child selected");
+                return;
+            }
+
+            // Create a new screening in the backend
+            const response = await fetch(`${BASE_URL}/screening`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                screeningID: screeningId,
+                startedAt: new Date().toISOString(),
+                childId: selectedChild.id,
+            }),
+        });
+            const text = await response.text();
+            console.log("RAW RESPONSE:", text);
+
+            if (!response.ok) {
+            throw new Error(`Failed: ${text}`);
+            }
+
+            const data = JSON.parse(text);
+
+            if (data.success && data) {
+                console.log('Screening started successfully:', data.screening);
+                navigation.navigate('VideoScreen', { videoNumber: 1, screeningID: screeningId });
+            } else {
+                console.log('Server did not confirm screening start');
+            }
+
+        } catch (error) {
+            console.error('Error starting screening:', error);
+        }
+    };
+
     return (
         <ScreeningCameraLayout
             onBack={() => navigation.goBack()}
@@ -29,7 +82,7 @@ export default function ReadyToBegin() {
             footer={
                 <Pressable
                     style={({ pressed }) => [styles.beginButton, pressed && styles.beginButtonPressed]}
-                    onPress={() => navigation.navigate('VideoScreen', { videoNumber: 1, screeningId })}
+                    onPress={handleBegin}
                 >
                     <Text style={styles.beginButtonText}>Begin</Text>
                 </Pressable>

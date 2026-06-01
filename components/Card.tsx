@@ -1,6 +1,9 @@
 import { ReactNode } from 'react';
 import { View, StyleSheet, Text, Pressable } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import { useWindowDimensions } from 'react-native';
+
+import EmptyState from '../assets/emptystate.svg';
 
 import Animated, {
   useSharedValue,
@@ -17,7 +20,8 @@ type Props = {
 export default function Card({ children, onPress }: Props) {
   const scale = useSharedValue(1);
   const navigation = useNavigation<any>();
-
+  const { width } = useWindowDimensions();
+  const IllustrationSize = width < 350 ? 100 : 120;
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
@@ -33,7 +37,11 @@ export default function Card({ children, onPress }: Props) {
         accessibilityLabel="Past screenings, no results yet"
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <View style={styles.topSection} />
+        <View style={styles.topSection}>
+        <View style={styles.illustrationWrapper}>
+          <EmptyState width="108%" height="108%" preserveAspectRatio="xMidYMid meet" />
+        </View>
+        </View>
 
         <View style={styles.bottomSection}>
           <View style={styles.row}>
@@ -90,11 +98,14 @@ const styles = StyleSheet.create({
   },
 
   topSection: {
-    height: 160,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    backgroundColor: '#c7caf1'
-  },
+  height: 160,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  backgroundColor: '#c7caf1',
+  justifyContent: 'center',
+  alignItems: 'center',
+  overflow: 'hidden',
+},
 
   bottomSection: {
     backgroundColor: '#ffffff',
@@ -141,5 +152,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6
-  }
+  },
+
+  illustrationWrapper: {
+  width: '100%',
+  height: '100%',
+  justifyContent: 'center',
+  alignItems: 'center',
+  transform: [{ translateX: -8 }],
+},
 });

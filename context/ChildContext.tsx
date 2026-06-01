@@ -1,5 +1,13 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from '../src/config/firebase';
 import { birthdayFromApi } from '../utils/childFlow';
 import { normalizeAvatarKey, type ChildAvatarKey } from '../utils/childAvatars';
@@ -40,6 +48,7 @@ type ChildContextType = {
   children: Child[];
   selectedChild: Child | null;
   setSelectedChild: (child: Child) => void;
+  selectChild: (child: Child | null) => Promise<void>;
   updateChildren: () => Promise<void>;
   createChild: (payload: CreateChildPayload) => Promise<CreateChildResult>;
   updateChildFields: (
@@ -50,6 +59,8 @@ type ChildContextType = {
       avatarKey?: string;
     },
   ) => Promise<boolean>;
+  updateChildName: (childId: string, newName: string) => void;
+  updateChildBirthDate: (childId: string, birthday: string | null) => void;
   setChildAvatar: (childId: string, avatarKey: string) => Promise<boolean>;
   getAvatarKey: (childId: string) => ChildAvatarKey | null;
 };
@@ -76,6 +87,15 @@ export function ChildProvider({ children: reactChildren }: { children: ReactNode
       }
       return list[0] ?? null;
     });
+  }, []);
+
+  const selectChild = useCallback(async (child: Child | null) => {
+    setSelectedChild(child);
+    if (child?.id) {
+      await AsyncStorage.setItem('selectedChildId', child.id);
+    } else {
+      await AsyncStorage.removeItem('selectedChildId');
+    }
   }, []);
 
   const getAvatarKey = useCallback(
@@ -128,6 +148,7 @@ export function ChildProvider({ children: reactChildren }: { children: ReactNode
         const child = await createChildForUser(uid, payload);
         setChildren((current) => [...current, child]);
         setSelectedChild(child);
+        await AsyncStorage.setItem('selectedChildId', child.id);
         return { child, error: null };
       } catch (err) {
         return { child: null, error: firebaseErrorMessage(err) };
@@ -169,11 +190,44 @@ export function ChildProvider({ children: reactChildren }: { children: ReactNode
     [uid],
   );
 
+  const updateChildName = useCallback(
+    (childId: string, newName: string) => {
+      const trimmed = newName.trim();
+      if (!trimmed) return;
+      setChildren((prev) =>
+        prev.map((child) =>
+          child.id === childId ? { ...child, name: trimmed } : child,
+        ),
+      );
+      setSelectedChild((prev) =>
+        prev && prev.id === childId ? { ...prev, name: trimmed } : prev,
+      );
+      updateChildFields(childId, { name: trimmed }).catch(() => {});
+    },
+    [updateChildFields],
+  );
+
+  const updateChildBirthDate = useCallback(
+    (childId: string, birthday: string | null) => {
+      setChildren((prev) =>
+        prev.map((child) =>
+          child.id === childId ? { ...child, birthday } : child,
+        ),
+      );
+      setSelectedChild((prev) =>
+        prev && prev.id === childId ? { ...prev, birthday } : prev,
+      );
+      updateChildFields(childId, { birthday }).catch(() => {});
+    },
+    [updateChildFields],
+  );
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         setUid(null);
         setChildren([]);
+        await AsyncStorage.removeItem('selectedChildId');
         setSelectedChild(null);
         return;
       }
@@ -181,7 +235,13 @@ export function ChildProvider({ children: reactChildren }: { children: ReactNode
       setUid(user.uid);
       try {
         const list = await fetchChildrenForUser(user.uid);
-        applyChildrenList(list);
+        const savedChildId = await AsyncStorage.getItem('selectedChildId');
+        const restored =
+          list.find((c) => c.id === savedChildId) ?? list[0] ?? null;
+        applyChildrenList(list, restored?.id);
+        if (restored?.id) {
+          await AsyncStorage.setItem('selectedChildId', restored.id);
+        }
       } catch (err) {
         console.error('ChildContext init error:', err);
       }
@@ -196,9 +256,12 @@ export function ChildProvider({ children: reactChildren }: { children: ReactNode
         children,
         selectedChild,
         setSelectedChild,
+        selectChild,
         updateChildren,
         createChild,
         updateChildFields,
+        updateChildName,
+        updateChildBirthDate,
         setChildAvatar,
         getAvatarKey,
       }}

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, FlatList, StyleSheet, useWindowDimensions, Animated, ViewToken } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, FlatList, StyleSheet, useWindowDimensions, Animated, Easing, ViewToken } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,11 +19,9 @@ export default function Launch() {
   const { width, height } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const insets = useSafeAreaInsets();
-  const slideHeight =
-    height - insets.top - insets.bottom - BOTTOM_BAR_HEIGHT - 12;
-
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef<FlatList>(null);
+  const btnOpacity = useRef(new Animated.Value(0)).current;
 
   const viewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -36,6 +34,18 @@ export default function Launch() {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   const isLast = currentIndex === LaunchSlides.length - 1;
+
+  useEffect(() => {
+    if (isLast) {
+      btnOpacity.setValue(0);
+      Animated.timing(btnOpacity, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isLast]);
 
   const handleNext = () => {
     if (isLast) {
@@ -64,13 +74,18 @@ export default function Launch() {
         <FlatList
           data={LaunchSlides}
           renderItem={({ item }) => (
-            <LaunchItems item={item} width={width} slideHeight={slideHeight} />
+           <LaunchItems
+  item={item}
+  width={width}
+  currentIndex={currentIndex}
+  totalSlides={LaunchSlides.length}
+/>
           )}
           keyExtractor={(item) => item.id}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          style={{ height: slideHeight, width }}
+          style={{  width }}
           getItemLayout={(_, index) => ({
             length: width,
             offset: width * index,
@@ -96,7 +111,9 @@ export default function Launch() {
         <View style={[styles.bottomRow, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           {isLast ? (
             <View style={styles.lastRow}>
-              <PrimaryBlueButton onPress={handleNext} fullWidth>Let's begin</PrimaryBlueButton>
+              <Animated.View style={[{ flex: 1 }, { opacity: btnOpacity }]}>
+                <PrimaryBlueButton onPress={handleNext} fullWidth>Let's begin</PrimaryBlueButton>
+              </Animated.View>
             </View>
           ) : (
             <View style={styles.navRow}>
@@ -110,6 +127,7 @@ export default function Launch() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

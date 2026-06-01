@@ -12,14 +12,28 @@ import { useState } from 'react';
 import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import { isAddChildFlow } from '../utils/childFlow';
 import { useWindowDimensions } from 'react-native';
-import { CHILD_AVATAR_KEYS } from '../utils/childAvatars';
 
 import HomeBg from '../components/HomeBg';
 import OnboardingLayout from '../components/OnboardingLayout';
-import ChildProfileAvatar from '../components/ChildProfileAvatar';
 import { useProfile } from '../context/ProfileContext';
 import { useAppState } from '../context/AppStateContext';
 import { useChild } from '../context/ChildContext';
+
+import jelli from '../assets/jellie.svg';
+import fibi from '../assets/fibi.svg';
+import cici from '../assets/cici.svg';
+import solie from '../assets/solie.svg';
+import suki from '../assets/suki.svg';
+import dumi from '../assets/dumi.svg';
+
+const AVATARS = [
+  { id: '1', component: jelli },
+  { id: '2', component: fibi },
+  { id: '3', component: cici },
+  { id: '4', component: solie },
+  { id: '5', component: suki },
+  { id: '6', component: dumi },
+];
 
 export default function PickProfile() {
   const { completeOnboarding } = useAppState();
@@ -51,7 +65,7 @@ export default function PickProfile() {
       if (!saved) {
         Alert.alert(
           'Could not save avatar',
-          'Your profile picture could not be saved to your account. Check your connection and try again.',
+          'Your profile picture could not be saved. Please try again.',
         );
         return;
       }
@@ -75,7 +89,6 @@ export default function PickProfile() {
   };
 
   const avatarSize = (width - 60 - 16) / 2;
-  const innerSize = avatarSize - 8;
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -108,14 +121,15 @@ export default function PickProfile() {
               </View>
 
               <View style={styles.grid}>
-                {CHILD_AVATAR_KEYS.map((id, index) => {
-                  const isSelected = selectedId === id;
+                {AVATARS.map((avatar) => {
+                  const isSelected = selectedId === avatar.id;
+                  const AvatarSvg = avatar.component;
                   return (
                     <Pressable
-                      key={id}
-                      onPress={() => setSelectedId(id)}
+                      key={avatar.id}
+                      onPress={() => setSelectedId(avatar.id)}
                       accessibilityRole="radio"
-                      accessibilityLabel={`Profile picture option ${index + 1}`}
+                      accessibilityLabel={`Profile picture option ${avatar.id}`}
                       accessibilityState={{ checked: isSelected }}
                       hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                       style={styles.avatarWrapper}
@@ -131,7 +145,10 @@ export default function PickProfile() {
                           isSelected && styles.avatarCircleSelected,
                         ]}
                       >
-                        <ChildProfileAvatar avatarKey={id} size={innerSize} />
+                        <AvatarSvg
+                          width={avatarSize - 2}
+                          height={avatarSize - 2}
+                        />
                       </View>
                     </Pressable>
                   );
@@ -199,7 +216,7 @@ const styles = StyleSheet.create({
   },
 
   avatarCircle: {
-    backgroundColor: '#eae9fa',
+    backgroundColor: '#ffffff',
     borderWidth: 3,
     borderColor: 'transparent',
     justifyContent: 'center',
@@ -209,6 +226,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,
     elevation: 4,
+    overflow: 'hidden',
   },
 
   avatarCircleSelected: {
