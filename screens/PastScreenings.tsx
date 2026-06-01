@@ -96,8 +96,8 @@ export default function PastScreenings() {
                 if (data.success && data.screenings) {
                     setPastScreenings(data.screenings);
                 }
-            } catch {
-                // Backend optional in local dev — empty list is fine
+            } catch (err){
+                console.error('Error fetching past screenings:', err);
             }
         };
         fetchPastScreenings();
@@ -151,7 +151,19 @@ export default function PastScreenings() {
                             ]}
                         >
                             <View style={styles.itemHeader}>
-                                <Text style={styles.dateText}>{screening.date}</Text>
+                                <Text style={styles.dateText}>{
+                                    new Date(screening.createdAt).toLocaleString('en-US', {
+                                        month: 'long',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true,
+                                    })
+                                    .replace(' at', ' ~')
+                                    .replace('AM', 'am')
+                                    .replace('PM', 'pm')
+                                }</Text>
                                 <View style={[styles.statusBadge, screening.hasResults ? styles.statusBadgeComplete : styles.statusBadgeReview]}>
                                     <Text style={[styles.statusBadgeText, screening.hasResults ? styles.statusBadgeTextComplete : styles.statusBadgeTextReview]}>
                                         {screening.status}
@@ -159,7 +171,7 @@ export default function PastScreenings() {
                                 </View>
                             </View>
 
-                            <Text style={styles.durationText}>Session length: {screening.duration}</Text>
+                            {/* <Text style={styles.durationText}>Session length: {screening.duration}</Text> */}
 
                             {!screening.hasResults ? (
                                 <Text style={styles.pendingText}>Results will appear once clinician review is complete.</Text>
