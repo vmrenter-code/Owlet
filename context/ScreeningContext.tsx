@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode, useContext, useRef } from 'react';
+import React, { createContext, useEffect, useState, ReactNode, useContext, useRef } from 'react';
 import { usePolarH9 } from '../src/services/polarH9Service';
 
 export interface HeartRateDataPoint {
@@ -51,6 +51,12 @@ export const ScreeningProvider = ({ children }: { children: ReactNode }) => {
   const screeningStartTimeRef = useRef<number | null>(null);
 
   const { heartRate, rrInterval, connected, scanning, error, connectToH9, disconnect } = usePolarH9();
+
+  useEffect(() => {
+    if (rrInterval !== null) {
+      addRrInterval(rrInterval);
+    }
+  }, [rrInterval]);
 
   const startScreening = () => {
     const newId = `screening_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
