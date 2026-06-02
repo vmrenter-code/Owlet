@@ -106,7 +106,7 @@ function Dropdown({ placeholder, options, value, onChange }: {
 export default function ChildBackground() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { childName, dob } = route.params ?? {};
+  const { childName, dob, flow = 'onboarding' } = route.params ?? {};
   const [gender, setGender] = useState('');
 
   const [race, setRace] = useState('');
@@ -119,6 +119,7 @@ export default function ChildBackground() {
     race,
     ethnicity,
     gender,
+    flow,
   });
 };
 

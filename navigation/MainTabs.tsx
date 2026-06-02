@@ -7,7 +7,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React from 'react';
 
 import Home from '../screens/Home';
-import FAQ from '../screens/FAQ';
 import PastScreenings from '../screens/PastScreenings';
 
 const Tab = createBottomTabNavigator();
@@ -17,7 +16,6 @@ function HomeStackScreen() {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="HomeScreen" component={Home} />
-      <HomeStack.Screen name="FAQ" component={FAQ} />
     </HomeStack.Navigator>
   );
 }

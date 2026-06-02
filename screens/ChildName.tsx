@@ -1,15 +1,28 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { isAddChildFlow, type ChildFlowMode } from '../utils/childFlow';
 import InputFields from '../components/InputFields';
 import OnboardingLayout from '../components/OnboardingLayout';
 
 export default function ChildName() {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const flow: ChildFlowMode = route.params?.flow === 'addChild' ? 'addChild' : 'onboarding';
   const [childName, setChildName] = useState('');
 
   const handleNext = () => {
-    navigation.navigate('ChildDOB', { childName });
+    navigation.navigate('ChildDOB', { childName, flow });
+  };
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    if (isAddChildFlow(flow)) {
+      navigation.getParent()?.goBack();
+    }
   };
 
   return (
@@ -17,7 +30,8 @@ export default function ChildName() {
         <OnboardingLayout
           step={1}
           totalSteps={5}
-          onBack={() => navigation.goBack()}
+          showBackOnFirstStep
+          onBack={handleBack}
           onNext={handleNext}
           canProceed={childName.trim().length > 0}
         >

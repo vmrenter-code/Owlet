@@ -1,49 +1,91 @@
-import {View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, ScrollView, Pressable} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  Pressable,
+  Alert,
+} from 'react-native';
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
+import { isAddChildFlow } from '../utils/childFlow';
 import { useWindowDimensions } from 'react-native';
 
 import HomeBg from '../components/HomeBg';
 import OnboardingLayout from '../components/OnboardingLayout';
-
-import { auth } from '../src/config/firebase';
-import { doc, setDoc } from 'firebase/firestore';
 import { useProfile } from '../context/ProfileContext';
 import { useAppState } from '../context/AppStateContext';
+import { useChild } from '../context/ChildContext';
+
+import jelli from '../assets/jellie.svg';
+import fibi from '../assets/fibi.svg';
+import cici from '../assets/cici.svg';
+import solie from '../assets/solie.svg';
+import suki from '../assets/suki.svg';
+import dumi from '../assets/dumi.svg';
 
 const AVATARS = [
-  { id: '1', label: '' },
-  { id: '2', label: '' },
-  { id: '3', label: '' },
-  { id: '4', label: '' },
-  { id: '5', label: '' },
-  { id: '6', label: '' },
+  { id: '1', component: jelli },
+  { id: '2', component: fibi },
+  { id: '3', component: cici },
+  { id: '4', component: solie },
+  { id: '5', component: suki },
+  { id: '6', component: dumi },
 ];
 
 export default function PickProfile() {
   const { completeOnboarding } = useAppState();
   const { setProfileComplete } = useProfile();
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const flow = route.params?.flow;
   const { width } = useWindowDimensions();
+  const { selectedChild, setChildAvatar, updateChildren } = useChild();
 
-  const [dob, setDob] = useState('');
-  const [childName, setChildName] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const isFormValid = childName.trim().length > 0 && dob.length === 10;
-
-  const formatDOB = (text: string) => {
-    const cleaned = text.replace(/\D/g, '');
-    if (cleaned.length <= 2) return cleaned;
-    if (cleaned.length <= 4) return `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
-    return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
-  };
+  const [saving, setSaving] = useState(false);
 
   const handleContinue = async () => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-    setProfileComplete(true);
-    completeOnboarding();
+    if (saving || !selectedId) return;
+
+    const childId = selectedChild?.id;
+    if (!childId) {
+      Alert.alert(
+        'No child profile',
+        'Go back and finish your child\'s details before choosing an avatar.',
+      );
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const saved = await setChildAvatar(childId, selectedId);
+      if (!saved) {
+        Alert.alert(
+          'Could not save avatar',
+          'Your profile picture could not be saved. Please try again.',
+        );
+        return;
+      }
+      await updateChildren();
+
+      if (isAddChildFlow(flow)) {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'MainTabs' }],
+          }),
+        );
+        return;
+      }
+
+      setProfileComplete(true);
+      completeOnboarding();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const avatarSize = (width - 60 - 16) / 2;
@@ -62,6 +104,7 @@ export default function PickProfile() {
           onBack={() => navigation.goBack()}
           onNext={handleContinue}
           canProceed={!!selectedId}
+          loading={saving}
           nextLabel="Continue"
         >
           <ScrollView
@@ -73,37 +116,40 @@ export default function PickProfile() {
               <View style={styles.titleContainer}>
                 <Text style={styles.titleStyle}>Select Your Avatar</Text>
                 <Text style={styles.subtitleStyle}>
-                  Pick a profile picture for your child.
+                  Pick a profile picture for {selectedChild?.name ?? 'your child'}.
                 </Text>
               </View>
 
               <View style={styles.grid}>
                 {AVATARS.map((avatar) => {
                   const isSelected = selectedId === avatar.id;
+                  const AvatarSvg = avatar.component;
                   return (
                     <Pressable
                       key={avatar.id}
                       onPress={() => setSelectedId(avatar.id)}
                       accessibilityRole="radio"
-                      accessibilityLabel={`${avatar.label} avatar`}
+                      accessibilityLabel={`Profile picture option ${avatar.id}`}
                       accessibilityState={{ checked: isSelected }}
                       hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                       style={styles.avatarWrapper}
                     >
-                      <View style={[
-                        styles.avatarCircle,
-                        { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 },
-                        isSelected && styles.avatarCircleSelected,
-                      ]}>
-                        <View style={[
-                          styles.avatarPlaceholder,
-                          { width: avatarSize - 8, height: avatarSize - 8, borderRadius: (avatarSize - 8) / 2 },
-                          isSelected && styles.avatarPlaceholderSelected,
-                        ]} />
+                      <View
+                        style={[
+                          styles.avatarCircle,
+                          {
+                            width: avatarSize,
+                            height: avatarSize,
+                            borderRadius: avatarSize / 2,
+                          },
+                          isSelected && styles.avatarCircleSelected,
+                        ]}
+                      >
+                        <AvatarSvg
+                          width={avatarSize - 2}
+                          height={avatarSize - 2}
+                        />
                       </View>
-                      <Text style={[styles.avatarLabel, isSelected && styles.avatarLabelSelected]}>
-                        {avatar.label}
-                      </Text>
                     </Pressable>
                   );
                 })}
@@ -167,11 +213,10 @@ const styles = StyleSheet.create({
   avatarWrapper: {
     width: '47%',
     alignItems: 'center',
-    gap: 8,
   },
 
   avatarCircle: {
-    backgroundColor: '#eae9fa',
+    backgroundColor: '#ffffff',
     borderWidth: 3,
     borderColor: 'transparent',
     justifyContent: 'center',
@@ -181,31 +226,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12,
     elevation: 4,
+    overflow: 'hidden',
   },
 
   avatarCircleSelected: {
     borderColor: '#5058b4',
     backgroundColor: '#f9fdfd',
-  },
-
-  avatarPlaceholder: {
-    backgroundColor: '#fdfdfd',
-  },
-
-  avatarPlaceholderSelected: {
-    backgroundColor: '#ffffff',
-  },
-
-  avatarLabel: {
-    fontSize: 13,
-    fontFamily: 'NotoSans-Regular',
-    color: '#2E3332',
-    textAlign: 'center',
-    letterSpacing: 0.1,
-  },
-
-  avatarLabelSelected: {
-    color: '#5058b4',
-    fontFamily: 'NotoSans-SemiBold',
   },
 });

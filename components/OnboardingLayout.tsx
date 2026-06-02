@@ -9,9 +9,12 @@ type Props = {
   step: number;
   totalSteps: number;
   onBack?: () => void;
+  /** Show back control on step 1 (e.g. child name entry). */
+  showBackOnFirstStep?: boolean;
   onNext: () => void;
   canProceed: boolean;
   nextLabel?: string;
+  loading?: boolean;
   children: React.ReactNode;
 };
 
@@ -19,9 +22,11 @@ export default function OnboardingLayout({
   step,
   totalSteps,
   onBack,
+  showBackOnFirstStep = false,
   onNext,
   canProceed,
   nextLabel = 'Next',
+  loading = false,
   children,
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -41,7 +46,7 @@ export default function OnboardingLayout({
     outputRange: ['0%', '100%'],
   });
 
-  const showBack = step > 1 && !!onBack;
+  const showBack = !!onBack && (step > 1 || showBackOnFirstStep);
 
   return (
     <View style={styles.root}>
@@ -80,7 +85,12 @@ export default function OnboardingLayout({
         </ScrollView>
 
         <View style={styles.bottomSection}>
-          <PrimaryBlueButton onPress={onNext} fullWidth disabled={!canProceed}>
+          <PrimaryBlueButton
+            onPress={onNext}
+            fullWidth
+            disabled={!canProceed || loading}
+            loading={loading}
+          >
             {nextLabel}
           </PrimaryBlueButton>
         </View>

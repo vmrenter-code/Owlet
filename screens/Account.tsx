@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation, useFocusEffect, CommonActions } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import HomeBg from '../components/HomeBg';
 import { useAppState } from '../context/AppStateContext';
 
 import { getAuth, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth'; 
@@ -13,6 +13,7 @@ import BackArrow from '../components/BackArrow';
 import { useChildProfile } from '../context/ChildProfileContext';
 import CalendarPicker from '../components/CalendarPicker';
 import { useChild } from '../context/ChildContext';
+import { API_BASE_URL } from '../src/config/apiBaseUrl';
 
 export default function Account() {
     const { logout } = useAppState();
@@ -34,15 +35,14 @@ export default function Account() {
     const {
         activeChildId,
         activeChild,
-        updateChildName,
         birthDates,
-        updateChildBirthDate,
+        //updateChildBirthDate,
         openSwitcher,
     } = useChildProfile();
 
     const activeBirthDate = birthDates[activeChildId] ?? null;
 
-    const {selectedChild} = useChild();
+    const {selectedChild, updateChildName, updateChildBirthDate} = useChild();
 
     const formatBirthDate = (bday: Date | null | undefined): string => {
         if (!bday) return 'Not set';
@@ -90,52 +90,24 @@ export default function Account() {
         setEditNameVisible(true);
     };
 
-    const saveChildName = () => {
+    const saveChildName = async () => {
         const trimmed = nameDraft.trim();
         if (trimmed.length === 0) {
             Alert.alert('Name required', 'Please enter a name.');
             return;
         }
-        updateChildName(activeChildId, trimmed);
+        const childId = selectedChild?.id ?? activeChildId;
+        updateChildName(childId, trimmed);
         setEditNameVisible(false);
     };
 
     useFocusEffect(
         useCallback(() => {
-            let cancelled = false;
-            (async () => {
-                try {
-                    const raw = await AsyncStorage.getItem('raceEthnicity:' + activeChildId);
-                    if (cancelled) return;
-                    if (!raw) {
-                        setRaceEthnicitySummary('Not set');
-                        return;
-                    }
-                    const parsed = JSON.parse(raw) as {
-                        selections?: string[];
-                        races?: string[];
-                        ethnicity?: string | null;
-                    };
-                    let items: string[] = [];
-                    if (Array.isArray(parsed.selections)) {
-                        items = parsed.selections;
-                    } else {
-                        const merged = new Set<string>();
-                        if (Array.isArray(parsed.races)) parsed.races.forEach((r) => merged.add(r));
-                        if (parsed.ethnicity && parsed.ethnicity !== 'Not Hispanic or Latino') {
-                            merged.add(parsed.ethnicity);
-                        }
-                        items = Array.from(merged);
-                    }
-                    setRaceEthnicitySummary(items.length ? items.join(', ') : 'Not set');
-                } catch {
-                    setRaceEthnicitySummary('Not set');
-                }
-            })();
-            return () => {
-                cancelled = true;
-            };
-        }, [activeChildId]),
+            const parts = [selectedChild?.race, selectedChild?.ethnicity].filter(
+                (v): v is string => !!v && v.length > 0,
+            );
+            setRaceEthnicitySummary(parts.length ? parts.join(', ') : 'Not set');
+        }, [selectedChild?.race, selectedChild?.ethnicity]),
     );
 
     const handleDeleteAccount = () => {
@@ -214,17 +186,13 @@ navigation.getParent()?.dispatch(
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#ecfffb', '#fcecfb']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradient}
-            />
-            {/* Header */}
-           <BackArrow />
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
+            </View>
+            <BackArrow />
            <Text style={[styles.title, { marginTop: insets.top + 44 }]}>Account</Text>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
                
 
                 <View style={styles.section}>
@@ -473,13 +441,13 @@ navigation.getParent()?.dispatch(
                     />
                     <View style={[styles.editNameCard, styles.calendarCard]}>
                         <Text style={styles.editNameTitle}>
-                            Select {activeChild.name}'s birth date
+                            Select {selectedChild?.name}'s birth date
                         </Text>
                         <CalendarPicker
                             value={activeBirthDate}
                             minDate={new Date(2000, 0, 1)}
                             onChange={(iso) => {
-                                updateChildBirthDate(activeChildId, iso);
+                                updateChildBirthDate(selectedChild?.id ?? '', iso);
                                 setBirthDateModalVisible(false);
                             }}
                         />
@@ -507,8 +475,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    gradient: {
+    bg: {
         ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
+    },
+    scroll: {
+        flex: 1,
+        zIndex: 1,
     },
 
 
@@ -526,10 +499,10 @@ const styles = StyleSheet.create({
     },
 
     sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
-        paddingHorizontal: 25,
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 12,
     },
@@ -538,8 +511,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
         marginBottom: 8,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
     },
 
     accountItem: {
@@ -556,18 +531,20 @@ const styles = StyleSheet.create({
     },
 
     accountItemPressed: {
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'rgba(80, 88, 180, 0.06)',
     },
 
     itemLabel: {
         flex: 1,
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
     },
 
     itemValue: {
-        fontSize: 16,
-        color: '#999',
+        fontSize: 14,
+        fontFamily: 'NotoSans-Regular',
+        color: '#888',
     },
 
     itemValueTrailing: {
@@ -586,8 +563,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
         marginTop: 20,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
     },
 
     dangerItem: {
@@ -602,17 +581,18 @@ const styles = StyleSheet.create({
     },
 
     dangerText: {
-        fontSize: 16,
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
         color: '#e74c3c',
     },
 
     title: {
-        fontSize: 24,
-        fontFamily: 'NotoSans-Bold',
-        color: '#1f2a2f',
-        paddingHorizontal: 24,
+        fontSize: 26,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        paddingHorizontal: 20,
         paddingBottom: 16,
-        letterSpacing: -0.5,
+        letterSpacing: -0.3,
     },
 
 
@@ -640,9 +620,9 @@ const styles = StyleSheet.create({
     },
 
     editNameTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
         marginBottom: 14,
     },
 
@@ -652,8 +632,9 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingHorizontal: 14,
         paddingVertical: 12,
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-Regular',
+        color: '#151515',
         backgroundColor: '#fafafa',
     },
 
@@ -680,18 +661,18 @@ const styles = StyleSheet.create({
 
     editNameCancelText: {
         fontSize: 15,
-        color: '#333',
-        fontWeight: '500',
+        fontFamily: 'NotoSans-Medium',
+        color: '#151515',
     },
 
     editNameSave: {
-        backgroundColor: '#49A3BD',
+        backgroundColor: '#5058b4',
     },
 
     editNameSaveText: {
         fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
         color: '#ffffff',
-        fontWeight: '600',
     },
 
     calendarCard: {

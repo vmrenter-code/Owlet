@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useChildProfile } from '../context/ChildProfileContext';
+import HomeBg from '../components/HomeBg';
+import BackArrow from '../components/BackArrow';
 
 /**
  * Combined race & ethnicity categories (single choice).
@@ -59,6 +61,7 @@ function normalizeToSingle(selections: string[]): string[] {
 
 export default function RaceEthnicity() {
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
     const { activeChildId, activeChild } = useChildProfile();
 
     const [selections, setSelections] = useState<string[]>([]);
@@ -115,31 +118,22 @@ export default function RaceEthnicity() {
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={['#ecfffb', '#fcecfb']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradient}
-            />
-
-            {/* Header */}
-            <View style={styles.header}>
-                <Pressable
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </Pressable>
+            <View style={styles.bg} pointerEvents="none">
+                <HomeBg />
             </View>
 
-            {/* Title */}
-            <Text style={styles.title}>Race & Ethnicity</Text>
-            <Text style={styles.subtitle}>For {activeChild.name}</Text>
+            <BackArrow />
 
             <ScrollView
+                style={styles.scroll}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 32 },
+                ]}
             >
+                <Text style={styles.title}>Race & Ethnicity</Text>
+                <Text style={styles.subtitle}>For {activeChild.name}</Text>
                 <View style={styles.section}>
                     {OPTIONS.map((option, index) => {
                         const selected = selections.includes(option);
@@ -172,53 +166,46 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    gradient: {
+    bg: {
         ...StyleSheet.absoluteFillObject,
+        zIndex: 0,
     },
 
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-    },
-
-    backButton: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-    },
-
-    backArrow: {
-        fontSize: 24,
-        color: '#333',
+    scroll: {
+        flex: 1,
+        zIndex: 1,
     },
 
     title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
-        paddingHorizontal: 25,
-        paddingTop: 12,
+        fontSize: 26,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
+        letterSpacing: -0.3,
+        paddingHorizontal: 20,
+        marginBottom: 4,
     },
 
     subtitle: {
         fontSize: 14,
-        color: '#666',
-        paddingHorizontal: 25,
-        paddingTop: 4,
-        paddingBottom: 12,
+        fontFamily: 'NotoSans-Regular',
+        color: '#888',
+        paddingHorizontal: 20,
+        marginBottom: 20,
+        lineHeight: 20,
     },
 
     scrollContent: {
-        paddingBottom: 40,
+        paddingHorizontal: 0,
     },
 
     section: {
         backgroundColor: '#ffffff',
         marginHorizontal: 20,
         marginBottom: 12,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.06)',
     },
 
     row: {
@@ -232,7 +219,7 @@ const styles = StyleSheet.create({
     },
 
     rowPressed: {
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'rgba(80, 88, 180, 0.06)',
     },
 
     lastItem: {
@@ -241,14 +228,15 @@ const styles = StyleSheet.create({
 
     rowLabel: {
         flex: 1,
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#151515',
         marginRight: 12,
     },
 
     checkmark: {
-        fontSize: 18,
-        color: '#8BC0CF',
-        fontWeight: '600',
+        fontSize: 16,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#5058b4',
     },
 });

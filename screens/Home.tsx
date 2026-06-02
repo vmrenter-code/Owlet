@@ -21,7 +21,9 @@ export default function Home() {
   const { activeChildId, activeChild, birthDates, openSwitcher } = useChildProfile();
   const activeAge = formatChildAge(birthDates[activeChildId]);
   const insets = useSafeAreaInsets();
-  const { selectedChild } = useChild();
+  const { selectedChild, getAvatarKey } = useChild();
+  const activeAvatarKey = activeChildId ? getAvatarKey(activeChildId) : null;
+  const displayName = selectedChild?.name ?? activeChild.name;
 
   return (
     <View style={styles.container}>
@@ -46,12 +48,16 @@ export default function Home() {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <ProfileContainer>
-              <ChildProfileAvatar childId={activeChildId} size={34} />
+              <ChildProfileAvatar
+                avatarKey={activeAvatarKey}
+                name={displayName}
+                size={34}
+              />
             </ProfileContainer>
             <View style={styles.profileTextWrap}>
               <View style={styles.profileTopRow}>
                 <Text style={styles.profileChildName} numberOfLines={1}>
-                  {selectedChild?.name ?? 'NoChild'}
+                  {displayName}
                 </Text>
                 <Svg width={16} height={16} viewBox="0 0 24 24" style={styles.profileChevronIcon}>
                   <Path
