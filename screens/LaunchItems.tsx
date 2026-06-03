@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import {View, Text, StyleSheet, Animated,} from 'react-native';
+import { View, Text, StyleSheet, Animated, useWindowDimensions } from 'react-native';
 import HomeBg from '../components/HomeBg';
-import PrimaryBlueButton from '../components/PrimaryBlueButton';
 
 type Slide = {
   id: string;
@@ -30,7 +29,11 @@ export default function LaunchItems({
   onSkip,
 }: Props) {
   const Svg = item.image;
-  const svgSize = width * 1.15;
+  const { height: windowHeight } = useWindowDimensions();
+
+  // Responsive SVG sizing: clamp between min/max, based on shorter axis
+  const shortAxis = Math.min(width, windowHeight);
+  const svgSize = Math.min(Math.max(shortAxis * 1, 200), 420);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(28)).current;
@@ -80,8 +83,7 @@ export default function LaunchItems({
   }, [isLast]);
 
   return (
-    <View style={[styles.container, { width}]}>
-
+    <View style={[styles.container, { width }]}>
       <HomeBg />
 
       <Animated.View
@@ -93,8 +95,21 @@ export default function LaunchItems({
           },
         ]}
       >
-        <View style={styles.imageZone}>
-          <Svg width={svgSize} height={svgSize} />
+        {/* SVG image zone: fixed intrinsic size, no flex stretch */}
+        <View
+          style={[
+            styles.imageZone,
+            { width: svgSize, height: svgSize },
+          ]}
+        >
+          <Svg
+            width={svgSize}
+            height={svgSize}
+            // preserveAspectRatio handled by the SVG itself;
+            // explicit width+height prevents the "unbounded" stretch bug
+            // on Android where SVGs without a viewBox fill the parent.
+            style={styles.svgImage}
+          />
         </View>
 
         <View style={styles.textZone}>
@@ -103,20 +118,17 @@ export default function LaunchItems({
           <Text style={styles.description}>{item.description}</Text>
         </View>
       </Animated.View>
-
-      </View>
-
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-  flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  overflow: 'hidden',
-},
-  
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
 
   centerBlock: {
     alignItems: 'center',
@@ -127,13 +139,23 @@ const styles = StyleSheet.create({
   },
 
   imageZone: {
+    // No flex: 1 — let the explicit width/height from JS control the box.
+    // overflow: hidden clips any SVG that bleeds out on edge-case devices.
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+
+  // Applied directly to the <Svg> element so it never exceeds its container.
+  svgImage: {
+    maxWidth: '100%',
+    maxHeight: '100%',
   },
 
   textZone: {
     alignItems: 'center',
     gap: 8,
+    marginTop: 12,
   },
 
   eyebrow: {
@@ -149,6 +171,7 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSans-SemiBold',
     lineHeight: 36,
     letterSpacing: -0.6,
+    textAlign: 'center',
   },
 
   description: {
@@ -157,7 +180,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     letterSpacing: 0.1,
     color: '#2E3332',
-    textAlign: 'left',
+    textAlign: 'center',
   },
 
   bottomBar: {
@@ -168,8 +191,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
-
-
 
   ctaBlock: {
     width: '100%',

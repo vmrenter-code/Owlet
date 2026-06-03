@@ -20,7 +20,7 @@ function InstructionItems({
   width,
 }: Props) {
   const Svg = item.image;
-  const svgSize = width * 1.15;
+  const svgSize = width * 1;
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(28)).current;

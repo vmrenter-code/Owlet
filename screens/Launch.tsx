@@ -12,6 +12,8 @@ import HomeBg from '../components/HomeBg';
 import OnboardingBack from '../components/OnboardingBack';
 import NextButton from '../components/NextButton';
 
+type SizeVariant = 'small' | 'medium' | 'large';
+
 
 export default function Launch() {
   const navigation = useNavigation<any>();
@@ -61,6 +63,21 @@ export default function Launch() {
   const handleSkip = () => {
     navigation.navigate('Welcome');
   };
+
+  const frameSizes: Record<SizeVariant, { width: string; maxWidth: number }> = {
+  small: {
+    width: '70%',
+    maxWidth: 260,
+  },
+  medium: {
+    width: '82%',
+    maxWidth: 340,
+  },
+  large: {
+    width: '92%',
+    maxWidth: 420,
+  },
+};
 
   return (
     <View style={styles.container}>
