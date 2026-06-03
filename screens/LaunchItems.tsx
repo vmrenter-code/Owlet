@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
 
   description: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'NotoSans-Regular',
     lineHeight: 22,
     letterSpacing: 0.1,
