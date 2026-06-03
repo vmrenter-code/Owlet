@@ -87,8 +87,8 @@ export default function ChildMedical() {
   return (
     <View style={{ flex: 1 }}>
       <OnboardingLayout
-        step={4}
-        totalSteps={5}
+        step={5}
+        totalSteps={6}
         onBack={() => navigation.goBack()}
         onNext={handleContinue}
         canProceed={true}

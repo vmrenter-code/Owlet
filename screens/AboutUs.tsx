@@ -28,17 +28,14 @@ export default function AboutUs() {
                     <BackArrow />
                 </View>
 
-                <View style={styles.imageShadow}>
-                    <ImageCard style={styles.imageCard} />
-                </View>
+
+                <Text style={styles.title}>About Us</Text>
 
                 <View style={styles.textRow}>
                     <Text style={styles.textStyle}>April 8, 2026</Text>
                     <Text style={styles.textStyle}>|</Text>
                     <Text style={styles.textStyle}>Owlet Team</Text>
                 </View>
-
-                <Text style={styles.title}>About Us</Text>
 
                 <Text style={styles.headerStyle}>Our Mission</Text>
                 <Text style={styles.content}>
@@ -54,7 +51,7 @@ export default function AboutUs() {
 
                 <Text style={styles.headerStyle}>Discovery as a Partnership</Text>
                 <Text style={styles.content}>
-                    Families are essential contributors to the knowledge we build together.
+                    Families are essential contributors to the knowledge we build together. together. Everything we do is guided by our Five Pillars:
                 </Text>
 
                 <View style={styles.pillarWrapper}>

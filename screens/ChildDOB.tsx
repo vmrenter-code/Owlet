@@ -38,7 +38,7 @@ export default function ChildDOB() {
     <View style={{ flex: 1 }}>
       <OnboardingLayout
         step={2}
-        totalSteps={5}
+        totalSteps={6}
         onBack={() => navigation.goBack()}
         onNext={handleNext}
         canProceed={!!dob}
@@ -54,6 +54,8 @@ export default function ChildDOB() {
             </View>
 
             {/* Trigger field */}
+            <View style = {styles.fieldWrapper}>
+            <Text style={styles.fieldLabel}>Birthday</Text>
             <Pressable
               onPress={() => setShowPicker(true)}
               style={styles.inputBox}
@@ -62,6 +64,7 @@ export default function ChildDOB() {
                 {dob || 'Select date of birth'}
               </Text>
             </Pressable>
+            </View>
 
             {/* Native picker */}
             {showPicker && (
@@ -154,4 +157,16 @@ inputText: {
 placeholder: {
   color: '#aaa',
 },
+
+fieldLabel: {
+    fontSize: 13,
+    fontFamily: 'NotoSans-SemiBold',
+    color: '#2E3332',
+    letterSpacing: 0.1,
+    paddingLeft: 4,
+  },
+
+  fieldWrapper: {
+    gap: 6,
+  },
 });
