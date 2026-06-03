@@ -117,8 +117,10 @@ const styles = StyleSheet.create({
     },
     infoRow: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 12,
+        width: '100%',
+        justifyContent: 'flex-start',
     },
     infoDot: {
         width: 8,
@@ -126,6 +128,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         backgroundColor: INDIGO,
         flexShrink: 0,
+        marginTop: 7,
     },
     infoText: {
         fontSize: 14,
@@ -133,6 +136,7 @@ const styles = StyleSheet.create({
         color: '#333',
         lineHeight: 21,
         textAlign: 'center',
+        flex: 1,
     },
     footer: {
         paddingHorizontal: 28,

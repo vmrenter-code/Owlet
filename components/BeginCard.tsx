@@ -288,7 +288,7 @@ description: {
     flex: 1,
     paddingVertical: 15,
     borderRadius: 14,
-    backgroundColor: '#4a8f8f',
+    backgroundColor: '#5058b4',
     alignItems: 'center',
   },
 
