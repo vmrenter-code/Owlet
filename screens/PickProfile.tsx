@@ -18,6 +18,7 @@ import OnboardingLayout from '../components/OnboardingLayout';
 import { useProfile } from '../context/ProfileContext';
 import { useAppState } from '../context/AppStateContext';
 import { useChild } from '../context/ChildContext';
+import { setChildAvatarKey } from '../utils/childAvatarStorage';
 
 import jelli from '../assets/jellie.svg';
 import fibi from '../assets/fibi.svg';
@@ -42,7 +43,7 @@ export default function PickProfile() {
   const route = useRoute<any>();
   const flow = route.params?.flow;
   const { width } = useWindowDimensions();
-  const { selectedChild, setChildAvatar, updateChildren } = useChild();
+  const { selectedChild, updateChildren } = useChild();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -61,7 +62,7 @@ export default function PickProfile() {
 
     setSaving(true);
     try {
-      const saved = await setChildAvatar(childId, selectedId);
+      const saved = await setChildAvatarKey(childId, selectedId);
       if (!saved) {
         Alert.alert(
           'Could not save avatar',

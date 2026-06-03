@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import LargeInput from '../components/LargeInput';
 import OnboardingLayout from '../components/OnboardingLayout';
 import { useChild } from '../context/ChildContext';
+import { createChildViaApi } from '../src/services/childApiService';
 import { birthdayToIso, isAddChildFlow } from '../utils/childFlow';
 
 const MEDICAL_CHIPS = [
@@ -27,7 +28,7 @@ export default function ChildMedical() {
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
   const [medicalNotes, setMedicalNotes] = useState('');
   const [saving, setSaving] = useState(false);
-  const { createChild, updateChildren } = useChild();
+  const { updateChildren, selectChild } = useChild();
   const addingChild = isAddChildFlow(flow);
 
   const toggleChip = (chip: string) => {
@@ -53,26 +54,27 @@ export default function ChildMedical() {
     setSaving(true);
     try {
       const isoBirthday = birthdayToIso(dob);
-      const { child, error } = await createChild({
-        name: childName.trim(),
-        birthday: isoBirthday,
-        race,
-        ethnicity,
-        gender,
-        medicalHistory: selectedChips,
-        medicalNotes: medicalNotes.trim() || undefined,
-      });
-
-      if (!child) {
+      try {
+        const child = await createChildViaApi({
+          name: childName.trim(),
+          birthday: isoBirthday,
+          race,
+          ethnicity,
+          gender,
+          medicalHistory: selectedChips,
+          medicalNotes: medicalNotes.trim() || undefined,
+        });
+        await selectChild(child);
+        await updateChildren();
+      } catch (err) {
         Alert.alert(
           'Could not save profile',
-          error ??
-            'Your child\'s information could not be saved to your account. Make sure you are signed in and the server is running, then try again.',
+          err instanceof Error
+            ? err.message
+            : 'Your child\'s information could not be saved to your account. Make sure you are signed in and the server is running, then try again.',
         );
         return;
       }
-
-      await updateChildren();
 
       navigation.navigate('PickProfile', {
         flow: addingChild ? 'addChild' : 'onboarding',

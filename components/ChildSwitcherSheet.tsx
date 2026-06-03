@@ -13,7 +13,7 @@ import { Svg, Path, Circle } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import ChildProfileAvatar from './ChildProfileAvatar';
 import { useChildProfile } from '../context/ChildProfileContext';
-import { useChild } from '../context/ChildContext';
+import { useChildAvatarKey } from '../hooks/useChildAvatarKey';
 import { formatChildAge } from '../utils/formatChildAge';
 
 const INDIGO = '#5058b4';
@@ -24,6 +24,53 @@ const CheckMarkIcon = () => (
         <Path d="M5 9l2.5 2.5L13 6" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
 );
+
+function ChildSwitcherCell({
+    child,
+    selected,
+    age,
+    onSelect,
+}: {
+    child: { id: string; name: string };
+    selected: boolean;
+    age: string;
+    onSelect: () => void;
+}) {
+    const avatarKey = useChildAvatarKey(child.id);
+
+    return (
+        <Pressable
+            style={styles.cell}
+            onPress={onSelect}
+            accessibilityRole="button"
+            accessibilityLabel={`Select ${child.name}`}
+        >
+            <View
+                style={[
+                    styles.avatarWrap,
+                    selected && styles.avatarWrapSelected,
+                ]}
+            >
+                <ChildProfileAvatar
+                    avatarKey={avatarKey}
+                    name={child.name}
+                    size={56}
+                />
+            </View>
+            <Text style={styles.name} numberOfLines={1}>
+                {child.name}
+            </Text>
+            {age ? (
+                <Text style={styles.age}>{age}</Text>
+            ) : (
+                <Text style={styles.agePlaceholder}> </Text>
+            )}
+            <View style={styles.checkArea}>
+                {selected ? <CheckMarkIcon /> : null}
+            </View>
+        </Pressable>
+    );
+}
 
 const PlusIcon = () => (
     <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
@@ -46,7 +93,6 @@ export default function ChildSwitcherSheet() {
         setActiveChildId,
         birthDates,
     } = useChildProfile();
-    const { getAvatarKey } = useChild();
 
     const screenHeight = Dimensions.get('window').height;
     const sheetTranslateY = useRef(new Animated.Value(screenHeight)).current;
@@ -130,45 +176,15 @@ export default function ChildSwitcherSheet() {
                         <Text style={styles.title}>Choose child profile</Text>
 
                         <View style={styles.row}>
-                            {profiles.map((child) => {
-                                const selected = activeChildId === child.id;
-                                const age = formatChildAge(birthDates[child.id]);
-                                const avatarKey = getAvatarKey(child.id);
-                                const childName = child.name;
-                                return (
-                                    <Pressable
-                                        key={child.id}
-                                        style={styles.cell}
-                                        onPress={() => selectChild(child.id)}
-                                        accessibilityRole="button"
-                                        accessibilityLabel={`Select ${child.name}`}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.avatarWrap,
-                                                selected && styles.avatarWrapSelected,
-                                            ]}
-                                        >
-                                            <ChildProfileAvatar
-                                              avatarKey={avatarKey}
-                                              name={childName}
-                                              size={56}
-                                            />
-                                        </View>
-                                        <Text style={styles.name} numberOfLines={1}>
-                                            {child.name}
-                                        </Text>
-                                        {age ? (
-                                            <Text style={styles.age}>{age}</Text>
-                                        ) : (
-                                            <Text style={styles.agePlaceholder}> </Text>
-                                        )}
-                                        <View style={styles.checkArea}>
-                                            {selected ? <CheckMarkIcon /> : null}
-                                        </View>
-                                    </Pressable>
-                                );
-                            })}
+                            {profiles.map((child) => (
+                                <ChildSwitcherCell
+                                    key={child.id}
+                                    child={child}
+                                    selected={activeChildId === child.id}
+                                    age={formatChildAge(birthDates[child.id])}
+                                    onSelect={() => selectChild(child.id)}
+                                />
+                            ))}
 
                             <Pressable
                                 style={({ pressed }) => [

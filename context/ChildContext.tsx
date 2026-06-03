@@ -1,21 +1,8 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  ReactNode,
-} from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth } from '../src/config/firebase';
-import { birthdayFromApi } from '../utils/childFlow';
-import { normalizeAvatarKey, type ChildAvatarKey } from '../utils/childAvatars';
-import {
-  createChildForUser,
-  fetchChildrenForUser,
-  updateChildForUser,
-} from '../src/services/childProfileService';
+
+import { API_BASE_URL } from '../src/config/apiBaseUrl';
 
 export type Child = {
   id: string;
@@ -23,25 +10,6 @@ export type Child = {
   birthday?: string | null;
   race?: string | null;
   ethnicity?: string | null;
-  gender?: string | null;
-  avatarKey?: string | null;
-  medicalHistory?: string[] | string | null;
-  medicalNotes?: string | null;
-};
-
-export type CreateChildPayload = {
-  name: string;
-  birthday?: string | null;
-  race?: string;
-  ethnicity?: string;
-  gender?: string;
-  medicalHistory?: string[];
-  medicalNotes?: string;
-};
-
-export type CreateChildResult = {
-  child: Child | null;
-  error: string | null;
 };
 
 type ChildContextType = {
@@ -50,197 +18,118 @@ type ChildContextType = {
   setSelectedChild: (child: Child) => void;
   selectChild: (child: Child | null) => Promise<void>;
   updateChildren: () => Promise<void>;
-  createChild: (payload: CreateChildPayload) => Promise<CreateChildResult>;
-  updateChildFields: (
-    childId: string,
-    fields: {
-      name?: string;
-      birthday?: string | null;
-      avatarKey?: string;
-    },
-  ) => Promise<boolean>;
   updateChildName: (childId: string, newName: string) => void;
   updateChildBirthDate: (childId: string, birthday: string | null) => void;
-  setChildAvatar: (childId: string, avatarKey: string) => Promise<boolean>;
-  getAvatarKey: (childId: string) => ChildAvatarKey | null;
 };
 
 const ChildContext = createContext<ChildContextType | undefined>(undefined);
 
-function firebaseErrorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  return 'Could not save your child\'s profile. Please try again.';
-}
+const SELECTED_CHILD_KEY = 'selectedChildId';
 
-export function ChildProvider({ children: reactChildren }: { children: ReactNode }) {
+export const ChildProvider = ({ children: ReactChildren }: { children: React.ReactNode }) => {
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
-  const [uid, setUid] = useState<string | null>(null);
 
-  const applyChildrenList = useCallback((list: Child[], keepSelectedId?: string) => {
-    setChildren(list);
-    setSelectedChild((prev) => {
-      const id = keepSelectedId ?? prev?.id;
-      if (id) {
-        const match = list.find((c) => c.id === id);
-        if (match) return match;
-      }
-      return list[0] ?? null;
-    });
-  }, []);
-
-  const selectChild = useCallback(async (child: Child | null) => {
+  const selectChild = async (child: Child | null) => {
     setSelectedChild(child);
+
     if (child?.id) {
-      await AsyncStorage.setItem('selectedChildId', child.id);
+      await AsyncStorage.setItem(SELECTED_CHILD_KEY, child.id);
     } else {
-      await AsyncStorage.removeItem('selectedChildId');
+      await AsyncStorage.removeItem(SELECTED_CHILD_KEY);
     }
-  }, []);
+  };
 
-  const getAvatarKey = useCallback(
-    (childId: string): ChildAvatarKey | null => {
-      const child = children.find((c) => c.id === childId);
-      if (child?.avatarKey) return normalizeAvatarKey(child.avatarKey);
-      return null;
-    },
-    [children],
-  );
+  const updateChildren = async () => {
+    const user = getAuth().currentUser;
+    if (!user) return;
 
-  const updateChildren = useCallback(async () => {
-    if (!uid) return;
-    try {
-      const list = await fetchChildrenForUser(uid);
-      applyChildrenList(list);
-    } catch (err) {
-      console.error('ChildContext fetch error:', err);
-    }
-  }, [uid, applyChildrenList]);
+    const token = await user.getIdToken();
+    const res = await fetch(`${API_BASE_URL}/children`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  const setChildAvatar = useCallback(
-    async (childId: string, avatarKey: string): Promise<boolean> => {
-      if (!uid) return false;
-      const key = normalizeAvatarKey(avatarKey);
-      if (!key) return false;
+    const data = await res.json();
+    if (!data || !Array.isArray(data)) return;
 
-      try {
-        const updated = await updateChildForUser(uid, childId, { avatarKey: key });
-        if (!updated) return false;
-        setChildren((current) =>
-          current.map((c) => (c.id === childId ? updated : c)),
-        );
-        setSelectedChild((prev) => (prev?.id === childId ? updated : prev));
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    [uid],
-  );
+    setChildren(data);
 
-  const createChild = useCallback(
-    async (payload: CreateChildPayload): Promise<CreateChildResult> => {
-      if (!uid) {
-        return { child: null, error: 'You are not signed in. Please log in and try again.' };
-      }
+    setSelectedChild((prev) => {
+      if (!prev) return data[0] ?? null;
+      const match = data.find((c: Child) => c.id === prev.id);
+      return match ?? data[0] ?? null;
+    });
+  };
 
-      try {
-        const child = await createChildForUser(uid, payload);
-        setChildren((current) => [...current, child]);
-        setSelectedChild(child);
-        await AsyncStorage.setItem('selectedChildId', child.id);
-        return { child, error: null };
-      } catch (err) {
-        return { child: null, error: firebaseErrorMessage(err) };
-      }
-    },
-    [uid],
-  );
+  const updateChildName = (childId: string, newName: string) => {
+    setChildren((prev) =>
+      prev.map((child) =>
+        child.id === childId ? { ...child, name: newName } : child,
+      ),
+    );
 
-  const updateChildFields = useCallback(
-    async (
-      childId: string,
-      fields: { name?: string; birthday?: string | null; avatarKey?: string },
-    ): Promise<boolean> => {
-      if (!uid) return false;
+    setSelectedChild((prev) =>
+      prev && prev.id === childId ? { ...prev, name: newName } : prev,
+    );
+  };
 
-      try {
-        const patched = await updateChildForUser(uid, childId, {
-          ...fields,
-          birthday:
-            fields.birthday !== undefined && fields.birthday !== null
-              ? birthdayFromApi(fields.birthday)
-              : fields.birthday,
-          avatarKey:
-            fields.avatarKey !== undefined
-              ? normalizeAvatarKey(fields.avatarKey) ?? undefined
-              : undefined,
-        });
-        if (!patched) return false;
+  const updateChildBirthDate = (childId: string, birthday: string | null) => {
+    setChildren((prev) =>
+      prev.map((child) =>
+        child.id === childId ? { ...child, birthday } : child,
+      ),
+    );
 
-        setChildren((current) =>
-          current.map((c) => (c.id === childId ? patched : c)),
-        );
-        setSelectedChild((prev) => (prev?.id === childId ? patched : prev));
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    [uid],
-  );
-
-  const updateChildName = useCallback(
-    (childId: string, newName: string) => {
-      const trimmed = newName.trim();
-      if (!trimmed) return;
-      setChildren((prev) =>
-        prev.map((child) =>
-          child.id === childId ? { ...child, name: trimmed } : child,
-        ),
-      );
-      setSelectedChild((prev) =>
-        prev && prev.id === childId ? { ...prev, name: trimmed } : prev,
-      );
-      updateChildFields(childId, { name: trimmed }).catch(() => {});
-    },
-    [updateChildFields],
-  );
-
-  const updateChildBirthDate = useCallback(
-    (childId: string, birthday: string | null) => {
-      setChildren((prev) =>
-        prev.map((child) =>
-          child.id === childId ? { ...child, birthday } : child,
-        ),
-      );
-      setSelectedChild((prev) =>
-        prev && prev.id === childId ? { ...prev, birthday } : prev,
-      );
-      updateChildFields(childId, { birthday }).catch(() => {});
-    },
-    [updateChildFields],
-  );
+    setSelectedChild((prev) =>
+      prev && prev.id === childId ? { ...prev, birthday } : prev,
+    );
+  };
 
   useEffect(() => {
+    const auth = getAuth();
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        setUid(null);
         setChildren([]);
-        await AsyncStorage.removeItem('selectedChildId');
+        await AsyncStorage.removeItem(SELECTED_CHILD_KEY);
         setSelectedChild(null);
         return;
       }
 
-      setUid(user.uid);
       try {
-        const list = await fetchChildrenForUser(user.uid);
-        const savedChildId = await AsyncStorage.getItem('selectedChildId');
-        const restored =
-          list.find((c) => c.id === savedChildId) ?? list[0] ?? null;
-        applyChildrenList(list, restored?.id);
-        if (restored?.id) {
-          await AsyncStorage.setItem('selectedChildId', restored.id);
+        const token = await user.getIdToken();
+
+        await fetch(`${API_BASE_URL}/users/sync`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const res = await fetch(`${API_BASE_URL}/children`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const childrenData = await res.json();
+        if (!Array.isArray(childrenData)) {
+          console.error('ChildContext init error: /children did not return an array');
+          return;
+        }
+
+        setChildren(childrenData);
+
+        const savedChildId = await AsyncStorage.getItem(SELECTED_CHILD_KEY);
+        const restoredChild =
+          childrenData.find((c: Child) => c.id === savedChildId) ||
+          childrenData[0] ||
+          null;
+
+        setSelectedChild(restoredChild);
+        if (restoredChild?.id) {
+          await AsyncStorage.setItem(SELECTED_CHILD_KEY, restoredChild.id);
         }
       } catch (err) {
         console.error('ChildContext init error:', err);
@@ -248,7 +137,7 @@ export function ChildProvider({ children: reactChildren }: { children: ReactNode
     });
 
     return unsubscribe;
-  }, [applyChildrenList]);
+  }, []);
 
   return (
     <ChildContext.Provider
@@ -258,18 +147,14 @@ export function ChildProvider({ children: reactChildren }: { children: ReactNode
         setSelectedChild,
         selectChild,
         updateChildren,
-        createChild,
-        updateChildFields,
         updateChildName,
         updateChildBirthDate,
-        setChildAvatar,
-        getAvatarKey,
       }}
     >
-      {reactChildren}
+      {ReactChildren}
     </ChildContext.Provider>
   );
-}
+};
 
 export const useChild = () => {
   const context = useContext(ChildContext);

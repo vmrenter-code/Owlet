@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform, Modal, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
-import { useScreening } from '../../context/ScreeningContext';
+import { useScreening, calculateRMSSD } from '../../context/ScreeningContext';
 
 // Video sources for each screening video
 const videoSources: { [key: number]: any } = {
@@ -30,7 +30,7 @@ export default function VideoScreen() {
     const route = useRoute<any>();
     const isFocused = useIsFocused();
 
-    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, connected, disconnect } = useScreening();
+    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, rrLog, connected, disconnect } = useScreening();
     const heartRateLogRef = useRef<typeof heartRateLog>([]);
     const heartRateRef = useRef<number | null>(null);
 
@@ -47,6 +47,15 @@ export default function VideoScreen() {
             setScreeningStartTime(Date.now());
         }
     }, [videoNumber]);
+
+    useEffect(() => {
+        if (rrLog.length > 0) {
+            AsyncStorage.setItem(
+                `rrLog_${currentScreeningID}`,
+                JSON.stringify(rrLog)
+            ).catch(() => {});
+        }
+    }, [currentScreeningID, rrLog]);
 
     useEffect(() => {
         heartRateLogRef.current = heartRateLog;
@@ -98,6 +107,7 @@ export default function VideoScreen() {
     const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
     
     const [videoFinished, setVideoFinished] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     
     // Track exit confirmation modal visibility
     const [showExitModal, setShowExitModal] = useState(false);
@@ -309,9 +319,12 @@ export default function VideoScreen() {
         }
     };
 
-    // safe recording start
+    const ownsRecordingSession = videoNumber === 1;
+
+    // safe recording start -- only the first screen should own the recording session
     useEffect(() => {
         if (
+            ownsRecordingSession &&
             isCameraReady &&
             isRefReady &&
             isCameraMounted &&
@@ -332,87 +345,116 @@ export default function VideoScreen() {
 
             return () => clearTimeout(startTimer);
         }
-    }, [cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted]);
+    }, [ownsRecordingSession, cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted]);
     
     const handleNext = async () => {
+    if (isUploading) {
+        return;
+    }
+
     // Stop the current video before navigating
     if (videoRef.current) {
         await videoRef.current.stopAsync();
     }
 
-    if (videoNumber < totalVideos) {
-        navigation.replace('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
+        if (videoNumber < totalVideos) {
+        navigation.push('VideoScreen', { videoNumber: videoNumber + 1, screeningId: currentScreeningID });
     } else {
         //
-        let recordingPath: string | null = null;
-        let uploadedObjectKey: string | null = null;
-
-        if (!isCurrentlyRecording()) {
-            //
-            const recovered = await startScreeningRecording();
-            if (recovered) {
-                await new Promise((resolve) => setTimeout(resolve, 1200));
-            }
-        }
-
+        setIsUploading(true);
         try {
-            recordingPath = await Promise.race([
-                stopScreeningRecording(),
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
-            ]);
-        } catch (e) {
-            //
-        }
+            let recordingPath: string | null = null;
+            let uploadedObjectKey: string | null = null;
+            const screeningIdForUpload = activeScreeningId ?? currentScreeningID;
 
-        //
-
-        // S3 Upload
-        if (recordingPath && activeScreeningId) {
-            const uploadResult = await uploadScreeningVideo({
-                baseUrl: BASE_URL,
-                screeningId: activeScreeningId,
-                videoNumber: totalVideos,
-                recordingUri: recordingPath,
-                contentType: 'video/mp4',
-            });
-
-            if (uploadResult.success) {
-                uploadedObjectKey = uploadResult.objectKey ?? null;
+            try {
+                recordingPath = await Promise.race([
+                    stopScreeningRecording(),
+                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+                ]);
+            } catch (e) {
                 //
+            }
+
+            //
+
+            // S3 Upload
+            if (recordingPath && screeningIdForUpload) {
+                const uploadResult = await uploadScreeningVideo({
+                    baseUrl: BASE_URL,
+                    screeningId: screeningIdForUpload,
+                    videoNumber: totalVideos,
+                    recordingUri: recordingPath,
+                    contentType: 'video/mp4',
+                });
+
+                if (uploadResult.success) {
+                    uploadedObjectKey = uploadResult.objectKey ?? null;
+                    //
+                } else {
+                    //
+                }
             } else {
                 //
             }
-        } else {
-            //
-        }
 
-        // Save screening progress
-        try {
-            await AsyncStorage.setItem('screeningProgress', JSON.stringify({
-                screeningId: activeScreeningId,
-                videoNumber: totalVideos,
-                completed: true,
-                timestamp: Date.now(),
-                recordingUri: recordingPath,
-                s3ObjectKey: uploadedObjectKey,
-            }));
-        } catch (e) {
-            //
-        }
+            // Save screening progress
+            try {
+                await AsyncStorage.setItem('screeningProgress', JSON.stringify({
+                    screeningId: screeningIdForUpload,
+                    videoNumber: totalVideos,
+                    completed: true,
+                    timestamp: Date.now(),
+                    recordingUri: recordingPath,
+                    s3ObjectKey: uploadedObjectKey,
+                }));
+            } catch (e) {
+                //
+            }
 
-        // Save heart rate log BEFORE disconnecting
-        try {
-            //
-            await AsyncStorage.setItem(
-                `heartRateLog_${currentScreeningID}`,
-                JSON.stringify(heartRateLogRef.current)
-            );
-        } catch (e) {
-            //
-        }
+            // Save heart rate log BEFORE disconnecting
+            try {
+                //
+                await AsyncStorage.setItem(
+                    `heartRateLog_${screeningIdForUpload}`,
+                    JSON.stringify(heartRateLogRef.current)
+                );
+                await AsyncStorage.setItem(
+                    `rrLog_${screeningIdForUpload}`,
+                    JSON.stringify(rrLog)
+                );
+            } catch (e) {
+                //
+            }
 
-        disconnect(); // disconnect AFTER saving
-        navigation.navigate('ScreeningComplete');
+            try {
+                const rmssd = calculateRMSSD(rrLog);
+                const response = await fetch(`${BASE_URL}/screening/${screeningIdForUpload}/heart-rate-csv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        videoNumber: totalVideos,
+                        heartRateLog: heartRateLogRef.current,
+                        rrLog,
+                        rmssd,
+                        completedAt: new Date().toISOString(),
+                    }),
+                });
+
+                if (!response.ok) {
+                    console.warn('Heart rate upload failed:', await response.text());
+                }
+            } catch (error) {
+                console.warn('Heart rate upload error:', error);
+            }
+
+            disconnect(); // disconnect AFTER saving
+            navigation.navigate('ScreeningComplete');
+        } finally {
+            setIsUploading(false);
+        }
     }
 };
 //hidden camera. must have it to run without preview
@@ -567,6 +609,16 @@ export default function VideoScreen() {
                         </View>
                     </View>
                 ) : null}
+
+                <Modal visible={isUploading} transparent statusBarTranslucent animationType="fade" onRequestClose={() => {}}>
+                    <View style={styles.uploadOverlay}>
+                        <View style={styles.uploadCard}>
+                            <ActivityIndicator size="large" color="#5058b4" />
+                            <Text style={styles.uploadTitle}>Video is uploading</Text>
+                            <Text style={styles.uploadMessage}>Please stay on this screen until the upload finishes.</Text>
+                        </View>
+                    </View>
+                </Modal>
 
                 <TroubleshootingOverlay
                     visible={showTroubleshooting}
@@ -835,6 +887,42 @@ skipIcon: {
         flexDirection: 'row',
         gap: 10,
         width: '100%',
+    },
+
+    uploadOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.72)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+
+    uploadCard: {
+        width: '100%',
+        maxWidth: 360,
+        borderRadius: 24,
+        paddingVertical: 28,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+        backgroundColor: 'rgba(18, 20, 28, 0.95)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.12)',
+    },
+
+    uploadTitle: {
+        marginTop: 18,
+        color: '#FFFFFF',
+        fontSize: 22,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+
+    uploadMessage: {
+        marginTop: 10,
+        color: 'rgba(255, 255, 255, 0.78)',
+        fontSize: 15,
+        lineHeight: 22,
+        textAlign: 'center',
     },
 
     cancelButton: {
