@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,24 @@ import {
   Animated,
   useWindowDimensions,
   Platform,
+  FlatList,
+  ViewToken,
+  Easing,
+  ListRenderItem
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import InstructionSlides from './InstructionSlides';
+import InstructionItems from './InstructionItems';
 import Paginator from '../components/Paginator';
 import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import HomeBg from '../components/HomeBg';
 import ImageCard from '../components/ImageCard';
 import { useScreening } from '../context/ScreeningContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import SkipButton from '../components/SkipButton';
+import NextButton from '../components/NextButton';
+import BackArrow from '../components/WelcomeBackArrow';
 
 const createLocalScreeningId = () =>
   `local_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -32,9 +41,35 @@ export default function ScreeningInstructions() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentIndexRef = useRef(0);
-  const { width } = useWindowDimensions();
-
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const scrollX = useRef(new Animated.Value(0)).current;
+  const slidesRef = useRef<FlatList>(null);
+  const btnOpacity = useRef(new Animated.Value(0)).current;
+  const viewableItemsChanged = useRef(
+      ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+        if (viewableItems.length > 0) {
+          setCurrentIndex(viewableItems[0].index ?? 0);
+        }
+      }
+    ).current;
+
+
+
+const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+const isLast = currentIndex === InstructionSlides.length - 1;
+
+useEffect(() => {
+    if (isLast) {
+      btnOpacity.setValue(0);
+      Animated.timing(btnOpacity, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isLast]);
 
   useEffect(() => {
     Animated.timing(scrollX, {
@@ -64,94 +99,146 @@ export default function ScreeningInstructions() {
   };
 
   const handleNext = async () => {
-    const idx = currentIndexRef.current;
-    if (idx < LAST_INDEX) {
-      const next = idx + 1;
-      currentIndexRef.current = next;
-      setCurrentIndex(next);
-      return;
-    }
-    const screeningId = await resolveScreeningId();
-    navigation.navigate('EKGPlacement', { screeningId });
-  };
+  const idx = currentIndexRef.current;
+  if (idx < LAST_INDEX) {
+    const next = idx + 1;
+    currentIndexRef.current = next;
+    setCurrentIndex(next);
+    slidesRef.current?.scrollToIndex({ index: next, animated: true });
+    return;
+  }
+  const screeningId = await resolveScreeningId();
+  navigation.navigate('EKGPlacement', { screeningId });
+};
 
   const slide = InstructionSlides[currentIndex];
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.bg}>
-        <HomeBg />
-      </View>
+  const handleSkip = () => {
+    navigation.navigate('EKGPlacement');
+  };
 
-      <View style={styles.slideArea}>
-        <View style={styles.imageBox}>
-          <ImageCard style={styles.imageFill} />
-        </View>
-        <View style={styles.textBox}>
-          <Text style={styles.title} accessibilityRole="header">{slide.title}</Text>
-          <Text style={styles.desc}>{slide.description}</Text>
-        </View>
-      </View>
+  const renderItem: ListRenderItem<typeof InstructionSlides[0]> = useCallback(
+  ({ item }: { item: typeof InstructionSlides[0] }) => (
+    <InstructionItems
+      item={item}
+      width={width}
+      currentIndex={currentIndex}
+      totalSlides={InstructionSlides.length}
+    />
+  ),
+  [currentIndex, width]
+);
 
-      <View style={styles.footer}>
-        <Paginator data={InstructionSlides} scrollX={scrollX} />
-        <View style={styles.btnWrap}>
-          <PrimaryBlueButton onPress={handleNext}>Next</PrimaryBlueButton>
-        </View>
-      </View>
-    </View>
-  );
-}
+  
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  bg: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 0,
-    pointerEvents: 'none',
-  } as any,
-  slideArea: {
-    flex: 1,
-    zIndex: 1,
-    minHeight: 0,
-  },
-  imageBox: {
-    flex: 3,
-    width: '100%',
-  },
-  imageFill: {
-    width: '100%',
-    height: '100%',
-  },
-  textBox: {
-    flex: 2,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  title: {
-    fontSize: 22,
-    fontFamily: 'NotoSans-SemiBold',
-    color: '#151515',
-    marginBottom: 8,
-    letterSpacing: -0.2,
-    textAlign: 'center',
-  },
-  desc: {
-    fontSize: 15,
-    fontFamily: 'NotoSans-Regular',
-    color: '#2E3332',
-    lineHeight: 21,
-    letterSpacing: 0.1,
-    textAlign: 'center',
-  },
-  footer: {
-    zIndex: 10,
-    paddingBottom: 28,
-    flexShrink: 0,
-  },
-  btnWrap: {
-    paddingHorizontal: 28,
-    paddingTop: 8,
-  },
-});
+ return (
+     <View style={styles.container}>
+ 
+       <View style={styles.formatBg}>
+         <HomeBg />
+       </View>
+ 
+       <View style={[styles.shell, { paddingTop: insets.top }]}>
+        <BackArrow />
+         <FlatList
+           data={InstructionSlides}
+            renderItem={renderItem}
+          
+           
+           keyExtractor={(item) => item.id}
+           horizontal
+           pagingEnabled
+           showsHorizontalScrollIndicator={false}
+           style={{  width }}
+           getItemLayout={(_, index) => ({
+             length: width,
+             offset: width * index,
+             index,
+           })}
+           bounces={false}
+           onScroll={Animated.event(
+             [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+             { useNativeDriver: false }
+           )}
+           scrollEventThrottle={16}
+           onViewableItemsChanged={viewableItemsChanged}
+           viewabilityConfig={viewConfig}
+           ref={slidesRef}
+         />
+ 
+         {isLast && (
+           <View style={[styles.backArrowWrapper, { top: insets.top }]}>
+           </View>
+         )}
+ 
+         <View style={[styles.bottomRow, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+           {isLast ? (
+             <View style={styles.lastRow}>
+               <Animated.View style={[{ flex: 1 }, { opacity: btnOpacity }]}>
+                 <PrimaryBlueButton onPress={handleNext} fullWidth>Let's begin</PrimaryBlueButton>
+               </Animated.View>
+             </View>
+           ) : (
+             <View style={styles.navRow}>
+              <SkipButton onPress={handleSkip} label="Skip" />
+              <Paginator data={InstructionSlides} scrollX={scrollX} />
+              <NextButton onPress={handleNext} />
+               
+             </View>
+           )}
+         </View>
+       </View>
+     </View>
+   );
+ }
+ 
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+   },
+   shell: {
+     flex: 1,
+   },
+ 
+   formatBg: {
+     position: 'absolute',
+     top: 0,
+     left: 0,
+     right: 0,
+     bottom: 0,
+     zIndex: 0,
+     pointerEvents: 'none',
+   },
+ 
+   bottomRow: {
+     width: '100%',
+     paddingHorizontal: 20,
+     marginTop: 12,
+     flexShrink: 0,
+     zIndex: 10,
+     position: 'relative',
+   },
+ 
+   navRow: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     justifyContent: 'space-between',
+   },
+ 
+   startButton: {
+     flex: 1,
+     marginLeft: 16,
+   },
+ 
+   backArrowWrapper: {
+     position: 'absolute',
+     left: 8,
+     zIndex: 100,
+   },
+ 
+   lastRow: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     justifyContent: 'center',
+   },
+ });

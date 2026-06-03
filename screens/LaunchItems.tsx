@@ -40,9 +40,6 @@ export default function LaunchItems({
 
   const isLast = currentIndex === totalSlides - 1;
 
-  const dotActive = '#5058b4';
-  const dotInactive = 'rgba(80,88,180,0.2)';
-
   useEffect(() => {
     fadeAnim.setValue(0);
     slideAnim.setValue(28);
@@ -85,10 +82,8 @@ export default function LaunchItems({
   return (
     <View style={[styles.container, { width}]}>
 
-      {/* BACKGROUND */}
       <HomeBg />
 
-      {/* CENTER BLOCK */}
       <Animated.View
         style={[
           styles.centerBlock,
@@ -115,7 +110,7 @@ export default function LaunchItems({
 }
 
 const styles = StyleSheet.create({
-   container: {
+  container: {
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
@@ -126,7 +121,9 @@ const styles = StyleSheet.create({
   centerBlock: {
     alignItems: 'center',
     paddingHorizontal: 30,
-    marginTop: 60,        // shifts the whole block down toward the lower half
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
   },
 
   imageZone: {

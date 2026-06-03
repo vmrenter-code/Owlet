@@ -29,7 +29,7 @@ export default function ChildName() {
       <View style={{ flex: 1 }}>
         <OnboardingLayout
           step={1}
-          totalSteps={5}
+          totalSteps={6}
           showBackOnFirstStep
           onBack={handleBack}
           onNext={handleNext}
@@ -41,6 +41,9 @@ export default function ChildName() {
                 <Text style={styles.subtitleStyle}>This is how they'll appear in the app.</Text>
               </View>
 
+
+              <View style={styles.fieldWrapper}>
+              <Text style={styles.fieldLabel}>First name</Text>
               <InputFields
                 placeholder="Child's first name"
                 maxLength={15}
@@ -51,6 +54,7 @@ export default function ChildName() {
                 onSubmitEditing={childName.trim().length > 0 ? handleNext : undefined}
               />
               <Text style={styles.charCount}>{childName.length}/15</Text>
+            </View>
             </View>
         </OnboardingLayout>
       </View>
@@ -88,5 +92,17 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSans-Regular',
     textAlign: 'right',
     letterSpacing: 0.1,
+  },
+
+  fieldLabel: {
+    fontSize: 13,
+    fontFamily: 'NotoSans-SemiBold',
+    color: '#2E3332',
+    letterSpacing: 0.1,
+    paddingLeft: 4,
+  },
+
+  fieldWrapper: {
+    gap: 6,
   },
 });

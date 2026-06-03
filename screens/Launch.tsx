@@ -12,7 +12,6 @@ import HomeBg from '../components/HomeBg';
 import OnboardingBack from '../components/OnboardingBack';
 import NextButton from '../components/NextButton';
 
-const BOTTOM_BAR_HEIGHT = 64;
 
 export default function Launch() {
   const navigation = useNavigation<any>();

@@ -35,7 +35,7 @@ export default function PillarCarousel() {
                     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
                         <Path
                             d="M15 18l-6-6 6-6"
-                            stroke="#161B1A"
+                            stroke="#ffffff"
                             strokeWidth={2}
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -59,7 +59,7 @@ export default function PillarCarousel() {
                     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
                         <Path
                             d="M9 18l6-6-6-6"
-                            stroke="#161B1A"
+                            stroke="#ffffff"
                             strokeWidth={2}
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -74,7 +74,7 @@ export default function PillarCarousel() {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#F5F9F8',
+        backgroundColor: '#5058b4',
         borderRadius: 20,
         padding: 20,
         marginTop: 12,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     pillarName: {
         fontSize: 18,
         fontFamily: 'NotoSans-SemiBold',
-        color: '#151515',
+        color: '#ffffff',
         marginBottom: 8,
         letterSpacing: -0.2,
     },
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     pillarDesc: {
         fontSize: 15,
         lineHeight: 21,
-        color: '#2E3332',
+        color: '#ffffff',
         fontFamily: 'NotoSans-Regular',
         letterSpacing: 0.1,
     },
@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         marginTop: 16,
+        color: '#ffffff',
     },
 
     arrowButton: {
@@ -114,6 +115,7 @@ const styles = StyleSheet.create({
         height: 44,
         justifyContent: 'center',
         alignItems: 'center',
+        color: '#ffffff',
     },
 
     dots: {
@@ -125,10 +127,10 @@ const styles = StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: 'rgba(0,0,0,0.15)',
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
     },
 
     dotActive: {
-        backgroundColor: '#5058b4',
+        backgroundColor: '#ffffff',
     },
 });

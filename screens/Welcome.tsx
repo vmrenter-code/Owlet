@@ -8,6 +8,8 @@ import PrimaryWhiteButton from '../components/PrimaryWhiteButton';
 import ImageCard from '../components/ImageCard';
 import { Svg, Path, Rect } from 'react-native-svg';
 
+import Logo from '../assets/logo.svg';
+
 export default function Welcome() {
     const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
@@ -37,9 +39,7 @@ export default function Welcome() {
             <View style={[styles.container, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}>
 
                 <View style={styles.centerSection}>
-                    <View style={styles.imageWrapper}>
-                        <ImageCard style={styles.imageCard} />
-                    </View>
+  <Logo width={150} height={150} />
 
                     <Text style={styles.titleStyle}>owlet</Text>
                     <Text style={styles.subtitleStyle}>Early insights for your child's development.</Text>

@@ -113,7 +113,7 @@ export default function ChildBackground() {
   const [ethnicity, setEthnicity] = useState('');
 
   const handleNext = () => {
-  navigation.navigate('ChildMedical', {
+  navigation.navigate('ChildProvider', {
     childName,
     dob,
     race,
@@ -127,7 +127,7 @@ export default function ChildBackground() {
       <View style={{ flex: 1 }}>
         <OnboardingLayout
           step={3}
-          totalSteps={5}
+          totalSteps={6}
           onBack={() => navigation.goBack()}
           onNext={handleNext}
           canProceed={true}
@@ -138,6 +138,8 @@ export default function ChildBackground() {
                 <Text style={styles.subtitleStyle}>This helps us provide better context. This step is optional.</Text>
               </View>
 
+              <View style={styles.fieldWrapper}>
+                <Text style = {styles.fieldLabel}>Race</Text>
               <View style={styles.fieldGroup}>
                 <Dropdown
                   placeholder="Race"
@@ -145,15 +147,19 @@ export default function ChildBackground() {
                   value={race}
                   onChange={setRace}
                 />
+               </View> 
+               <View style={styles.fieldWrapper}>
+                <Text style={styles.fieldLabel}>Ethnicity</Text>
                 <Dropdown
                   placeholder="Ethnicity"
                   options={ETHNICITY_OPTIONS}
                   value={ethnicity}
                   onChange={setEthnicity}
                 />
+                </View>
 
-                <View style={styles.fieldGroup}>
-  
+  <View style={styles.fieldWrapper}>
+    <Text style={styles.fieldLabel}>Gender</Text>
   <Dropdown
     placeholder="Gender"
     options={GENDER_OPTIONS}
@@ -287,5 +293,17 @@ const styles = StyleSheet.create({
   optionTextSelected: {
     color: '#4a8f8f',
     fontFamily: 'NotoSans-SemiBold',
+  },
+
+  fieldLabel: {
+    fontSize: 13,
+    fontFamily: 'NotoSans-SemiBold',
+    color: '#2E3332',
+    letterSpacing: 0.1,
+    paddingLeft: 4,
+  },
+
+  fieldWrapper: {
+    gap: 6,
   },
 });

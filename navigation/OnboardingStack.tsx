@@ -6,6 +6,7 @@ import ChildDOB from '../screens/ChildDOB';
 import ChildBackground from '../screens/ChildBackground';
 import ChildMedical from '../screens/ChildMedical';
 import PickProfile from '../screens/PickProfile';
+import ChildProvider from '../screens/ChildProvider';
 
 export type OnboardingStackParamList = {
   ChildName: undefined;
@@ -13,6 +14,7 @@ export type OnboardingStackParamList = {
   ChildBackground: { childName: string; dob: string };
   ChildMedical: { childName: string; dob: string; race: string; ethnicity: string };
   PickProfile: undefined;
+  ChildProvider: { childName: string; dob: string; race: string; ethnicity: string; gender: string };
 };
 
 const Stack = createNativeStackNavigator<OnboardingStackParamList>();
@@ -32,6 +34,7 @@ export default function OnboardingStack() {
       <Stack.Screen name="ChildBackground" component={ChildBackground} />
       <Stack.Screen name="ChildMedical" component={ChildMedical} />
       <Stack.Screen name="PickProfile" component={PickProfile} />
+      <Stack.Screen name="ChildProvider" component={ChildProvider} />
     </Stack.Navigator>
   );
 }

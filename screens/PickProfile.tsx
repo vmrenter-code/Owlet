@@ -99,8 +99,8 @@ export default function PickProfile() {
         </View>
 
         <OnboardingLayout
-          step={5}
-          totalSteps={5}
+          step={6}
+          totalSteps={6}
           onBack={() => navigation.goBack()}
           onNext={handleContinue}
           canProceed={!!selectedId}
