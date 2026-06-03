@@ -23,12 +23,12 @@ import { useScreening } from '../context/ScreeningContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SkipButton from '../components/SkipButton';
 import NextButton from '../components/NextButton';
-import BackArrow from '../components/WelcomeBackArrow';
+import BackArrow from '../components/BackArrow';
 
 const createLocalScreeningId = () =>
   `local_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-const LAST_INDEX = InstructionSlides.findIndex((s) => s.id === '6') ?? InstructionSlides.length - 1;
+const LAST_INDEX = InstructionSlides.length - 1;
 
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
@@ -46,13 +46,16 @@ export default function ScreeningInstructions() {
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef<FlatList>(null);
   const btnOpacity = useRef(new Animated.Value(0)).current;
-  const viewableItemsChanged = useRef(
-      ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-        if (viewableItems.length > 0) {
-          setCurrentIndex(viewableItems[0].index ?? 0);
-        }
-      }
-    ).current;
+ const viewableItemsChanged = useRef(
+  ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    if (viewableItems.length > 0) {
+      const index = viewableItems[0].index ?? 0;
+
+      currentIndexRef.current = index;
+      setCurrentIndex(index);
+    }
+  }
+).current;
 
 
 
@@ -117,16 +120,14 @@ useEffect(() => {
     navigation.navigate('EKGPlacement');
   };
 
-  const renderItem: ListRenderItem<typeof InstructionSlides[0]> = useCallback(
-  ({ item }: { item: typeof InstructionSlides[0] }) => (
+ const renderItem = useCallback(
+  ({ item }: { item: (typeof InstructionSlides)[number] }) => (
     <InstructionItems
       item={item}
       width={width}
-      currentIndex={currentIndex}
-      totalSlides={InstructionSlides.length}
     />
   ),
-  [currentIndex, width]
+  [width]
 );
 
   
@@ -140,31 +141,32 @@ useEffect(() => {
  
        <View style={[styles.shell, { paddingTop: insets.top }]}>
         <BackArrow />
-         <FlatList
-           data={InstructionSlides}
-            renderItem={renderItem}
-          
-           
-           keyExtractor={(item) => item.id}
-           horizontal
-           pagingEnabled
-           showsHorizontalScrollIndicator={false}
-           style={{  width }}
-           getItemLayout={(_, index) => ({
-             length: width,
-             offset: width * index,
-             index,
-           })}
-           bounces={false}
-           onScroll={Animated.event(
-             [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-             { useNativeDriver: false }
-           )}
-           scrollEventThrottle={16}
-           onViewableItemsChanged={viewableItemsChanged}
-           viewabilityConfig={viewConfig}
-           ref={slidesRef}
-         />
+        <FlatList
+  data={InstructionSlides}
+  renderItem={renderItem}
+  keyExtractor={(item) => item.id}
+  horizontal
+  pagingEnabled
+  showsHorizontalScrollIndicator={false}
+  removeClippedSubviews
+  initialNumToRender={1}
+  maxToRenderPerBatch={1}
+  windowSize={3}
+  getItemLayout={(_, index) => ({
+    length: width,
+    offset: width * index,
+    index,
+  })}
+  bounces={false}
+  onScroll={Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    { useNativeDriver: false }
+  )}
+  scrollEventThrottle={16}
+  onViewableItemsChanged={viewableItemsChanged}
+  viewabilityConfig={viewConfig}
+  ref={slidesRef}
+/>
  
          {isLast && (
            <View style={[styles.backArrowWrapper, { top: insets.top }]}>
@@ -194,51 +196,51 @@ useEffect(() => {
  
  const styles = StyleSheet.create({
    container: {
-     flex: 1,
-   },
-   shell: {
-     flex: 1,
-   },
- 
-   formatBg: {
-     position: 'absolute',
-     top: 0,
-     left: 0,
-     right: 0,
-     bottom: 0,
-     zIndex: 0,
-     pointerEvents: 'none',
-   },
- 
-   bottomRow: {
-     width: '100%',
-     paddingHorizontal: 20,
-     marginTop: 12,
-     flexShrink: 0,
-     zIndex: 10,
-     position: 'relative',
-   },
- 
-   navRow: {
-     flexDirection: 'row',
-     alignItems: 'center',
-     justifyContent: 'space-between',
-   },
- 
-   startButton: {
-     flex: 1,
-     marginLeft: 16,
-   },
- 
-   backArrowWrapper: {
-     position: 'absolute',
-     left: 8,
-     zIndex: 100,
-   },
- 
-   lastRow: {
-     flexDirection: 'row',
-     alignItems: 'center',
-     justifyContent: 'center',
-   },
- });
+    flex: 1,
+  },
+  shell: {
+    flex: 1,
+  },
+
+  formatBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+    pointerEvents: 'none',
+  },
+
+  bottomRow: {
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 12,
+    flexShrink: 0,
+    zIndex: 10,
+    position: 'relative',
+  },
+
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  startButton: {
+    flex: 1,
+    marginLeft: 16,
+  },
+
+  backArrowWrapper: {
+    position: 'absolute',
+    left: 8,
+    zIndex: 100,
+  },
+
+  lastRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

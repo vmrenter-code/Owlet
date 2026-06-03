@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, memo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import HomeBg from '../components/HomeBg';
 
 type Slide = {
   id: string;
@@ -14,19 +13,11 @@ type Slide = {
 type Props = {
   item: Slide;
   width: number;
-  currentIndex: number;
-  totalSlides: number;
-  onNext?: () => void;
-  onSkip?: () => void;
 };
 
-export default memo(function InstructionItems({
+function InstructionItems({
   item,
   width,
-  currentIndex,
-  totalSlides,
-  onNext,
-  onSkip,
 }: Props) {
   const Svg = item.image;
   const svgSize = width * 1.15;
@@ -34,14 +25,10 @@ export default memo(function InstructionItems({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(28)).current;
 
-  const btnFadeAnim = useRef(new Animated.Value(0)).current;
-  const btnSlideAnim = useRef(new Animated.Value(16)).current;
-
-  const isLast = currentIndex === totalSlides - 1;
-
   useEffect(() => {
     fadeAnim.setValue(0);
     slideAnim.setValue(28);
+
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -56,32 +43,8 @@ export default memo(function InstructionItems({
     ]).start();
   }, [item.id]);
 
-  useEffect(() => {
-    if (!isLast) return;
-
-    btnFadeAnim.setValue(0);
-    btnSlideAnim.setValue(16);
-
-    Animated.parallel([
-      Animated.timing(btnFadeAnim, {
-        toValue: 1,
-        duration: 400,
-        delay: 80,
-        useNativeDriver: true,
-      }),
-      Animated.timing(btnSlideAnim, {
-        toValue: 0,
-        duration: 360,
-        delay: 80,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [isLast]);
-
   return (
     <View style={[styles.container, { width }]}>
-      <HomeBg />
-
       <Animated.View
         style={[
           styles.centerBlock,
@@ -96,22 +59,36 @@ export default memo(function InstructionItems({
         </View>
 
         <View style={styles.textZone}>
-          <Text style={styles.eyebrow}>{item.eyebrow}</Text>
+          {!!item.eyebrow && (
+            <Text style={styles.eyebrow}>{item.eyebrow}</Text>
+          )}
+
           <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
+
+          <Text style={styles.description}>
+            {item.description}
+          </Text>
         </View>
       </Animated.View>
     </View>
   );
-});
+}
+
+export default memo(
+  InstructionItems,
+  (prev, next) =>
+    prev.item.id === next.item.id &&
+    prev.width === next.width
+);
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  overflow: 'hidden',
+},
+  
 
   centerBlock: {
     alignItems: 'center',
@@ -124,6 +101,7 @@ const styles = StyleSheet.create({
   imageZone: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 24,
   },
 
   textZone: {
@@ -144,7 +122,6 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSans-SemiBold',
     lineHeight: 36,
     letterSpacing: -0.6,
-    textAlign: 'left',
   },
 
   description: {
@@ -153,7 +130,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     letterSpacing: 0.1,
     color: '#2E3332',
-    textAlign: 'left',
+    textAlign: 'center',
   },
 
   bottomBar: {
@@ -164,6 +141,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
+
+
 
   ctaBlock: {
     width: '100%',
