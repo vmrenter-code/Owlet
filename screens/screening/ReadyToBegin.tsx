@@ -6,11 +6,11 @@ import { useScreening } from '../../context/ScreeningContext';
 import ScreeningCameraLayout from '../../components/ScreeningCameraLayout';
 import { getAuth } from 'firebase/auth';
 import { useChild } from '../../context/ChildContext';
+import { API_BASE_URL } from '../../src/config/apiBaseUrl';
 
 export default function ReadyToBegin() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const BASE_URL = 'http://localhost:4000';
     const { screeningId: screeningIDFromContext } = useScreening();
     const screeningId = screeningIDFromContext ?? route.params?.screeningId;
     const { selectedChild } = useChild();
@@ -41,7 +41,7 @@ export default function ReadyToBegin() {
             }
 
             // Create a new screening in the backend
-            const response = await fetch(`${BASE_URL}/screening`, {
+            const response = await fetch(`${API_BASE_URL}/screening`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

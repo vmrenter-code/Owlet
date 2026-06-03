@@ -35,8 +35,9 @@ export function ChildProfileProvider({ children }: { children: ReactNode }) {
   const {
     children: childList,
     selectedChild,
-    setSelectedChild,
-    updateChildFields,
+    selectChild,
+    updateChildName: syncChildName,
+    updateChildBirthDate: syncChildBirthDate,
   } = useChild();
 
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -65,18 +66,18 @@ export function ChildProfileProvider({ children }: { children: ReactNode }) {
 
   const setActiveChildId = (id: string) => {
     const match = childList.find((c) => c.id === id);
-    if (match) setSelectedChild(match);
+    if (match) selectChild(match).catch(() => {});
   };
 
   const updateChildName = (id: string, name: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    updateChildFields(id, { name: trimmed }).catch(() => {});
+    syncChildName(id, trimmed);
   };
 
   const updateChildBirthDate = (id: string, isoDate: string) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return;
-    updateChildFields(id, { birthday: isoDate }).catch(() => {});
+    syncChildBirthDate(id, isoDate);
   };
 
   return (

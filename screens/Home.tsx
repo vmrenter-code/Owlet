@@ -14,6 +14,7 @@ import { useChildProfile } from '../context/ChildProfileContext';
 import { formatChildAge } from '../utils/formatChildAge';
 import { usePortraitLock } from '../hooks/usePortraitLock';
 import { useChild } from '../context/ChildContext';
+import { useChildAvatarKey } from '../hooks/useChildAvatarKey';
 
 export default function Home() {
   usePortraitLock();
@@ -21,8 +22,8 @@ export default function Home() {
   const { activeChildId, activeChild, birthDates, openSwitcher } = useChildProfile();
   const activeAge = formatChildAge(birthDates[activeChildId]);
   const insets = useSafeAreaInsets();
-  const { selectedChild, getAvatarKey } = useChild();
-  const activeAvatarKey = activeChildId ? getAvatarKey(activeChildId) : null;
+  const { selectedChild } = useChild();
+  const activeAvatarKey = useChildAvatarKey(activeChildId);
   const displayName = selectedChild?.name ?? activeChild.name;
 
   return (
