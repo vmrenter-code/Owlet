@@ -52,8 +52,9 @@ export const ScreeningProvider = ({ children }: { children: ReactNode }) => {
 
   const { heartRate, rrInterval, connected, scanning, error, connectToH9, disconnect } = usePolarH9();
 
+  // Only collect RR intervals once the screening clock has started
   useEffect(() => {
-    if (rrInterval !== null) {
+    if (rrInterval !== null && screeningStartTimeRef.current !== null) {
       addRrInterval(rrInterval);
     }
   }, [rrInterval]);

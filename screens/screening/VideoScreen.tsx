@@ -31,7 +31,7 @@ export default function VideoScreen() {
     const route = useRoute<any>();
     const isFocused = useIsFocused();
 
-    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, setScreeningStartTime, heartRate, rrLog, connected, disconnect } = useScreening();
+    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, clearRrLog, setScreeningStartTime, heartRate, rrLog, connected, disconnect } = useScreening();
     const heartRateLogRef = useRef<typeof heartRateLog>([]);
     const heartRateRef = useRef<number | null>(null);
 
@@ -45,6 +45,7 @@ export default function VideoScreen() {
     useEffect(() => {
         if (videoNumber === 1) {
             clearHeartRateLog();
+            clearRrLog();
             setScreeningStartTime(Date.now());
         }
     }, [videoNumber]);
