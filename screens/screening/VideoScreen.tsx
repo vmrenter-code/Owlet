@@ -100,7 +100,7 @@ export default function VideoScreen() {
     const { hasPermission: cameraGranted, requestPermission: requestCameraPermission } = useCameraPermission();
     const { hasPermission: micGranted, requestPermission: requestMicrophonePermission } = useMicrophonePermission();
     const frontDevice = useCameraDevice('front');
-    const videoOutput = useVideoOutput({ enableAudio: true });
+    const videoOutput = useVideoOutput({ enableAudio: true, fileType: 'mp4' });
     
     const totalVideos = 5;
     const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);

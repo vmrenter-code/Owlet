@@ -57,8 +57,10 @@ export const startScreeningRecording = async (): Promise<boolean> => {
     console.log('Starting video recording to:', activeRecorder.filePath);
     await activeRecorder.startRecording(
       (filePath) => {
-        console.log('Recording finished:', filePath);
-        currentRecordingUri = filePath;
+        // React Native fetch requires file:// prefix to read local files
+        const normalizedUri = filePath.startsWith('file://') ? filePath : `file://${filePath}`;
+        console.log('Recording finished:', normalizedUri);
+        currentRecordingUri = normalizedUri;
         isRecording = false;
         activeRecorder = null;
         if (recordingResolve) {

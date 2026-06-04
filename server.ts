@@ -635,52 +635,6 @@ app.post('/screening/:id/results', async (req, res) => {
   }
 });
 
-//s3 url for upload  https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html
-app.post('/screening/upload-url', async (req, res) => {
-  try {
-    const { screeningId, videoNumber, contentType } = req.body;
-
-    if (!screeningId || videoNumber === undefined || !contentType) {
-      return res.status(400).json({
-        success: false,
-        error: 'screeningId, videoNumber, and contentType are required',
-      });
-    }
-
-    const bucketName = process.env.AWS_S3_BUCKET_NAME;
-    if (!bucketName) {
-      return res.status(500).json({
-        success: false,
-        error: 'AWS_S3_BUCKET_NAME is not configured',
-      });
-    }
-
-    const safeScreeningId = String(screeningId).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const safeVideoNumber = String(videoNumber).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const extension = contentType === 'video/mp4' ? 'mp4' : 'webm';
-    const objectKey = `screenings/${safeScreeningId}/video_${safeVideoNumber}_${Date.now()}.${extension}`;
-
-    const command = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: objectKey,
-      ContentType: contentType,
-    });
-
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 60 * 20 });
-
-    res.json({
-      success: true,
-      uploadUrl,
-      objectKey,
-      bucketName,
-      expiresInSeconds: 1200,
-    });
-  } catch (err) {
-    console.error('Error creating upload URL:', err);
-    res.status(500).json({ success: false, error: 'Failed to create upload URL' });
-  }
-});
-
 // Receive results (CSV) from EC2 worker
 app.post('/screening/:id/results', async (req, res) => {
   try {
