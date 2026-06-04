@@ -1,15 +1,18 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Svg, Path } from 'react-native-svg';
 import HomeBg from '../../components/HomeBg';
 import PrimaryBlueButton from '../../components/PrimaryBlueButton';
+import HeartRateChart from '../../components/HeartRateChart';
 import { usePortraitLock } from '../../hooks/usePortraitLock';
+import { useScreening } from '../../context/ScreeningContext';
 
 export default function ScreeningComplete() {
     usePortraitLock();
     const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
+    const { heartRateLog } = useScreening();
 
     return (
         <View style={styles.container}>
@@ -17,8 +20,14 @@ export default function ScreeningComplete() {
                 <HomeBg />
             </View>
 
-            {/* Centred content */}
-            <View style={[styles.content, { paddingTop: insets.top + 40 }]}>
+            <ScrollView
+                style={styles.scroll}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingTop: insets.top + 32, paddingBottom: Math.max(insets.bottom, 16) + 80 },
+                ]}
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={styles.iconWrap}>
                     <View style={styles.iconCircle}>
                         <Svg width={40} height={40} viewBox="0 0 24 24" fill="none">
@@ -52,9 +61,11 @@ export default function ScreeningComplete() {
                         <Text style={styles.infoText}>View past screenings anytime in History</Text>
                     </View>
                 </View>
-            </View>
 
-            {/* Button pinned to bottom */}
+                <Text style={styles.sectionLabel}>Heart Rate Summary</Text>
+                <HeartRateChart data={heartRateLog} />
+            </ScrollView>
+
             <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
                 <PrimaryBlueButton onPress={() => navigation.navigate('MainTabs')} fullWidth>
                     Back to Home
@@ -72,12 +83,13 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         zIndex: 0,
     },
-    content: {
+    scroll: {
         flex: 1,
         zIndex: 1,
+    },
+    scrollContent: {
         paddingHorizontal: 24,
         alignItems: 'center',
-        justifyContent: 'center',
     },
     iconWrap: { marginBottom: 28 },
     iconCircle: {
@@ -114,6 +126,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(80,88,180,0.10)',
         alignItems: 'center',
+        marginBottom: 28,
     },
     infoRow: {
         flexDirection: 'row',
@@ -135,14 +148,28 @@ const styles = StyleSheet.create({
         fontFamily: 'NotoSans-Regular',
         color: '#333',
         lineHeight: 21,
-        textAlign: 'center',
         flex: 1,
     },
+    sectionLabel: {
+        alignSelf: 'flex-start',
+        fontSize: 13,
+        fontFamily: 'NotoSans-SemiBold',
+        color: '#555',
+        letterSpacing: 0.5,
+        textTransform: 'uppercase',
+        marginBottom: 10,
+    },
     footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         paddingHorizontal: 28,
-        paddingTop: 8,
+        paddingTop: 12,
         paddingBottom: 28,
-        flexShrink: 0,
-        zIndex: 1,
+        backgroundColor: 'rgba(255,255,255,0.92)',
+        zIndex: 2,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.06)',
     },
 });

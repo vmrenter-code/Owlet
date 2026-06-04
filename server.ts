@@ -104,6 +104,84 @@ async function uploadTextCsvToS3(objectKey: string, csvText: string): Promise<vo
   );
 }
 
+function buildHeartRateSvg(
+  heartRateLog: Array<{ time: number; bpm: number }>,
+  rmssd: number | null
+): string {
+  if (!heartRateLog.length) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200">
+      <rect width="600" height="200" fill="#12122a" rx="12"/>
+      <text x="300" y="95" fill="#888" text-anchor="middle" font-size="16" font-family="sans-serif">No heart rate data recorded</text>
+      <text x="300" y="118" fill="#555" text-anchor="middle" font-size="12" font-family="sans-serif">Polar H9 was not connected during this screening</text>
+    </svg>`;
+  }
+
+  const W = 600, H = 300;
+  const PL = 56, PR = 24, PT = 44, PB = 48;
+  const chartW = W - PL - PR;
+  const chartH = H - PT - PB;
+
+  const bpms = heartRateLog.map(p => p.bpm);
+  const times = heartRateLog.map(p => p.time);
+  const rawMin = Math.min(...bpms);
+  const rawMax = Math.max(...bpms);
+  const minBpm = rawMin - 5;
+  const maxBpm = rawMax + 5;
+  const bpmRange = maxBpm - minBpm || 1;
+  const maxTime = Math.max(...times) || 1;
+  const avg = Math.round(bpms.reduce((a, b) => a + b, 0) / bpms.length);
+
+  const toX = (t: number) => PL + (t / maxTime) * chartW;
+  const toY = (b: number) => PT + chartH - ((b - minBpm) / bpmRange) * chartH;
+
+  const polylinePoints = heartRateLog
+    .map(p => `${toX(p.time).toFixed(1)},${toY(p.bpm).toFixed(1)}`)
+    .join(' ');
+
+  // Grid lines
+  const step = Math.ceil((rawMax - rawMin + 10) / 4 / 5) * 5 || 10;
+  const startVal = Math.floor(minBpm / step) * step;
+  let gridSvg = '';
+  for (let b = startVal; b <= maxBpm + step; b += step) {
+    const y = toY(b);
+    if (y < PT - 2 || y > PT + chartH + 2) continue;
+    gridSvg += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W - PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;
+    gridSvg += `<text x="${PL - 8}" y="${(y + 4).toFixed(1)}" fill="#777" text-anchor="end" font-size="11" font-family="sans-serif">${b}</text>`;
+  }
+
+  // X-axis time labels
+  let xSvg = '';
+  for (let i = 0; i <= 4; i++) {
+    const t = Math.round((i / 4) * maxTime);
+    const x = toX(t).toFixed(1);
+    xSvg += `<text x="${x}" y="${H - 10}" fill="#777" text-anchor="middle" font-size="11" font-family="sans-serif">${t}s</text>`;
+  }
+
+  const statsText = `Avg: ${avg} BPM  |  Min: ${rawMin} BPM  |  Max: ${rawMax} BPM${rmssd !== null ? `  |  RMSSD: ${rmssd}ms` : ''}`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+    <rect width="${W}" height="${H}" fill="#12122a" rx="12"/>
+    <text x="${W / 2}" y="24" fill="#ffffff" text-anchor="middle" font-size="14" font-weight="bold" font-family="sans-serif">Heart Rate During Screening</text>
+    ${gridSvg}
+    <line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT + chartH}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <line x1="${PL}" y1="${PT + chartH}" x2="${W - PR}" y2="${PT + chartH}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <polyline points="${polylinePoints}" fill="none" stroke="#ff6b6b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${xSvg}
+    <text x="${W / 2}" y="${H - 28}" fill="#aaa" text-anchor="middle" font-size="11" font-family="sans-serif">${statsText}</text>
+  </svg>`;
+}
+
+async function uploadSvgToS3(objectKey: string, svgText: string): Promise<void> {
+  const bucketName = process.env.AWS_S3_BUCKET_NAME;
+  if (!bucketName) throw new Error('AWS_S3_BUCKET_NAME is not configured');
+  await s3.send(new PutObjectCommand({
+    Bucket: bucketName,
+    Key: objectKey,
+    Body: svgText,
+    ContentType: 'image/svg+xml',
+  }));
+}
+
 async function uploadTextJsonToS3(objectKey: string, jsonText: string): Promise<void> {
   const bucketName = process.env.AWS_S3_BUCKET_NAME;
   if (!bucketName) {
@@ -486,26 +564,33 @@ app.post('/screening/:id/heart-rate-csv', async (req, res) => {
     const heartRateKey = `${videoPrefix}/heart_rate_${timestamp}.csv`;
     const rrKey = `${videoPrefix}/rr_intervals_${timestamp}.csv`;
     const hrvKey = `${videoPrefix}/hrv_${timestamp}.json`;
+    const chartKey = `${videoPrefix}/heart_rate_chart_${timestamp}.svg`;
 
-    await uploadTextCsvToS3(heartRateKey, heartRateCsv);
-    await uploadTextCsvToS3(rrKey, rrCsv);
-    await uploadTextJsonToS3(
-      hrvKey,
-      JSON.stringify({
-        screeningId: safeScreeningId,
-        videoNumber: Number(videoNumber),
-        rmssd: rmssdValue,
-        completedAt: completedAt ?? null,
-        timestamp,
-      }, null, 2)
-    );
+    const svgContent = buildHeartRateSvg(heartRateLog, rmssdValue);
 
-    console.log(`Heart rate CSVs uploaded for screening=${screeningId}, video=${videoNumber}`);
+    await Promise.all([
+      uploadTextCsvToS3(heartRateKey, heartRateCsv),
+      uploadTextCsvToS3(rrKey, rrCsv),
+      uploadTextJsonToS3(
+        hrvKey,
+        JSON.stringify({
+          screeningId: safeScreeningId,
+          videoNumber: Number(videoNumber),
+          rmssd: rmssdValue,
+          completedAt: completedAt ?? null,
+          timestamp,
+        }, null, 2)
+      ),
+      uploadSvgToS3(chartKey, svgContent),
+    ]);
+
+    console.log(`Heart rate data uploaded for screening=${screeningId}, video=${videoNumber}`);
     return res.json({
       success: true,
       heartRateKey,
       rrKey,
       hrvKey,
+      chartKey,
       rmssd: rmssdValue,
     });
   } catch (err: any) {
