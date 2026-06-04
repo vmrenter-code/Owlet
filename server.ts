@@ -42,8 +42,13 @@ const prisma = new PrismaClient({ adapter });
 const app = express();
 app.use(express.json());
 app.use(cors());
-//uses env info for the region
-const s3 = new S3Client({ region: process.env.AWS_REGION });
+const s3 = new S3Client({
+  region: process.env.AWS_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
 console.log('AWS config:', { key: process.env.AWS_ACCESS_KEY_ID, bucket: process.env.AWS_S3_BUCKET_NAME });
 
 if (serviceAccount) {
@@ -503,8 +508,8 @@ app.post('/screening/:id/heart-rate-csv', async (req, res) => {
       hrvKey,
       rmssd: rmssdValue,
     });
-  } catch (err) {
-    console.error('Error uploading heart-rate CSVs:', err);
+  } catch (err: any) {
+    console.error('Error uploading heart-rate CSVs:', err?.Code ?? err?.message ?? err);
     return res.status(500).json({ success: false, error: 'Failed to upload heart-rate CSVs' });
   }
 });

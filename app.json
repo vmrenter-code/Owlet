@@ -55,7 +55,6 @@
     "plugins": [
       "expo-font",
       "@react-native-google-signin/google-signin",
-      "react-native-vision-camera",
       [
         "expo-build-properties",
         {
