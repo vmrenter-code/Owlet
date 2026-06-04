@@ -253,22 +253,23 @@ export default function VideoScreen() {
         setIsRefReady(true);
     };
 
-    // Register videoOutput with recording service whenever it changes
+    // Only the first VideoScreen registers its output and owns the camera session
     useEffect(() => {
+        if (!ownsRecordingSession) return;
         setVideoOutput(videoOutput);
         return () => setVideoOutput(null);
-    }, [videoOutput]);
+    }, [videoOutput, ownsRecordingSession]);
 
-    // Track camera mount state from permissions + device availability
+    // Camera mount state is only relevant for the screen that owns recording
     useEffect(() => {
-        const mounted = cameraGranted && micGranted && !!frontDevice;
+        const mounted = ownsRecordingSession && cameraGranted && micGranted && !!frontDevice;
         setIsCameraMounted(mounted);
         setIsRefReady(mounted);
         if (!mounted) {
             setCameraNotReady();
             setIsCameraReady(false);
         }
-    }, [cameraGranted, micGranted, frontDevice]);
+    }, [ownsRecordingSession, cameraGranted, micGranted, frontDevice]);
     
     // Save progress when entering this screen
     useEffect(() => {
@@ -464,12 +465,12 @@ export default function VideoScreen() {
 
     return (
         <View style={styles.container}>
-            {cameraGranted && micGranted && frontDevice && (
+            {ownsRecordingSession && cameraGranted && micGranted && frontDevice && (
                 <Camera
                     ref={cameraRef}
                     style={styles.hiddenCamera}
                     device={frontDevice}
-                    isActive={isFocused}
+                    isActive={true}
                     outputs={[videoOutput]}
                     onStarted={handleCameraReady}
                     onStopped={() => {
