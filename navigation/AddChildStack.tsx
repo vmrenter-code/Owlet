@@ -6,6 +6,7 @@ import ChildDOB from '../screens/ChildDOB';
 import ChildBackground from '../screens/ChildBackground';
 import ChildMedical from '../screens/ChildMedical';
 import PickProfile from '../screens/PickProfile';
+import ChildProvider from '../screens/ChildProvider';
 
 export type AddChildStackParamList = {
   ChildName: { flow: 'addChild' };
@@ -20,6 +21,11 @@ export type AddChildStackParamList = {
     flow: 'addChild';
   };
   PickProfile: { flow: 'addChild' };
+  ChildProvider: {
+    childName: string;
+    dob: string;
+    flow: 'addChild';
+  };
 };
 
 const Stack = createNativeStackNavigator<AddChildStackParamList>();
@@ -45,6 +51,11 @@ export default function AddChildStack() {
       <Stack.Screen
         name="PickProfile"
         component={PickProfile}
+        initialParams={{ flow: 'addChild' }}
+      />
+      <Stack.Screen
+        name="ChildProvider"
+        component={ChildProvider}
         initialParams={{ flow: 'addChild' }}
       />
     </Stack.Navigator>
