@@ -47,38 +47,35 @@ export default function ChildMedical() {
   const handleContinue = async () => {
     if (saving) return;
     if (!childName?.trim()) {
-      Alert.alert('Name required', 'Go back and enter your child\'s name.');
+      Alert.alert('Name required', "Go back and enter your child's name.");
       return;
     }
 
     setSaving(true);
     try {
       const isoBirthday = birthdayToIso(dob);
-      try {
-        const child = await createChildViaApi({
-          name: childName.trim(),
-          birthday: isoBirthday,
-          race,
-          ethnicity,
-          gender,
-          medicalHistory: selectedChips,
-          medicalNotes: medicalNotes.trim() || undefined,
-        });
-        await selectChild(child);
-        await updateChildren();
-      } catch (err) {
-        Alert.alert(
-          'Could not save profile',
-          err instanceof Error
-            ? err.message
-            : 'Your child\'s information could not be saved to your account. Make sure you are signed in and the server is running, then try again.',
-        );
-        return;
-      }
-
+      const child = await createChildViaApi({
+        name: childName.trim(),
+        birthday: isoBirthday,
+        race,
+        ethnicity,
+        gender,
+        medicalHistory: selectedChips,
+        medicalNotes: medicalNotes.trim() || undefined,
+      });
+      await selectChild(child);
+      // Refresh children list in background — don't block navigation on it
+      updateChildren().catch(() => {});
       navigation.navigate('PickProfile', {
         flow: addingChild ? 'addChild' : 'onboarding',
       });
+    } catch (err) {
+      Alert.alert(
+        'Could not save profile',
+        err instanceof Error
+          ? err.message
+          : "Your child's information could not be saved. Make sure you are signed in and the server is running, then try again.",
+      );
     } finally {
       setSaving(false);
     }
