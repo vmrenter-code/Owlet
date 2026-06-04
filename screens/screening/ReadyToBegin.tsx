@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect } from 'react';
-import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
+import { Camera, useCameraDevice, useCameraPermission, useMicrophonePermission } from 'react-native-vision-camera';
 import { useScreening } from '../../context/ScreeningContext';
 import ScreeningCameraLayout from '../../components/ScreeningCameraLayout';
 import { getAuth } from 'firebase/auth';
@@ -15,15 +15,16 @@ export default function ReadyToBegin() {
     const screeningId = screeningIDFromContext ?? route.params?.screeningId;
     const { selectedChild } = useChild();
 
-    const [permission, requestPermission] = useCameraPermissions();
-    const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
+    const { hasPermission: cameraGranted, requestPermission: requestCameraPermission } = useCameraPermission();
+    const { hasPermission: micGranted, requestPermission: requestMicrophonePermission } = useMicrophonePermission();
+    const frontDevice = useCameraDevice('front');
 
     useEffect(() => {
-        if (!permission || permission.status === 'undetermined') requestPermission();
-        if (!microphonePermission || microphonePermission.status === 'undetermined') requestMicrophonePermission();
-    }, [microphonePermission, requestMicrophonePermission, permission, requestPermission]);
+        if (!cameraGranted) requestCameraPermission();
+        if (!micGranted) requestMicrophonePermission();
+    }, [cameraGranted, micGranted]);
 
-    const cameraReady = permission?.granted && microphonePermission?.granted;
+    const cameraReady = cameraGranted && micGranted && !!frontDevice;
 
     const handleBegin = async () => {
         // Start the screening process & navigate to first video
@@ -89,7 +90,7 @@ export default function ReadyToBegin() {
             }
         >
             {cameraReady
-                ? <CameraView style={StyleSheet.absoluteFillObject} facing="front" />
+                ? <Camera style={StyleSheet.absoluteFillObject} device={frontDevice!} isActive={true} />
                 : <View style={styles.cameraFallback}><Text style={styles.cameraFallbackText}>Starting camera...</Text></View>
             }
         </ScreeningCameraLayout>

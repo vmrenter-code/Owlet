@@ -2,11 +2,11 @@ import { View, Text, StyleSheet, Pressable, Platform, Modal, ActivityIndicator }
 import { API_BASE_URL as BASE_URL } from '../../src/config/apiBaseUrl';
 import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
+import { Camera, useCameraDevice, useCameraPermission, useMicrophonePermission, useVideoOutput, type CameraRef } from 'react-native-vision-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
-import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, initializeCameraRef, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
+import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, setVideoOutput, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
 import { useScreening, calculateRMSSD } from '../../context/ScreeningContext';
 
 // Video sources for each screening video
@@ -94,11 +94,13 @@ export default function VideoScreen() {
     );
     
     const { screeningId, videoNumber: initialVideoNumber = 1 } = route.params ?? {};
-    const cameraRef = useRef<CameraView>(null);
+    const cameraRef = useRef<CameraRef>(null);
     const videoRef = useRef<Video>(null);
     const hasAttemptedRecordingStartRef = useRef(false);
-    const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-    const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
+    const { hasPermission: cameraGranted, requestPermission: requestCameraPermission } = useCameraPermission();
+    const { hasPermission: micGranted, requestPermission: requestMicrophonePermission } = useMicrophonePermission();
+    const frontDevice = useCameraDevice('front');
+    const videoOutput = useVideoOutput({ enableAudio: true });
     
     const totalVideos = 5;
     const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
@@ -227,14 +229,13 @@ export default function VideoScreen() {
     }, [activeScreeningId, BASE_URL]);
 
     useEffect(() => {
-        if (cameraPermission?.status === 'undetermined') {
-            requestCameraPermission?.();
+        if (!cameraGranted) {
+            requestCameraPermission();
         }
-
-        if (microphonePermission?.status === 'undetermined') {
-            requestMicrophonePermission?.();
+        if (!micGranted) {
+            requestMicrophonePermission();
         }
-    }, [cameraPermission?.status, microphonePermission?.status, requestCameraPermission, requestMicrophonePermission]);
+    }, [cameraGranted, micGranted]);
     
     const handleExitScreening = async () => {
         // Stop the video before exiting
@@ -246,25 +247,28 @@ export default function VideoScreen() {
     };
 
     const handleCameraReady = () => {
-        //
         setCameraReady();
         setIsCameraReady(true);
+        setIsCameraMounted(true);
+        setIsRefReady(true);
     };
 
-    // Initialize camera ref
-    const handleCameraRef = useCallback((ref: CameraView | null) => {
-        if (ref) {
-            cameraRef.current = ref;
-            initializeCameraRef(ref);
-            setIsRefReady(true);
-            setIsCameraMounted(true);
-        } else {
+    // Register videoOutput with recording service whenever it changes
+    useEffect(() => {
+        setVideoOutput(videoOutput);
+        return () => setVideoOutput(null);
+    }, [videoOutput]);
+
+    // Track camera mount state from permissions + device availability
+    useEffect(() => {
+        const mounted = cameraGranted && micGranted && !!frontDevice;
+        setIsCameraMounted(mounted);
+        setIsRefReady(mounted);
+        if (!mounted) {
             setCameraNotReady();
-            setIsCameraMounted(false);
-            setIsRefReady(false);
             setIsCameraReady(false);
         }
-    }, []);
+    }, [cameraGranted, micGranted, frontDevice]);
     
     // Save progress when entering this screen
     useEffect(() => {
@@ -326,8 +330,8 @@ export default function VideoScreen() {
             isCameraReady &&
             isRefReady &&
             isCameraMounted &&
-            cameraPermission?.granted &&
-            microphonePermission?.granted &&
+            cameraGranted &&
+            micGranted &&
             !isCurrentlyRecording() &&
             !hasAttemptedRecordingStartRef.current
         ) {
@@ -343,7 +347,7 @@ export default function VideoScreen() {
 
             return () => clearTimeout(startTimer);
         }
-    }, [ownsRecordingSession, cameraPermission?.granted, isCameraMounted, isCameraReady, isRefReady, microphonePermission?.granted]);
+    }, [ownsRecordingSession, cameraGranted, isCameraMounted, isCameraReady, isRefReady, micGranted]);
     
     const handleNext = async () => {
     if (isUploading) {
@@ -460,14 +464,18 @@ export default function VideoScreen() {
 
     return (
         <View style={styles.container}>
-            {cameraPermission?.granted && microphonePermission?.granted && (
-                <CameraView
-                    ref={handleCameraRef}
+            {cameraGranted && micGranted && frontDevice && (
+                <Camera
+                    ref={cameraRef}
                     style={styles.hiddenCamera}
-                    facing="front"
-                    mode="video"
-                    mute={false}
-                    onCameraReady={handleCameraReady}
+                    device={frontDevice}
+                    isActive={isFocused}
+                    outputs={[videoOutput]}
+                    onStarted={handleCameraReady}
+                    onStopped={() => {
+                        setCameraNotReady();
+                        setIsCameraReady(false);
+                    }}
                 />
             )}
 

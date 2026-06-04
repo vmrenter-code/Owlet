@@ -1,18 +1,18 @@
-import { CameraView } from 'expo-camera';
+import type { CameraVideoOutput, Recorder } from 'react-native-vision-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-let cameraRef: CameraView | null = null;
-let recordingCameraRef: CameraView | null = null; // camera that actually started the recording
+let videoOutput: CameraVideoOutput | null = null;
+let activeRecorder: Recorder | null = null;
 let cameraIsReady = false;
 let cameraReadyAt = 0;
 let isRecording = false;
 let recordingStartTime: number | null = null;
 let currentRecordingUri: string | null = null;
-let recordingPromise: Promise<{ uri: string } | undefined> | null = null;
+let recordingResolve: ((uri: string | null) => void) | null = null;
 const CAMERA_STABILIZATION_DELAY_MS = 250;
 
-export const initializeCameraRef = (ref: CameraView) => {
-  cameraRef = ref;
+export const setVideoOutput = (output: CameraVideoOutput | null) => {
+  videoOutput = output;
 };
 
 export const setCameraReady = () => {
@@ -26,16 +26,14 @@ export const setCameraNotReady = () => {
 };
 
 export const startScreeningRecording = async (): Promise<boolean> => {
-  if (!cameraRef) {
-    console.error('Camera ref not initialized');
+  if (!videoOutput) {
+    console.error('Video output not initialized');
     return false;
   }
-
   if (!cameraIsReady) {
     console.warn('Camera is not ready yet');
     return false;
   }
-
   if (isRecording) {
     console.warn('Recording already in progress');
     return false;
@@ -44,153 +42,107 @@ export const startScreeningRecording = async (): Promise<boolean> => {
   try {
     const elapsedSinceReady = Date.now() - cameraReadyAt;
     if (elapsedSinceReady < CAMERA_STABILIZATION_DELAY_MS) {
-      await new Promise((resolve) => setTimeout(resolve, CAMERA_STABILIZATION_DELAY_MS - elapsedSinceReady));
+      await new Promise((resolve) =>
+        setTimeout(resolve, CAMERA_STABILIZATION_DELAY_MS - elapsedSinceReady)
+      );
     }
 
     isRecording = true;
     recordingStartTime = Date.now();
     currentRecordingUri = null;
-    recordingCameraRef = cameraRef; // pin the camera for this recording session
 
-    console.log('Starting video recording...');
-    recordingPromise = recordingCameraRef.recordAsync({
-    maxDuration: 600, // temp 10 min max (idk how long vids will be)
-    });
+    console.log('Creating recorder...');
+    activeRecorder = await videoOutput.createRecorder({ maxDuration: 600 });
 
-    recordingPromise
-      .then((video) => {
-        console.log('recordAsync response:', video);
-        if (video?.uri) {
-          currentRecordingUri = video.uri;
-        } else {
-          console.error('recordAsync returned no URI. Response was:', video);
-        }
-      })
-      .catch((error) => {
-        console.error('recordAsync promise failed:', error);
-      })
-      .finally(() => {
+    console.log('Starting video recording to:', activeRecorder.filePath);
+    await activeRecorder.startRecording(
+      (filePath) => {
+        console.log('Recording finished:', filePath);
+        currentRecordingUri = filePath;
         isRecording = false;
-        recordingPromise = null;
-        recordingCameraRef = null;
-      });
+        activeRecorder = null;
+        if (recordingResolve) {
+          recordingResolve(filePath);
+          recordingResolve = null;
+        }
+      },
+      (error) => {
+        console.error('Recording error:', error);
+        isRecording = false;
+        activeRecorder = null;
+        if (recordingResolve) {
+          recordingResolve(currentRecordingUri);
+          recordingResolve = null;
+        }
+      }
+    );
 
     return true;
   } catch (error) {
     console.error('Error starting recording:', error);
     isRecording = false;
     recordingStartTime = null;
-    recordingPromise = null;
-    recordingCameraRef = null;
+    activeRecorder = null;
     return false;
   }
 };
 
-
- //Stop recording and save video file URI
- 
 export const stopScreeningRecording = async (): Promise<string | null> => {
-  if (!recordingCameraRef && !cameraRef) {
-    console.warn('Camera ref not initialized');
-    return null;
-  }
-
-  // If recordAsync already resolved on its own, we still want to finalize
-  // the cached URI instead of dropping the recording.
-  if (!recordingPromise && currentRecordingUri) {
-    const timestampKey = new Date().toISOString().replace(/[:.]/g, '-');
-
-    try {
-      const recordingMetadata = {
-        uri: currentRecordingUri,
-        timestamp: Date.now(),
-        duration: recordingStartTime ? Date.now() - recordingStartTime : 0,
-      };
-      await AsyncStorage.setItem(
-        `screening_recording_${timestampKey}`,
-        JSON.stringify(recordingMetadata)
-      );
-    } catch (e) {
-      console.log('Error saving recording metadata:', e);
-    }
-
-    console.log('Recording already completed, finalizing cached URI:', currentRecordingUri);
+  // Recording already completed on its own
+  if (!isRecording && currentRecordingUri) {
     const savedUri = currentRecordingUri;
     currentRecordingUri = null;
     recordingStartTime = null;
-    isRecording = false;
     return savedUri;
   }
 
-  if (!recordingPromise) {
+  if (!isRecording || !activeRecorder) {
     console.warn('No recording in progress');
     return null;
   }
 
   try {
-    // Attempt to stop the recording. Use the pinned camera that started it,
-    // not cameraRef which may have been overwritten by a later VideoScreen.
-    const activeCamera = recordingCameraRef ?? cameraRef;
+    const stopPromise = new Promise<string | null>((resolve) => {
+      recordingResolve = resolve;
+    });
+
     try {
-      activeCamera?.stopRecording();
+      await activeRecorder.stopRecording();
     } catch (stopErr) {
-      console.warn('stopRecording threw an error, will wait for recordAsync to settle:', stopErr);
+      console.warn('stopRecording threw, waiting for callback to settle:', stopErr);
     }
 
-    // Wait for the recordingPromise to resolve. iOS needs up to ~15s to
-    // finalize and write the .mov file after stopRecording is called.
-    const settled = await Promise.race([
-      recordingPromise.catch((e) => {
-        console.error('recordAsync rejected:', e);
-        return undefined;
-      }),
-      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 15000)),
+    const result = await Promise.race([
+      stopPromise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 15000)),
     ]);
 
-    const video = settled as { uri?: string } | undefined;
-
-    if (!video?.uri && !currentRecordingUri) {
-      console.error('No recording URI available after stop');
-      // cleanup internal state
-      isRecording = false;
-      recordingStartTime = null;
-      recordingPromise = null;
-      return null;
+    if (result) {
+      const timestampKey = new Date().toISOString().replace(/[:.]/g, '-');
+      try {
+        await AsyncStorage.setItem(
+          `screening_recording_${timestampKey}`,
+          JSON.stringify({
+            uri: result,
+            timestamp: Date.now(),
+            duration: recordingStartTime ? Date.now() - recordingStartTime : 0,
+          })
+        );
+      } catch (e) {
+        console.log('Error saving recording metadata:', e);
+      }
     }
 
-    // Prefer the URI from the resolved promise, fallback to any stored URI
-    currentRecordingUri = video?.uri ?? currentRecordingUri;
-    const timestampKey = new Date().toISOString().replace(/[:.]/g, '-');
-
-    // Save recording metadata to AsyncStorage for later retrieval
-    try {
-      const recordingMetadata = {
-        uri: currentRecordingUri,
-        timestamp: Date.now(),
-        duration: recordingStartTime ? Date.now() - recordingStartTime : 0,
-      };
-      await AsyncStorage.setItem(
-        `screening_recording_${timestampKey}`,
-        JSON.stringify(recordingMetadata)
-      );
-    } catch (e) {
-      console.log('Error saving recording metadata:', e);
-    }
-
-    console.log('Recording saved with URI:', currentRecordingUri);
-    const savedUri = currentRecordingUri;
-
-    // cleanup
-    currentRecordingUri = null;
+    console.log('Recording saved with URI:', result);
     recordingStartTime = null;
-    recordingPromise = null;
     isRecording = false;
+    recordingResolve = null;
 
-    return savedUri ?? null;
+    return result;
   } catch (error) {
     console.error('Error stopping recording:', error);
     isRecording = false;
-    recordingPromise = null;
+    recordingResolve = null;
     return null;
   }
 };
@@ -199,8 +151,6 @@ export const isCurrentlyRecording = (): boolean => {
   return isRecording;
 };
 
-//get uri of last recording (if any) for testing purposes, will be used in future to upload to cloud or whatever.
 export const getLastRecordingUri = (): string | null => {
   return currentRecordingUri;
 };
-
