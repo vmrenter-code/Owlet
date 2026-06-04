@@ -1,12 +1,11 @@
-import { View, Text, StyleSheet, Pressable, Platform, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, ActivityIndicator } from 'react-native';
 import { API_BASE_URL as BASE_URL } from '../../src/config/apiBaseUrl';
-import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Camera, useCameraDevice, useCameraPermission, useMicrophonePermission, useVideoOutput, type CameraRef } from 'react-native-vision-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Path } from 'react-native-svg';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
-import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording, setVideoOutput, setCameraReady, setCameraNotReady } from '../../src/services/screeningRecordingService';
+import { startScreeningRecording, stopScreeningRecording, isCurrentlyRecording } from '../../src/services/screeningRecordingService';
 import { useScreening, calculateRMSSD } from '../../context/ScreeningContext';
 
 // Video sources for each screening video
@@ -29,9 +28,8 @@ const createLocalScreeningId = () => `local_${Date.now()}_${Math.random().toStri
 export default function VideoScreen() {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const isFocused = useIsFocused();
 
-    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, clearRrLog, setScreeningStartTime, heartRate, rrLog, connected, disconnect } = useScreening();
+    const { screeningId: screeningID, heartRateLog, addHeartRateDataPoint, clearHeartRateLog, clearRrLog, setScreeningStartTime, heartRate, rrLog, connected, disconnect, setIsScreeningActive } = useScreening();
     const heartRateLogRef = useRef<typeof heartRateLog>([]);
     const heartRateRef = useRef<number | null>(null);
 
@@ -47,6 +45,7 @@ export default function VideoScreen() {
             clearHeartRateLog();
             clearRrLog();
             setScreeningStartTime(Date.now());
+            setIsScreeningActive(true);
         }
     }, [videoNumber]);
 
@@ -95,29 +94,17 @@ export default function VideoScreen() {
     );
     
     const { screeningId, videoNumber: initialVideoNumber = 1 } = route.params ?? {};
-    const cameraRef = useRef<CameraRef>(null);
     const videoRef = useRef<Video>(null);
     const hasAttemptedRecordingStartRef = useRef(false);
-    const { hasPermission: cameraGranted, requestPermission: requestCameraPermission } = useCameraPermission();
-    const { hasPermission: micGranted, requestPermission: requestMicrophonePermission } = useMicrophonePermission();
-    const frontDevice = useCameraDevice('front');
-    const videoOutput = useVideoOutput({ enableAudio: true, fileType: 'mp4' });
-    
+
     const totalVideos = 5;
     const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
     const [activeScreeningId, setActiveScreeningId] = useState<string | null>(screeningId ?? null);
-    
+
     const [videoFinished, setVideoFinished] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    
-    // Track exit confirmation modal visibility
     const [showExitModal, setShowExitModal] = useState(false);
     const [showTroubleshooting, setShowTroubleshooting] = useState(false);
-    const [isCameraMounted, setIsCameraMounted] = useState(false);
-
-    // added readiness tracking to ensure we don't try to start recording before camera is fully ready, which was causing crashes before
-    const [isCameraReady, setIsCameraReady] = useState(false);
-    const [isRefReady, setIsRefReady] = useState(false);
 
     useEffect(() => {
         setCurrentVideoNumber(initialVideoNumber);
@@ -229,48 +216,13 @@ export default function VideoScreen() {
         };
     }, [activeScreeningId, BASE_URL]);
 
-    useEffect(() => {
-        if (!cameraGranted) {
-            requestCameraPermission();
-        }
-        if (!micGranted) {
-            requestMicrophonePermission();
-        }
-    }, [cameraGranted, micGranted]);
-    
     const handleExitScreening = async () => {
-        // Stop the video before exiting
         if (videoRef.current) {
             await videoRef.current.stopAsync();
         }
         setShowExitModal(false);
         navigation.navigate('MainTabs');
     };
-
-    const handleCameraReady = () => {
-        setCameraReady();
-        setIsCameraReady(true);
-        setIsCameraMounted(true);
-        setIsRefReady(true);
-    };
-
-    // Only the first VideoScreen registers its output and owns the camera session
-    useEffect(() => {
-        if (!ownsRecordingSession) return;
-        setVideoOutput(videoOutput);
-        return () => setVideoOutput(null);
-    }, [videoOutput, ownsRecordingSession]);
-
-    // Camera mount state is only relevant for the screen that owns recording
-    useEffect(() => {
-        const mounted = ownsRecordingSession && cameraGranted && micGranted && !!frontDevice;
-        setIsCameraMounted(mounted);
-        setIsRefReady(mounted);
-        if (!mounted) {
-            setCameraNotReady();
-            setIsCameraReady(false);
-        }
-    }, [ownsRecordingSession, cameraGranted, micGranted, frontDevice]);
     
     // Save progress when entering this screen
     useEffect(() => {
@@ -325,31 +277,26 @@ export default function VideoScreen() {
 
     const ownsRecordingSession = videoNumber === 1;
 
-    // safe recording start -- only the first screen should own the recording session
+    // Start recording once the persistent camera is ready; retry until it succeeds
     useEffect(() => {
-        if (
-            ownsRecordingSession &&
-            isCameraReady &&
-            isRefReady &&
-            isCameraMounted &&
-            cameraGranted &&
-            micGranted &&
-            !isCurrentlyRecording() &&
-            !hasAttemptedRecordingStartRef.current
-        ) {
-            hasAttemptedRecordingStartRef.current = true;
-            //
-            const startTimer = setTimeout(() => {
-                startScreeningRecording().then((started) => {
-                    if (!started) {
-                        hasAttemptedRecordingStartRef.current = false;
-                    }
-                });
-            }, 250);
+        if (!ownsRecordingSession || hasAttemptedRecordingStartRef.current) return;
+        hasAttemptedRecordingStartRef.current = true;
 
-            return () => clearTimeout(startTimer);
-        }
-    }, [ownsRecordingSession, cameraGranted, isCameraMounted, isCameraReady, isRefReady, micGranted]);
+        let cancelled = false;
+        (async () => {
+            for (let i = 0; i < 20; i++) {
+                if (cancelled || isCurrentlyRecording()) break;
+                const started = await startScreeningRecording();
+                if (started) break;
+                await new Promise(r => setTimeout(r, 500));
+            }
+            if (!isCurrentlyRecording() && !cancelled) {
+                hasAttemptedRecordingStartRef.current = false;
+            }
+        })();
+
+        return () => { cancelled = true; };
+    }, [ownsRecordingSession]);
     
     const handleNext = async () => {
     if (isUploading) {
@@ -454,33 +401,17 @@ export default function VideoScreen() {
                 console.warn('Heart rate upload error:', error);
             }
 
-            disconnect(); // disconnect AFTER saving
+            setIsScreeningActive(false);
+            disconnect();
             navigation.navigate('ScreeningComplete');
         } finally {
             setIsUploading(false);
         }
     }
 };
-//hidden camera. must have it to run without preview
-
 
     return (
         <View style={styles.container}>
-            {ownsRecordingSession && cameraGranted && micGranted && frontDevice && (
-                <Camera
-                    ref={cameraRef}
-                    style={styles.hiddenCamera}
-                    device={frontDevice}
-                    isActive={true}
-                    outputs={[videoOutput]}
-                    onStarted={handleCameraReady}
-                    onStopped={() => {
-                        setCameraNotReady();
-                        setIsCameraReady(false);
-                    }}
-                />
-            )}
-
             <LandscapeStage backgroundColor="#000">
                 <View style={styles.videoContainer}>
                     <Video
@@ -488,7 +419,7 @@ export default function VideoScreen() {
                         source={videoSources[videoNumber]}
                         style={styles.video}
                         resizeMode={ResizeMode.COVER}
-                        shouldPlay={isFocused && !videoFinished}
+                        shouldPlay={!videoFinished}
                         isLooping={false}
                         onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
                             if (status.isLoaded && status.didJustFinish) {
@@ -643,12 +574,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#2a2a2a',
     },
 
-    hiddenCamera: {
-        position: 'absolute',
-        width: 10,
-        height: 10,
-        opacity: 0.1,
-    },
 
     headerContainer: {
         position: 'absolute',
