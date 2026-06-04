@@ -13,6 +13,7 @@ import PastScreenings from '../screens/PastScreenings';
 import NotificationCenter from '../screens/NotificationCenter';
 import ViewResults from '../screens/ViewResults';
 import ClinicianNotes from '../screens/ClinicianNotes';
+import HeartRateGraph from '../screens/HeartRateGraph';
 import FAQ from '../screens/FAQ';
 import ScreeningInstructions from '../screens/ScreeningInstructions';
 import AboutUs from '../screens/AboutUs';
@@ -41,6 +42,7 @@ export type AppStackParamList = {
   NotificationCenter: undefined;
   ViewResults: undefined;
   ClinicianNotes: undefined;
+  HeartRateGraph: { screeningId: string; date: string };
   FAQ: undefined;
   ScreeningInstructions: undefined;
   AboutUs: undefined;
@@ -79,6 +81,7 @@ export default function AppStack() {
       <Stack.Screen name="NotificationCenter" component={NotificationCenter} />
       <Stack.Screen name="ViewResults" component={ViewResults} />
       <Stack.Screen name="ClinicianNotes" component={ClinicianNotes} />
+      <Stack.Screen name="HeartRateGraph" component={HeartRateGraph} />
       <Stack.Screen name="FAQ" component={FAQ} />
       <Stack.Screen name="ScreeningInstructions" component={ScreeningInstructions} />
       <Stack.Screen name="AboutUs" component={AboutUs} />

@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg';
 import cors from 'cors';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 
 import admin from 'firebase-admin';
@@ -408,7 +408,7 @@ app.post('/screening', async (req, res) => {
     const screening = await prisma.screening.create({
       data: {
         id: screeningID,
-        status: 'pending',
+        status: 'reviewed',
         createdAt: startedAt ? new Date(startedAt) : new Date(),
         userId: user.id,
         childId: childId,
@@ -596,6 +596,55 @@ app.post('/screening/:id/heart-rate-csv', async (req, res) => {
   } catch (err: any) {
     console.error('Error uploading heart-rate CSVs:', err?.Code ?? err?.message ?? err);
     return res.status(500).json({ success: false, error: 'Failed to upload heart-rate CSVs' });
+  }
+});
+
+// Fetch stored heart-rate data from S3 for a past screening
+app.get('/screening/:id/heart-rate', async (req, res) => {
+  try {
+    const screeningId = getParam(req, 'id');
+    const safeId = String(screeningId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+    if (!bucketName) return res.status(500).json({ success: false, error: 'S3 not configured' });
+
+    // List all objects for this screening
+    const listed = await s3.send(new ListObjectsV2Command({
+      Bucket: bucketName,
+      Prefix: `results/${safeId}/`,
+    }));
+    const objects = listed.Contents ?? [];
+
+    const hrKey = objects.find(o => o.Key?.match(/heart_rate_\d+\.csv$/))?.Key;
+    const hrvKey = objects.find(o => o.Key?.match(/hrv_\d+\.json$/))?.Key;
+
+    if (!hrKey) {
+      return res.json({ success: true, data: [], rmssd: null });
+    }
+
+    // Download and parse the heart rate CSV
+    const csvObj = await s3.send(new GetObjectCommand({ Bucket: bucketName, Key: hrKey }));
+    const csvText = await (csvObj.Body as any).transformToString();
+    const lines = csvText.split('\n').filter(Boolean);
+    const data: { time: number; bpm: number }[] = [];
+    for (const line of lines.slice(1)) {
+      const [t, b] = line.split(',');
+      const time = parseFloat(t);
+      const bpm = parseFloat(b);
+      if (!isNaN(time) && !isNaN(bpm)) data.push({ time, bpm });
+    }
+
+    // Pull RMSSD from the HRV JSON if available
+    let rmssd: number | null = null;
+    if (hrvKey) {
+      const hrvObj = await s3.send(new GetObjectCommand({ Bucket: bucketName, Key: hrvKey }));
+      const hrvText = await (hrvObj.Body as any).transformToString();
+      rmssd = JSON.parse(hrvText)?.rmssd ?? null;
+    }
+
+    return res.json({ success: true, data, rmssd });
+  } catch (err: any) {
+    console.error('Error fetching heart rate data:', err?.Code ?? err?.message ?? err);
+    return res.status(500).json({ success: false, error: 'Failed to fetch heart rate data' });
   }
 });
 

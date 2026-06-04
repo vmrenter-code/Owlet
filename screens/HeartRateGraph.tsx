@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LineChart } from 'react-native-chart-kit';
+import { getAuth } from 'firebase/auth';
 import { HeartRateDataPoint, calculateRMSSD } from '../context/ScreeningContext';
+import { API_BASE_URL } from '../src/config/apiBaseUrl';
 
 const screenWidth = Dimensions.get('window').width;
 const Y_MIN = 0;
@@ -17,23 +19,45 @@ export default function HeartRateGraph() {
 
     const [heartRateLog, setHeartRateLog] = useState<HeartRateDataPoint[]>([]);
     const [rrLog, setRrLog] = useState<number[]>([]);
+    const [serverRmssd, setServerRmssd] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let cancelled = false;
         const loadLog = async () => {
             try {
+                // Try AsyncStorage first (works for screenings done on this device)
                 const raw = await AsyncStorage.getItem(`heartRateLog_${screeningId}`);
-                if (raw) setHeartRateLog(JSON.parse(raw));
-
                 const rawRr = await AsyncStorage.getItem(`rrLog_${screeningId}`);
-                if (rawRr) setRrLog(JSON.parse(rawRr));
-            } catch (e) {
-                console.log('Error loading logs');
+                const localData: HeartRateDataPoint[] = raw ? JSON.parse(raw) : [];
+                const localRr: number[] = rawRr ? JSON.parse(rawRr) : [];
+
+                if (localData.length > 0) {
+                    if (!cancelled) { setHeartRateLog(localData); setRrLog(localRr); }
+                    return;
+                }
+
+                // Fallback: fetch from server (reads the S3 CSV)
+                const user = getAuth().currentUser;
+                if (!user) return;
+                const token = await user.getIdToken();
+                const res = await fetch(`${API_BASE_URL}/screening/${screeningId}/heart-rate`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) return;
+                const json = await res.json();
+                if (!cancelled && json.success) {
+                    setHeartRateLog(json.data ?? []);
+                    setServerRmssd(json.rmssd ?? null);
+                }
+            } catch {
+                // leave state empty — UI handles it
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
         loadLog();
+        return () => { cancelled = true; };
     }, [screeningId]);
 
     const getSampledData = (data: HeartRateDataPoint[]) => {
@@ -58,7 +82,7 @@ export default function HeartRateGraph() {
     const maxBpm = bpmValues.length > 0 ? Math.max(...bpmValues) : 0;
     const minBpm = bpmValues.length > 0 ? Math.min(...bpmValues) : 0;
 
-    const rmssd = calculateRMSSD(rrLog);
+    const rmssd = calculateRMSSD(rrLog) ?? serverRmssd;
 
     const totalSeconds = heartRateLog.length > 0 ? heartRateLog[heartRateLog.length - 1]?.time ?? 0 : 0;
     const totalMins = Math.floor(totalSeconds / 60);
@@ -81,7 +105,8 @@ export default function HeartRateGraph() {
 
                 {loading ? (
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>Loading...</Text>
+                        <ActivityIndicator size="small" color="#5058b4" />
+                        <Text style={styles.emptyText}>Loading heart rate data…</Text>
                     </View>
                 ) : bpmValues.length === 0 ? (
                     <View style={styles.emptyContainer}>
