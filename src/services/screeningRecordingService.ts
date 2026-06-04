@@ -2,6 +2,7 @@ import { CameraView } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let cameraRef: CameraView | null = null;
+let recordingCameraRef: CameraView | null = null; // camera that actually started the recording
 let cameraIsReady = false;
 let cameraReadyAt = 0;
 let isRecording = false;
@@ -49,9 +50,10 @@ export const startScreeningRecording = async (): Promise<boolean> => {
     isRecording = true;
     recordingStartTime = Date.now();
     currentRecordingUri = null;
+    recordingCameraRef = cameraRef; // pin the camera for this recording session
 
     console.log('Starting video recording...');
-    recordingPromise = cameraRef.recordAsync({      
+    recordingPromise = recordingCameraRef.recordAsync({
     maxDuration: 600, // temp 10 min max (idk how long vids will be)
     });
 
@@ -70,6 +72,7 @@ export const startScreeningRecording = async (): Promise<boolean> => {
       .finally(() => {
         isRecording = false;
         recordingPromise = null;
+        recordingCameraRef = null;
       });
 
     return true;
@@ -78,6 +81,7 @@ export const startScreeningRecording = async (): Promise<boolean> => {
     isRecording = false;
     recordingStartTime = null;
     recordingPromise = null;
+    recordingCameraRef = null;
     return false;
   }
 };
@@ -86,7 +90,7 @@ export const startScreeningRecording = async (): Promise<boolean> => {
  //Stop recording and save video file URI
  
 export const stopScreeningRecording = async (): Promise<string | null> => {
-  if (!cameraRef) {
+  if (!recordingCameraRef && !cameraRef) {
     console.warn('Camera ref not initialized');
     return null;
   }
@@ -124,21 +128,23 @@ export const stopScreeningRecording = async (): Promise<string | null> => {
   }
 
   try {
-    // Attempt to stop the recording. Some devices/drivers may throw here;
-    // if so, we still wait for the recordAsync promise to settle.
+    // Attempt to stop the recording. Use the pinned camera that started it,
+    // not cameraRef which may have been overwritten by a later VideoScreen.
+    const activeCamera = recordingCameraRef ?? cameraRef;
     try {
-      await cameraRef.stopRecording();
+      activeCamera?.stopRecording();
     } catch (stopErr) {
       console.warn('stopRecording threw an error, will wait for recordAsync to settle:', stopErr);
     }
 
-    // Wait for the recordingPromise to resolve, but don't wait forever.
+    // Wait for the recordingPromise to resolve. iOS needs up to ~15s to
+    // finalize and write the .mov file after stopRecording is called.
     const settled = await Promise.race([
       recordingPromise.catch((e) => {
         console.error('recordAsync rejected:', e);
         return undefined;
       }),
-      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 3000)),
+      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 15000)),
     ]);
 
     const video = settled as { uri?: string } | undefined;

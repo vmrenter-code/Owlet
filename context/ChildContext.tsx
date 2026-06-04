@@ -115,7 +115,7 @@ export const ChildProvider = ({ children: ReactChildren }: { children: React.Rea
         });
         const childrenData = await res.json();
         if (!Array.isArray(childrenData)) {
-          console.error('ChildContext init error: /children did not return an array');
+          console.error('ChildContext init error: /children did not return an array', JSON.stringify(childrenData));
           return;
         }
 

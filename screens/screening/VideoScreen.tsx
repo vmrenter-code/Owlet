@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Pressable, Platform, Modal, ActivityIndicator } from 'react-native';
+import { API_BASE_URL as BASE_URL } from '../../src/config/apiBaseUrl';
 import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -98,9 +99,6 @@ export default function VideoScreen() {
     const hasAttemptedRecordingStartRef = useRef(false);
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
-    const BASE_URL =
-        process.env.EXPO_PUBLIC_API_BASE_URL ??
-        (Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000');
     
     const totalVideos = 5;
     const [currentVideoNumber, setCurrentVideoNumber] = useState(initialVideoNumber);
