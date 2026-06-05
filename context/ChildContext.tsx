@@ -101,18 +101,29 @@ export const ChildProvider = ({ children: ReactChildren }: { children: React.Rea
       try {
         const token = await user.getIdToken();
 
-        await fetch(`${API_BASE_URL}/users/sync`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const syncController = new AbortController();
+        const syncTimeout = setTimeout(() => syncController.abort(), 8000);
+        try {
+          await fetch(`${API_BASE_URL}/users/sync`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            signal: syncController.signal,
+          });
+        } finally {
+          clearTimeout(syncTimeout);
+        }
 
-        const res = await fetch(`${API_BASE_URL}/children`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const childController = new AbortController();
+        const childTimeout = setTimeout(() => childController.abort(), 8000);
+        let res: Response;
+        try {
+          res = await fetch(`${API_BASE_URL}/children`, {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: childController.signal,
+          });
+        } finally {
+          clearTimeout(childTimeout);
+        }
         const childrenData = await res.json();
         if (!Array.isArray(childrenData)) {
           console.error('ChildContext init error: /children did not return an array', JSON.stringify(childrenData));
