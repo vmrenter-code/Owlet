@@ -11,6 +11,7 @@ import {
   Easing,
   ListRenderItem
 } from 'react-native';
+import { API_BASE_URL as BASE_URL } from '../src/config/apiBaseUrl';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import InstructionSlides from './InstructionSlides';
@@ -30,9 +31,6 @@ const createLocalScreeningId = () =>
 
 const LAST_INDEX = InstructionSlides.length - 1;
 
-const BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ??
-  (Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000');
 
 export default function ScreeningInstructions() {
   const navigation = useNavigation<any>();

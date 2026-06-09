@@ -1,10 +1,11 @@
-import 'dotenv/config'
+import dotenv from 'dotenv';
+dotenv.config({ override: true });
 import express from 'express';
 import { randomUUID } from 'crypto';
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg';
 import cors from 'cors';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 
 import admin from 'firebase-admin';
@@ -41,8 +42,14 @@ const prisma = new PrismaClient({ adapter });
 const app = express();
 app.use(express.json());
 app.use(cors());
-//uses env info for the region
-const s3 = new S3Client({ region: process.env.AWS_REGION });
+const s3 = new S3Client({
+  region: process.env.AWS_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+console.log('AWS config:', { key: process.env.AWS_ACCESS_KEY_ID, bucket: process.env.AWS_S3_BUCKET_NAME });
 
 if (serviceAccount) {
   admin.initializeApp({
@@ -97,6 +104,84 @@ async function uploadTextCsvToS3(objectKey: string, csvText: string): Promise<vo
   );
 }
 
+function buildHeartRateSvg(
+  heartRateLog: Array<{ time: number; bpm: number }>,
+  rmssd: number | null
+): string {
+  if (!heartRateLog.length) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200">
+      <rect width="600" height="200" fill="#12122a" rx="12"/>
+      <text x="300" y="95" fill="#888" text-anchor="middle" font-size="16" font-family="sans-serif">No heart rate data recorded</text>
+      <text x="300" y="118" fill="#555" text-anchor="middle" font-size="12" font-family="sans-serif">Polar H9 was not connected during this screening</text>
+    </svg>`;
+  }
+
+  const W = 600, H = 300;
+  const PL = 56, PR = 24, PT = 44, PB = 48;
+  const chartW = W - PL - PR;
+  const chartH = H - PT - PB;
+
+  const bpms = heartRateLog.map(p => p.bpm);
+  const times = heartRateLog.map(p => p.time);
+  const rawMin = Math.min(...bpms);
+  const rawMax = Math.max(...bpms);
+  const minBpm = rawMin - 5;
+  const maxBpm = rawMax + 5;
+  const bpmRange = maxBpm - minBpm || 1;
+  const maxTime = Math.max(...times) || 1;
+  const avg = Math.round(bpms.reduce((a, b) => a + b, 0) / bpms.length);
+
+  const toX = (t: number) => PL + (t / maxTime) * chartW;
+  const toY = (b: number) => PT + chartH - ((b - minBpm) / bpmRange) * chartH;
+
+  const polylinePoints = heartRateLog
+    .map(p => `${toX(p.time).toFixed(1)},${toY(p.bpm).toFixed(1)}`)
+    .join(' ');
+
+  // Grid lines
+  const step = Math.ceil((rawMax - rawMin + 10) / 4 / 5) * 5 || 10;
+  const startVal = Math.floor(minBpm / step) * step;
+  let gridSvg = '';
+  for (let b = startVal; b <= maxBpm + step; b += step) {
+    const y = toY(b);
+    if (y < PT - 2 || y > PT + chartH + 2) continue;
+    gridSvg += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W - PR}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;
+    gridSvg += `<text x="${PL - 8}" y="${(y + 4).toFixed(1)}" fill="#777" text-anchor="end" font-size="11" font-family="sans-serif">${b}</text>`;
+  }
+
+  // X-axis time labels
+  let xSvg = '';
+  for (let i = 0; i <= 4; i++) {
+    const t = Math.round((i / 4) * maxTime);
+    const x = toX(t).toFixed(1);
+    xSvg += `<text x="${x}" y="${H - 10}" fill="#777" text-anchor="middle" font-size="11" font-family="sans-serif">${t}s</text>`;
+  }
+
+  const statsText = `Avg: ${avg} BPM  |  Min: ${rawMin} BPM  |  Max: ${rawMax} BPM${rmssd !== null ? `  |  RMSSD: ${rmssd}ms` : ''}`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+    <rect width="${W}" height="${H}" fill="#12122a" rx="12"/>
+    <text x="${W / 2}" y="24" fill="#ffffff" text-anchor="middle" font-size="14" font-weight="bold" font-family="sans-serif">Heart Rate During Screening</text>
+    ${gridSvg}
+    <line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT + chartH}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <line x1="${PL}" y1="${PT + chartH}" x2="${W - PR}" y2="${PT + chartH}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+    <polyline points="${polylinePoints}" fill="none" stroke="#ff6b6b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${xSvg}
+    <text x="${W / 2}" y="${H - 28}" fill="#aaa" text-anchor="middle" font-size="11" font-family="sans-serif">${statsText}</text>
+  </svg>`;
+}
+
+async function uploadSvgToS3(objectKey: string, svgText: string): Promise<void> {
+  const bucketName = process.env.AWS_S3_BUCKET_NAME;
+  if (!bucketName) throw new Error('AWS_S3_BUCKET_NAME is not configured');
+  await s3.send(new PutObjectCommand({
+    Bucket: bucketName,
+    Key: objectKey,
+    Body: svgText,
+    ContentType: 'image/svg+xml',
+  }));
+}
+
 async function uploadTextJsonToS3(objectKey: string, jsonText: string): Promise<void> {
   const bucketName = process.env.AWS_S3_BUCKET_NAME;
   if (!bucketName) {
@@ -122,18 +207,18 @@ app.post('/profile', async (req, res) => {
     const token = authHeader.split("Bearer ")[1];
     const decodedToken = await admin.auth().verifyIdToken(token);
     const firebaseUid = decodedToken.uid;
-    const { name, babyBday, notifications } = req.body;
+    const { name, notifications } = req.body;
 
     const user = await prisma.user.upsert({
       where: { firebaseUid },
-      update: { 
+      update: {
         name,
-        notifications 
+        notifications
       },
-      create: { 
-        firebaseUid, 
+      create: {
+        firebaseUid,
         name,
-        notifications 
+        notifications
       },
     });
     res.json({ success: true, user });
@@ -169,22 +254,7 @@ app.post('/users/sync', async (req, res) => {
         name,
       },
     });
-    /*
-    // Check if user already has a child profile, if not create a default one
-    const existingChild = await prisma.child.findFirst({ where: { userId: user.id } });
-    if (!existingChild) {
-      console.log(`No child profile found for user ${user.id}, creating default child profile`);
-      await prisma.child.create({
-        data: {
-          name: 'Default Child',
-          birthday: null,
-          userId: user.id,
-        },
-      });
-    }
     return res.json({ success: true, user });
-    */
-
   } catch (err) {
     console.error("Error syncing user:", err);
     return res.status(500).json({
@@ -221,8 +291,8 @@ app.post('/children', async (req, res) => {
         userId: user.id,
         race: race,
         ethnicity: ethnicity,
-        medicalHistory: medicalHistory,
-        medicalNotes: medicalNotes,
+        medicalHistory: { set: Array.isArray(medicalHistory) ? medicalHistory.map(String) : [] },
+        medicalNotes: medicalNotes ?? null,
       },
     });
     return res.json({ success: true, child });
@@ -338,7 +408,7 @@ app.post('/screening', async (req, res) => {
     const screening = await prisma.screening.create({
       data: {
         id: screeningID,
-        status: 'pending',
+        status: 'reviewed',
         createdAt: startedAt ? new Date(startedAt) : new Date(),
         userId: user.id,
         childId: childId,
@@ -494,31 +564,87 @@ app.post('/screening/:id/heart-rate-csv', async (req, res) => {
     const heartRateKey = `${videoPrefix}/heart_rate_${timestamp}.csv`;
     const rrKey = `${videoPrefix}/rr_intervals_${timestamp}.csv`;
     const hrvKey = `${videoPrefix}/hrv_${timestamp}.json`;
+    const chartKey = `${videoPrefix}/heart_rate_chart_${timestamp}.svg`;
 
-    await uploadTextCsvToS3(heartRateKey, heartRateCsv);
-    await uploadTextCsvToS3(rrKey, rrCsv);
-    await uploadTextJsonToS3(
-      hrvKey,
-      JSON.stringify({
-        screeningId: safeScreeningId,
-        videoNumber: Number(videoNumber),
-        rmssd: rmssdValue,
-        completedAt: completedAt ?? null,
-        timestamp,
-      }, null, 2)
-    );
+    const svgContent = buildHeartRateSvg(heartRateLog, rmssdValue);
 
-    console.log(`Heart rate CSVs uploaded for screening=${screeningId}, video=${videoNumber}`);
+    await Promise.all([
+      uploadTextCsvToS3(heartRateKey, heartRateCsv),
+      uploadTextCsvToS3(rrKey, rrCsv),
+      uploadTextJsonToS3(
+        hrvKey,
+        JSON.stringify({
+          screeningId: safeScreeningId,
+          videoNumber: Number(videoNumber),
+          rmssd: rmssdValue,
+          completedAt: completedAt ?? null,
+          timestamp,
+        }, null, 2)
+      ),
+      uploadSvgToS3(chartKey, svgContent),
+    ]);
+
+    console.log(`Heart rate data uploaded for screening=${screeningId}, video=${videoNumber}`);
     return res.json({
       success: true,
       heartRateKey,
       rrKey,
       hrvKey,
+      chartKey,
       rmssd: rmssdValue,
     });
-  } catch (err) {
-    console.error('Error uploading heart-rate CSVs:', err);
+  } catch (err: any) {
+    console.error('Error uploading heart-rate CSVs:', err?.Code ?? err?.message ?? err);
     return res.status(500).json({ success: false, error: 'Failed to upload heart-rate CSVs' });
+  }
+});
+
+// Fetch stored heart-rate data from S3 for a past screening
+app.get('/screening/:id/heart-rate', async (req, res) => {
+  try {
+    const screeningId = getParam(req, 'id');
+    const safeId = String(screeningId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+    if (!bucketName) return res.status(500).json({ success: false, error: 'S3 not configured' });
+
+    // List all objects for this screening
+    const listed = await s3.send(new ListObjectsV2Command({
+      Bucket: bucketName,
+      Prefix: `results/${safeId}/`,
+    }));
+    const objects = listed.Contents ?? [];
+
+    const hrKey = objects.find(o => o.Key?.match(/heart_rate_\d+\.csv$/))?.Key;
+    const hrvKey = objects.find(o => o.Key?.match(/hrv_\d+\.json$/))?.Key;
+
+    if (!hrKey) {
+      return res.json({ success: true, data: [], rmssd: null });
+    }
+
+    // Download and parse the heart rate CSV
+    const csvObj = await s3.send(new GetObjectCommand({ Bucket: bucketName, Key: hrKey }));
+    const csvText = await (csvObj.Body as any).transformToString();
+    const lines = csvText.split('\n').filter(Boolean);
+    const data: { time: number; bpm: number }[] = [];
+    for (const line of lines.slice(1)) {
+      const [t, b] = line.split(',');
+      const time = parseFloat(t);
+      const bpm = parseFloat(b);
+      if (!isNaN(time) && !isNaN(bpm)) data.push({ time, bpm });
+    }
+
+    // Pull RMSSD from the HRV JSON if available
+    let rmssd: number | null = null;
+    if (hrvKey) {
+      const hrvObj = await s3.send(new GetObjectCommand({ Bucket: bucketName, Key: hrvKey }));
+      const hrvText = await (hrvObj.Body as any).transformToString();
+      rmssd = JSON.parse(hrvText)?.rmssd ?? null;
+    }
+
+    return res.json({ success: true, data, rmssd });
+  } catch (err: any) {
+    console.error('Error fetching heart rate data:', err?.Code ?? err?.message ?? err);
+    return res.status(500).json({ success: false, error: 'Failed to fetch heart rate data' });
   }
 });
 
@@ -645,52 +771,6 @@ app.post('/screening/:id/results', async (req, res) => {
   } catch (err) {
     console.error('Error receiving results:', err);
     return res.status(500).json({ success: false, error: 'Failed to store results' });
-  }
-});
-
-//s3 url for upload  https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_s3_code_examples.html
-app.post('/screening/upload-url', async (req, res) => {
-  try {
-    const { screeningId, videoNumber, contentType } = req.body;
-
-    if (!screeningId || videoNumber === undefined || !contentType) {
-      return res.status(400).json({
-        success: false,
-        error: 'screeningId, videoNumber, and contentType are required',
-      });
-    }
-
-    const bucketName = process.env.AWS_S3_BUCKET_NAME;
-    if (!bucketName) {
-      return res.status(500).json({
-        success: false,
-        error: 'AWS_S3_BUCKET_NAME is not configured',
-      });
-    }
-
-    const safeScreeningId = String(screeningId).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const safeVideoNumber = String(videoNumber).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const extension = contentType === 'video/mp4' ? 'mp4' : 'webm';
-    const objectKey = `screenings/${safeScreeningId}/video_${safeVideoNumber}_${Date.now()}.${extension}`;
-
-    const command = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: objectKey,
-      ContentType: contentType,
-    });
-
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 60 * 20 });
-
-    res.json({
-      success: true,
-      uploadUrl,
-      objectKey,
-      bucketName,
-      expiresInSeconds: 1200,
-    });
-  } catch (err) {
-    console.error('Error creating upload URL:', err);
-    res.status(500).json({ success: false, error: 'Failed to create upload URL' });
   }
 });
 

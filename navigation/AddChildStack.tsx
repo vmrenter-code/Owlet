@@ -5,6 +5,7 @@ import ChildName from '../screens/ChildName';
 import ChildDOB from '../screens/ChildDOB';
 import ChildBackground from '../screens/ChildBackground';
 import ChildMedical from '../screens/ChildMedical';
+import ChildProvider from '../screens/ChildProvider';
 import PickProfile from '../screens/PickProfile';
 import ChildProvider from '../screens/ChildProvider';
 
@@ -13,6 +14,14 @@ export type AddChildStackParamList = {
   ChildDOB: { childName: string; flow: 'addChild' };
   ChildBackground: { childName: string; dob: string; flow: 'addChild' };
   ChildMedical: {
+    childName: string;
+    dob: string;
+    race: string;
+    ethnicity: string;
+    gender?: string;
+    flow: 'addChild';
+  };
+  ChildProvider: {
     childName: string;
     dob: string;
     race: string;
@@ -48,6 +57,7 @@ export default function AddChildStack() {
       <Stack.Screen name="ChildDOB" component={ChildDOB} />
       <Stack.Screen name="ChildBackground" component={ChildBackground} />
       <Stack.Screen name="ChildMedical" component={ChildMedical} />
+      <Stack.Screen name="ChildProvider" component={ChildProvider} />
       <Stack.Screen
         name="PickProfile"
         component={PickProfile}

@@ -10,6 +10,7 @@ import { ProfileProvider } from './context/ProfileContext';
 import { ChildProfileProvider } from './context/ChildProfileContext';
 import { ScreeningProvider } from './context/ScreeningContext';
 import { ChildProvider } from './context/ChildContext';
+import PersistentRecordingCamera from './components/PersistentRecordingCamera';
 
 export default function App() {
    const [fontsLoaded] = useFonts({
@@ -23,6 +24,7 @@ export default function App() {
       <ChildProvider>
       <ProfileProvider>
           <ScreeningProvider>
+            <PersistentRecordingCamera />
             <NavigationContainer>
               <ChildProfileProvider>
                 <RootNavigator />

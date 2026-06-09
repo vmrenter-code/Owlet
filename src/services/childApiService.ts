@@ -60,11 +60,22 @@ export async function createChildViaApi(
     ...(await authHeaders()),
     'Content-Type': 'application/json',
   };
-  const res = await fetch(`${API_BASE_URL}/children`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}/children`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } catch (err: any) {
+    if (err?.name === 'AbortError') throw new Error('Request timed out. Check your connection and try again.');
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || 'Failed to create child');

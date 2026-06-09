@@ -5,6 +5,7 @@ import HomeBg from '../components/HomeBg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackArrow from '../components/BackArrow';
 import { getAuth } from 'firebase/auth';
+import { API_BASE_URL as BASE_URL } from '../src/config/apiBaseUrl';
 
 export default function Languages() {
     const navigation = useNavigation<any>();
@@ -12,7 +13,6 @@ export default function Languages() {
     const [selectedLanguage, setSelectedLanguage] = useState('English');
 
     const languages = ['English', 'Spanish', 'Chinese', 'Vietnamese', 'Korean', 'Japanese'];
-    const BASE_URL = 'http://localhost:4000';
 
     // Load user's selected language from backend
     useEffect(() => {

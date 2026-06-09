@@ -38,6 +38,8 @@ interface ScreeningContextType {
   rrLog: number[];
   addRrInterval: (rr: number) => void;
   clearRrLog: () => void;
+  isScreeningActive: boolean;
+  setIsScreeningActive: (active: boolean) => void;
 }
 
 const ScreeningContext = createContext<ScreeningContextType | undefined>(undefined);
@@ -48,12 +50,14 @@ export const ScreeningProvider = ({ children }: { children: ReactNode }) => {
   const [heartRateLog, setHeartRateLog] = useState<HeartRateDataPoint[]>([]);
   const [rrLog, setRrLog] = useState<number[]>([]);
   const [screeningStartTime, setScreeningStartTime_internal] = useState<number | null>(null);
+  const [isScreeningActive, setIsScreeningActive] = useState(false);
   const screeningStartTimeRef = useRef<number | null>(null);
 
   const { heartRate, rrInterval, connected, scanning, error, connectToH9, disconnect } = usePolarH9();
 
+  // Only collect RR intervals once the screening clock has started
   useEffect(() => {
-    if (rrInterval !== null) {
+    if (rrInterval !== null && screeningStartTimeRef.current !== null) {
       addRrInterval(rrInterval);
     }
   }, [rrInterval]);
@@ -112,6 +116,8 @@ export const ScreeningProvider = ({ children }: { children: ReactNode }) => {
       rrLog,
       addRrInterval,
       clearRrLog,
+      isScreeningActive,
+      setIsScreeningActive,
     }}>
       {children}
     </ScreeningContext.Provider>
