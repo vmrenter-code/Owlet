@@ -7,7 +7,6 @@ import ChildBackground from '../screens/ChildBackground';
 import ChildMedical from '../screens/ChildMedical';
 import ChildProvider from '../screens/ChildProvider';
 import PickProfile from '../screens/PickProfile';
-import ChildProvider from '../screens/ChildProvider';
 
 export type AddChildStackParamList = {
   ChildName: { flow: 'addChild' };
