@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm ls *)",
+      "Bash(awk 'NR==259620{print NR\": \"substr\\($0,1,200\\); exit}' /private/tmp/claude-501/-Users-victorrenteria-Desktop-UCI-INF-191A-NeuroScreen-UCI-Neuroscreen/a279fd61-350d-498c-9534-433ccaf67648/scratchpad/dev-bundle.js)",
+      "Bash(awk 'NR<=259620 && /__d\\\\\\(function/{last=NR} END{print last}' /private/tmp/claude-501/-Users-victorrenteria-Desktop-UCI-INF-191A-NeuroScreen-UCI-Neuroscreen/a279fd61-350d-498c-9534-433ccaf67648/scratchpad/dev-bundle.js)"
+    ]
+  }
+}

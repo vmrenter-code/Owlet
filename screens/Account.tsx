@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { showAlert } from '../src/utils/showAlert';
 import { useNavigation, useFocusEffect, CommonActions } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -52,11 +53,11 @@ export default function Account() {
     const handleChangePassword = async () => {
         if (isChangingPassword) return;
         if (!currentPassword || !newPassword || !confirmPassword) {
-            Alert.alert('Missing fields', 'Please fill out all password fields.');
+            showAlert('Missing fields', 'Please fill out all password fields.');
             return;
         }
         if (newPassword !== confirmPassword) {
-            Alert.alert('Password mismatch', 'New passwords do not match.');
+            showAlert('Password mismatch', 'New passwords do not match.');
             return;
         }
 
@@ -72,14 +73,14 @@ export default function Account() {
             await reauthenticateWithCredential(user, credential);
             await updatePassword(user, newPassword);
 
-            Alert.alert('Password changed', 'Your password has been updated.');
+            showAlert('Password changed', 'Your password has been updated.');
             setChangePasswordVisible(false);
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
         } catch (err: any) {
             const message = err?.message ?? 'Unable to change password.';
-            Alert.alert('Error', message);
+            showAlert('Error', message);
         } finally {
             setIsChangingPassword(false);
         }
@@ -93,7 +94,7 @@ export default function Account() {
     const saveChildName = async () => {
         const trimmed = nameDraft.trim();
         if (trimmed.length === 0) {
-            Alert.alert('Name required', 'Please enter a name.');
+            showAlert('Name required', 'Please enter a name.');
             return;
         }
         const childId = selectedChild?.id ?? activeChildId;
@@ -115,7 +116,7 @@ export default function Account() {
             return;
         }
 
-        Alert.alert(
+        showAlert(
             'Delete Account?',
             'This permanently removes your account. This action cannot be undone.',
             [
@@ -129,7 +130,7 @@ export default function Account() {
                         setIsDeleting(false);
 
                        if (result.success) {
-    Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
+    showAlert('Account Deleted', 'Your account has been deleted successfully.');
 
     logout();
 
@@ -143,7 +144,7 @@ export default function Account() {
     return;
 }
 
-                        Alert.alert('Unable to Delete Account', result.error ?? 'Please try again.');
+                        showAlert('Unable to Delete Account', result.error ?? 'Please try again.');
                     },
                 },
             ]
@@ -159,7 +160,7 @@ export default function Account() {
     setIsLoggingOut(false);
 
     if (!result.success) {
-        Alert.alert('Unable to Log Out', result.error ?? 'Please try again.');
+        showAlert('Unable to Log Out', result.error ?? 'Please try again.');
         return;
     }
 

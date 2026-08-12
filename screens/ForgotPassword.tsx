@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { showAlert } from '../src/utils/showAlert';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,7 +25,7 @@ export default function ForgotPassword() {
 
     const handleSendReset = async () => {
         if (!email) {
-            Alert.alert('Error', 'Please enter your email address.');
+            showAlert('Error', 'Please enter your email address.');
             return;
         }
 
@@ -32,10 +33,10 @@ export default function ForgotPassword() {
         const result = await userAuthServices.resetPassword(email);
         
         if (result.success) {
-            Alert.alert('Success', 'If this email exists, we sent a password reset link.');
+            showAlert('Success', 'If this email exists, we sent a password reset link.');
             setEmail('');
         } else {
-            Alert.alert('Error', result.error ?? 'Failed to send reset email.');
+            showAlert('Error', result.error ?? 'Failed to send reset email.');
         }
         setLoading(false);
     };

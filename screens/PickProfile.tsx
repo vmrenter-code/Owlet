@@ -6,10 +6,10 @@ import {
   Keyboard,
   ScrollView,
   Pressable,
-  Alert,
 } from 'react-native';
 import { useState } from 'react';
 import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
+import { showAlert } from '../src/utils/showAlert';
 import { isAddChildFlow } from '../utils/childFlow';
 import { useWindowDimensions } from 'react-native';
 
@@ -53,7 +53,7 @@ export default function PickProfile() {
 
     const childId = selectedChild?.id;
     if (!childId) {
-      Alert.alert(
+      showAlert(
         'No child profile',
         'Go back and finish your child\'s details before choosing an avatar.',
       );
@@ -64,7 +64,7 @@ export default function PickProfile() {
     try {
       const saved = await setChildAvatarKey(childId, selectedId);
       if (!saved) {
-        Alert.alert(
+        showAlert(
           'Could not save avatar',
           'Your profile picture could not be saved. Please try again.',
         );

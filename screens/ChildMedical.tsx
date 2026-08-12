@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { showAlert } from '../src/utils/showAlert';
 import { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import LargeInput from '../components/LargeInput';
@@ -47,7 +48,7 @@ export default function ChildMedical() {
   const handleContinue = async () => {
     if (saving) return;
     if (!childName?.trim()) {
-      Alert.alert('Name required', "Go back and enter your child's name.");
+      showAlert('Name required', "Go back and enter your child's name.");
       return;
     }
 
@@ -70,7 +71,7 @@ export default function ChildMedical() {
         flow: addingChild ? 'addChild' : 'onboarding',
       });
     } catch (err) {
-      Alert.alert(
+      showAlert(
         'Could not save profile',
         err instanceof Error
           ? err.message

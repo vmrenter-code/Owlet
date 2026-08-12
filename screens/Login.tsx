@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import React, { useRef, useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,9 +7,8 @@ import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
 import HomeBg from '../components/HomeBg';
 import userAuthServices from '../src/services/userAuthServices';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../src/config/firebase';
+import { configureGoogleSignIn, signInWithGoogle } from '../src/services/googleAuthService';
+import { showAlert } from '../src/utils/showAlert';
 import { Svg, Path, Rect } from 'react-native-svg';
 import WelcomeBackArrow from '../components/WelcomeBackArrow';
 import { useAppState } from '../context/AppStateContext';
@@ -40,7 +39,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+      showAlert('Error', 'Please enter email and password');
       return;
     }
 
@@ -64,7 +63,7 @@ export default function Login() {
           message = 'Invalid email or password';
           break;
       }
-      Alert.alert('Login Failed', message);
+      showAlert('Login Failed', message);
     } finally {
       setLoading(false);
     }
@@ -79,28 +78,16 @@ export default function Login() {
   };
 
   useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: '398374460192-ln7hlk3h862ks0a7hl6hcmmbcim7rfhf.apps.googleusercontent.com',
-      iosClientId: '398374460192-q5umdtk9qkcueu62fhg859v44kr6jate.apps.googleusercontent.com',
-    });
+    configureGoogleSignIn();
   }, []);
 
   const handleGoogleSignIn = async () => {
     try {
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      await GoogleSignin.signOut();
-      const signInResult = await GoogleSignin.signIn();
-
-      const idToken = signInResult.data?.idToken ?? (signInResult as any).idToken;
-
-      if (!idToken) throw new Error('No ID token found');
-
-      const googleCredential = GoogleAuthProvider.credential(idToken);
-      await signInWithCredential(auth, googleCredential);
-
+      await signInWithGoogle();
       loginUser(true);
     } catch (error) {
       console.error('Google Sign-In error:', error);
+      showAlert('Google Sign-In', error instanceof Error ? error.message : 'Something went wrong.');
     }
   };
 

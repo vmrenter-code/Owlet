@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import userAuthServices from '../src/services/userAuthServices';
 import { useRef, useState } from 'react';
@@ -8,9 +8,8 @@ import PrimaryBlueButton from '../components/PrimaryBlueButton';
 import GoogleButton from '../components/GoogleButton';
 import HomeBg from '../components/HomeBg';
 import BackArrow from '../components/BackArrow';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../src/config/firebase';
+import { configureGoogleSignIn, signInWithGoogle } from '../src/services/googleAuthService';
+import { showAlert } from '../src/utils/showAlert';
 import { Svg, Path, Rect, Circle } from 'react-native-svg';
 import { useEffect } from 'react';
 import WelcomeBackArrow from '../components/WelcomeBackArrow';
@@ -181,7 +180,7 @@ export default function Signup() {
 
     const handleSignUp = async () => {
         if (!username || !email || !password || !confirmPassword) {
-            Alert.alert('Error', 'Please fill in all fields.');
+            showAlert('Error', 'Please fill in all fields.');
             return;
         }
 
@@ -192,7 +191,7 @@ export default function Signup() {
             !hasNumber ||
             !hasSpecialChar
         ) {
-            Alert.alert(
+            showAlert(
                 'Weak Password',
                 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
             );
@@ -200,7 +199,7 @@ export default function Signup() {
         }
 
         if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match.');
+            showAlert('Error', 'Passwords do not match.');
             return;
         }
 
@@ -209,27 +208,23 @@ export default function Signup() {
         if (result.success) {
             loginUser(false);
         } else {
-            Alert.alert('Error', result.error ?? 'Something went wrong.');
+            showAlert('Error', result.error ?? 'Something went wrong.');
         }
 
         setLoading(false);
     };
 
+    useEffect(() => {
+        configureGoogleSignIn();
+    }, []);
+
     const handleGoogleSignIn = async () => {
         try {
-            await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-            await GoogleSignin.signOut();
-            const signInResult = await GoogleSignin.signIn();
-            const idToken = signInResult.data?.idToken ?? (signInResult as any).idToken;
-            if (!idToken) throw new Error('No ID token found');
-
-            const googleCredential =
-                GoogleAuthProvider.credential(idToken);
-
-            await signInWithCredential(auth, googleCredential);
+            await signInWithGoogle();
             loginUser(false);
         } catch (error) {
             console.error('Google Sign-In error:', error);
+            showAlert('Google Sign-In', error instanceof Error ? error.message : 'Something went wrong.');
         }
     };
 
